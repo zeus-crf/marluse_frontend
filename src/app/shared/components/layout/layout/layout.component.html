@@ -1,1 +1,42 @@
-<p>layout works!</p>
+<div class="flex h-screen bg-gray-100">
+
+  <!-- Sidebar -->
+  <aside class="w-60 bg-white shadow-md flex flex-col">
+    <!-- Logo -->
+    <div class="px-6 py-5 border-b">
+      <h1 class="text-lg font-bold text-gray-800">Marluse</h1>
+      <p class="text-xs text-gray-400">Materiais de Construção</p>
+    </div>
+
+    <!-- Menu -->
+    <nav class="flex-1 py-4 overflow-y-auto">
+      @for (item of menuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
+          class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+        >
+          <i [class]="item.icon"></i>
+          <span class="text-sm">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Logout -->
+    <div class="border-t p-4">
+      <button
+        (click)="logout()"
+        class="flex items-center gap-3 w-full px-2 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
+      >
+        <i class="pi pi-sign-out"></i>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Conteúdo -->
+  <main class="flex-1 overflow-y-auto p-6">
+    <router-outlet />
+  </main>
+
+</div>
