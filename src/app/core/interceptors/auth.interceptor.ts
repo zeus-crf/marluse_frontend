@@ -3,11 +3,15 @@ import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { catchError, throwError } from "rxjs";
 
+const PUBLIC_URLS = ['/api/auth/'];
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
-  const authReq = token
+  const isPublic = PUBLIC_URLS.some(url => req.url.includes(url));
+
+  const authReq = token && !isPublic
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
 
