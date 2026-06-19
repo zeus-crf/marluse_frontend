@@ -2,23 +2,24 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { EmailComponent } from '../../../shared/components/email/email.component';
 import { SenhaComponent } from '../../../shared/components/password/password.component';
 import { AuthService } from '../../../core/services/auth.service';
-import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, EmailComponent, SenhaComponent],
+  imports: [CommonModule, ReactiveFormsModule, EmailComponent, SenhaComponent, ToastModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
-  private message = inject(MessageService);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private messageService = inject(MessageService);
 
   form: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -26,24 +27,37 @@ export class LoginComponent {
   });
 
   loading = false;
-  errorMessage = '';
 
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+
     this.loading = true;
-    this.errorMessage = '';
     const { email, password } = this.form.value;
+
     this.authService.login(email, password).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
-  
+      next: (res) => {
+        this.router.navigate(['/dashboard'], {
+          state: { toast: { severity: 'success', summary: 'Sucesso', detail: res.message } }
+        });
+      },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.status === 401
-          ? 'E-mail ou senha inválidos.'
-          : 'Erro ao conectar. Tente novamente.';
+
+        // Tenta pegar a mensagem do backend, com fallbacks
+        const detail =
+          err?.error?.message ||
+          err?.error?.error ||
+          (err.status === 401 || err.status === 403 ? 'E-mail ou senha inválidos.' : 'Erro ao conectar. Tente novamente.');
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao entrar',
+          detail,
+          life: 5000,
+        });
       },
     });
   }

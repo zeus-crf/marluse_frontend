@@ -14,7 +14,7 @@ export class AuthService {
     constructor(private http: HttpClient, private router: Router){}
 
     login(email: string, password: string){
-        return this.http.post<{ data: { token: string } }>(
+        return this.http.post<{ message: string; data: any}>(
             `${environment.apiUrl}/auth/login`,
             {email, password}
         ).pipe(

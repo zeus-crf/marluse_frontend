@@ -1,3 +1,5 @@
+<p-toast position="top-right" />
+
 <div class="min-h-screen flex items-center justify-center bg-slate-100 px-4 py-12">
 
   <!-- Card principal -->
@@ -27,7 +29,7 @@
         <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow shadow-blue-500/30">
           <span class="material-symbols-outlined text-white text-[20px]">storefront</span>
         </div>
-        <span class="text-gray-900 text-base font-bold tracking-tight">Marluse</span>
+        <span class="text-gray-900 text-base font-bold tracking-tight">Marluse Materias de Construção</span>
       </div>
 
       <div class="space-y-1">
@@ -85,14 +87,7 @@
           <label for="remember" class="text-sm text-gray-600 cursor-pointer select-none">Lembrar de mim</label>
         </div>
 
-        @if (errorMessage) {
-          <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
-            <span class="material-symbols-outlined text-red-400 text-[16px] mt-0.5 flex-shrink-0">error</span>
-            <p class="text-sm text-red-600">{{ errorMessage }}</p>
-          </div>
-        }
-
-        <button
+<button
           type="submit"
           [disabled]="loading"
           [class.opacity-60]="loading"
