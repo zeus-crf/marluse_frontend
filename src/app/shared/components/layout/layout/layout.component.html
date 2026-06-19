@@ -1,42 +1,30 @@
-<div class="flex h-screen bg-gray-100">
+<div class="flex h-screen bg-slate-50 overflow-hidden">
 
-  <!-- Sidebar -->
-  <aside class="w-60 bg-white shadow-md flex flex-col">
-    <!-- Logo -->
-    <div class="px-6 py-5 border-b">
-      <h1 class="text-lg font-bold text-gray-800">Marluse</h1>
-      <p class="text-xs text-gray-400">Materiais de Construção</p>
-    </div>
+  <app-sidebar />
 
-    <!-- Menu -->
-    <nav class="flex-1 py-4 overflow-y-auto">
-      @for (item of menuItems; track item.route) {
-        <a
-          [routerLink]="item.route"
-          routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-          class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
-        >
-          <i [class]="item.icon"></i>
-          <span class="text-sm">{{ item.label }}</span>
-        </a>
-      }
-    </nav>
+  <div class="flex-1 flex flex-col overflow-hidden">
 
-    <!-- Logout -->
-    <div class="border-t p-4">
-      <button
-        (click)="logout()"
-        class="flex items-center gap-3 w-full px-2 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
-      >
-        <i class="pi pi-sign-out"></i>
-        <span>Sair</span>
-      </button>
-    </div>
-  </aside>
+    <!-- Topbar -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+      <div>
+        <h2 class="text-sm font-semibold text-gray-800">Bem-vindo de volta</h2>
+        <p class="text-xs text-gray-400">Marluse Materiais de Construção</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="p-2 rounded-xl text-gray-400 hover:bg-slate-100 hover:text-gray-600 transition-colors relative">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-[16px]">person</span>
+        </div>
+      </div>
+    </header>
 
-  <!-- Conteúdo -->
-  <main class="flex-1 overflow-y-auto p-6">
-    <router-outlet />
-  </main>
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet />
+    </main>
+
+  </div>
 
 </div>
