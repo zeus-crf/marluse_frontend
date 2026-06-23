@@ -22,7 +22,8 @@ export interface PedidoResponse {
   valorTotal: number;
   observacao: string | null;
   itens: ItemPedidoResponse[];
-  createdAt: string; // ISO string: "2025-06-01T10:30:00"
+  createdAt: string;
+  dataVencimento: string | null; // 'YYYY-MM-DD', só para FIADO
 }
 
 export interface ItemPedidoRequest {
@@ -35,6 +36,8 @@ export interface PedidoRequest {
   formaPagamento: FormaPagamento;
   itens: ItemPedidoRequest[];
   observacao?: string;
+  status?: StatusPedido;       // omitir = CONFIRMADO (Venda)
+  dataVencimento?: string;     // 'YYYY-MM-DD', só para FIADO
 }
 
 export interface ProdutoSimples {
