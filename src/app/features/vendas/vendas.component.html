@@ -187,14 +187,14 @@
   />
 
 <!-- Modal Detalhe (descomentar após criar o component) -->
-<!-- <app-pedido-detalhe-modal
-  [visible]="showModalDetalhe"
-  [pedido]="pedidoSelecionado"
-  [salvando]="salvando"
-  (fechar)="fecharDetalhe()"
-  (pagar)="onPagar($event)"
-  (cancelar)="onCancelar($event)"
-/> -->
+  <app-pedido-detalhe-modal
+    [visible]="showModalDetalhe"
+    [pedido]="pedidoSelecionado"
+    [salvando]="salvando"
+    (fechar)="fecharDetalhe()"
+    (pagar)="onPagar($event)"
+    (cancelar)="onCancelar($event)"
+  />
 
 <!-- Modal Filtros (descomentar após criar o component) -->
 <!-- <app-vendas-filtros-modal

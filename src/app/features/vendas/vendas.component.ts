@@ -14,11 +14,11 @@ import {
 } from './models/vendas.models';
 import { VendasTableComponent } from './components/vendas-table/vendas-table.component';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
-
+import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],

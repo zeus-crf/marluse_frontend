@@ -1,0 +1,124 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '600px' }"
+  [contentStyle]="{ padding: '20px 24px 24px' }"
+  header="Detalhes da Venda">
+
+  @if (pedido) {
+    <div class="flex flex-col gap-5">
+
+      <!-- Info grid -->
+      <div class="grid grid-cols-4 gap-3">
+
+        <div class="col-span-2">
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Cliente</div>
+          <div class="text-[13.5px] font-medium text-gray-800">{{ pedido.clienteNome }}</div>
+        </div>
+
+        <div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Data</div>
+          <div class="text-[13.5px] font-medium text-gray-800">{{ formatData(pedido.createdAt) }}</div>
+        </div>
+
+        <div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Status</div>
+          <div class="mt-0.5">
+            <p-tag [value]="getStatusLabel(pedido.status)" [severity]="getSeverity(pedido.status)" />
+          </div>
+        </div>
+
+        <div class="col-span-2">
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Pagamento</div>
+          <div class="text-[13.5px] font-medium text-gray-800 capitalize">{{ getPagamentoLabel(pedido.formaPagamento) }}</div>
+        </div>
+
+        @if (pedido.dataVencimento) {
+          <div class="col-span-2">
+            <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Vencimento</div>
+            <div class="text-[13.5px] font-medium text-gray-800">{{ formatData(pedido.dataVencimento) }}</div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Itens -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Itens</div>
+
+        <div class="border border-slate-200 rounded-md overflow-hidden">
+
+          <!-- Cabeçalho -->
+          <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 bg-slate-50 border-b border-slate-200 px-[14px] py-[7px]">
+            @for (h of ['Produto','Qtd.','Vl. Unit.','Subtotal']; track h; let i = $index) {
+              <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]"
+                [class.text-right]="i > 0">{{ h }}</div>
+            }
+          </div>
+
+          <!-- Linhas -->
+          @for (item of pedido.itens; track item.id; let i = $index) {
+            <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[9px] border-b border-slate-100 last:border-0 items-center"
+              [class.bg-white]="i % 2 === 0"
+              [class.bg-slate-50]="i % 2 !== 0">
+              <div class="text-[13px] text-gray-800">{{ item.produtoNome }}</div>
+              <div class="text-[13px] text-gray-500 text-right font-mono">{{ item.quantidade }}</div>
+              <div class="text-[13px] text-gray-500 text-right font-mono">{{ formatCurrency(item.precoUnitario) }}</div>
+              <div class="text-[13px] font-semibold text-gray-800 text-right font-mono">{{ formatCurrency(item.subtotal) }}</div>
+            </div>
+          }
+
+          <!-- Total -->
+          <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[9px] bg-slate-50 border-t border-slate-200">
+            <div class="col-span-3 text-[12px] font-bold text-gray-400 uppercase tracking-[0.06em] text-right self-center">Total</div>
+            <div class="text-[15px] font-bold text-blue-600 text-right font-mono">{{ formatCurrency(pedido.valorTotal) }}</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Observação -->
+      @if (pedido.observacao) {
+        <div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Observação</div>
+          <div class="text-[13px] text-gray-500 bg-slate-50 rounded-md px-3 py-[10px]">{{ pedido.observacao }}</div>
+        </div>
+      }
+
+      <!-- Ações -->
+      <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+
+        <button type="button" (click)="fechar.emit()"
+          class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          Fechar
+        </button>
+
+        <div class="flex gap-2">
+          @if (podeCancelar) {
+            <button type="button" (click)="cancelar.emit(pedido!.id)" [disabled]="salvando"
+              class="px-4 py-[7px] text-[13px] font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors">
+              Cancelar venda
+            </button>
+          }
+          @if (podePagar) {
+            <button type="button" (click)="pagar.emit(pedido!.id)" [disabled]="salvando"
+              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              @if (salvando) {
+                <i class="pi pi-spin pi-spinner text-xs"></i>
+              } @else {
+                <i class="pi pi-check text-xs"></i>
+              }
+              Marcar como Pago
+            </button>
+          }
+        </div>
+
+      </div>
+
+    </div>
+  }
+
+</p-dialog>
