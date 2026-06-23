@@ -26,7 +26,7 @@ export const routes: Routes = [
       {
         path: 'vendas',
         loadComponent: () =>
-          import('./features/vendas/vendas/vendas.component').then(m => m.VendasComponent)
+          import('./features/vendas/vendas.component').then(m => m.VendasComponent)
       },
       {
         path: 'locacoes',

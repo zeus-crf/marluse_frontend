@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-vendas',
   imports: [],
   templateUrl: './vendas.component.html',
-  styleUrl: './vendas.component.scss',
+  styleUrl: './vendas.component.sccs,
 })
 export class VendasComponent {}
