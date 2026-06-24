@@ -171,6 +171,7 @@
       [pedidos]="pedidosFiltrados"
       [loading]="loading"
       (verDetalhe)="abrirDetalhe($event)"
+      (editar)="abrirEdicao($event)"
     />
   </div>
 
@@ -195,6 +196,16 @@
     (pagar)="onPagar($event)"
     (cancelar)="onCancelar($event)"
   />
+
+<!-- Modal Edição -->
+<app-pedido-edicao-modal
+  [visible]="showModalEdicao"
+  [pedido]="pedidoSelecionado"
+  [salvando]="salvando"
+  (fechar)="fecharEdicao()"
+  (salvar)="onSalvarEdicao($event)"
+/>
+
 
 <!-- Modal Filtros (descomentar após criar o component) -->
 <!-- <app-vendas-filtros-modal

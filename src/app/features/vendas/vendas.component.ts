@@ -11,14 +11,19 @@ import {
   ProdutoSimples,
   ClienteSimples,
   StatusPedido,
+  PedidoAtualizarRequest,
 } from './models/vendas.models';
 import { VendasTableComponent } from './components/vendas-table/vendas-table.component';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
+import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
+
+
+
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],
@@ -47,6 +52,7 @@ export class VendasComponent implements OnInit {
   // ── Modais ─────────────────────────────────────────────────
   showModalCriar = false;
   showModalDetalhe = false;
+  showModalEdicao = false;
   showModalFiltros = false;
   pedidoSelecionado: PedidoResponse | null = null;
 
@@ -281,11 +287,56 @@ export class VendasComponent implements OnInit {
     });
   }
 
+
+  // --- Modal Edição ----------------------
+
+  abrirEdicao(pedido: PedidoResponse): void {
+    this.pedidoSelecionado = pedido;
+    this.showModalEdicao = true;
+  }
+
+  fecharEdicao(): void {
+    this.showModalEdicao = false;
+    this.pedidoSelecionado = null;
+  }
+
+  onSalvarEdicao(pedido: PedidoAtualizarRequest): void {
+    const id = this.pedidoSelecionado!.id;
+    this.onEditar(id, pedido);
+  }
+
+  onEditar(id: string, pedido: PedidoAtualizarRequest): void {
+    this.salvando = true;
+    this.service.putEditarVenda(id, pedido).subscribe ({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharEdicao();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Editado',
+          detail: 'Pagamento registrado com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      }, 
+        error: () => {
+          this.salvando = false;
+          this.cdr.detectChanges();
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao editar venda',
+            life: 3000
+          });
+        },
+    });
+  }
+
   // ── Modal Filtros ──────────────────────────────────────────
   abrirModalFiltros(): void {
     this.showModalFiltros = true;
   }
-
 
 
   fecharModalFiltros(): void {
@@ -305,6 +356,7 @@ export class VendasComponent implements OnInit {
     this.statusFiltro = 'TODOS';
     this.showModalFiltros = false;
   }
+
 
   // ── Helpers ────────────────────────────────────────────────
   private atualizarNaLista(pedidoAtualizado: PedidoResponse): void {

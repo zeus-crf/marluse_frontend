@@ -40,6 +40,11 @@ export interface PedidoRequest {
   dataVencimento?: string;     // 'YYYY-MM-DD', só para FIADO
 }
 
+export interface PedidoAtualizarRequest {
+  formaPagamento?: FormaPagamento;
+  observacao?: string;
+}
+
 export interface ProdutoSimples {
   id: string;
   nome: string;

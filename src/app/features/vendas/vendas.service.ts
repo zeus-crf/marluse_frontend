@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { map, Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
-import { ClienteResponse, ClienteSimples, PedidoRequest, PedidoResponse, ProdutoResponse, ProdutoSimples, StatusPedido, VendasFiltro } from "./models/vendas.models";
+import { ClienteResponse, ClienteSimples, PedidoAtualizarRequest, PedidoRequest, PedidoResponse, ProdutoResponse, ProdutoSimples, StatusPedido, VendasFiltro } from "./models/vendas.models";
 
 @Injectable({ providedIn: 'root' })
 export class VendasService {
@@ -55,10 +55,14 @@ export class VendasService {
         );
     }
 
-
     patchPagarPedido(id: string): Observable<PedidoResponse> {
         return this.http.patch<{data: PedidoResponse}>(`${this.baseUrl}/${id}/pagar`, {})
             .pipe(map(r => r.data))
+    }
+
+    putEditarVenda(id: string, pedido: PedidoAtualizarRequest): Observable<PedidoResponse> {
+        return this.http.put<{ data: PedidoResponse }>(`${this.baseUrl}/${id}` , pedido)
+        .pipe(map (r => r.data))
     }
 
     patchCancelarPedido(id: string): Observable<PedidoResponse> {
