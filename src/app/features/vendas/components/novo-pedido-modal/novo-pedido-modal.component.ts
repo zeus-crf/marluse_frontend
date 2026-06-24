@@ -37,7 +37,9 @@ export class NovoPedidoModalComponent {
   tipo: 'PEDIDO' | 'ORCAMENTO' = 'PEDIDO';
   dataVencimento = '';
   clienteId = '';
+  observacao = '';
   formaPagamento: FormaPagamento | '' = '';
+  
   itens: ItemForm[] = [this.novoItem()];
   salvando = false;
 
@@ -120,6 +122,7 @@ export class NovoPedidoModalComponent {
       itens:          this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade })),
       status,
       dataVencimento: this.isFiado && this.dataVencimento ? this.dataVencimento : undefined,
+      observacao: this.observacao,
     }).subscribe({
       next: (pedido) => {
         this.pedidoCriado.emit(pedido);
@@ -141,6 +144,7 @@ export class NovoPedidoModalComponent {
     this.clienteId     = '';
     this.formaPagamento = '';
     this.itens         = [this.novoItem()];
+    this.observacao = '';
   }
 
   rowTotal(item: ItemForm): number { return item.precoUnitario * item.quantidade; }

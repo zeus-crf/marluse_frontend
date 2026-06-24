@@ -127,6 +127,16 @@
         </div>
       </div>
 
+      <div>
+        <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>
+        <textarea
+          [(ngModel)]="observacao"
+          rows="3"
+          placeholder="Observações sobre a venda (opcional)…"
+          class="w-full bg-white border border-slate-200 rounded-md px-3 py-[9px] text-[13px] text-gray-800 font-[inherit] outline-none resize-y focus:border-blue-400 transition-colors">
+        </textarea>
+      </div>
+
       <!-- PAGAMENTO + TOTAL -->
       <div class="grid grid-cols-[1fr_auto] gap-4 items-end">
 
@@ -161,6 +171,8 @@
         </div>
 
       </div>
+
+      
 
       <!-- AÇÕES -->
       <div class="flex justify-end gap-2 pt-[4px] border-t border-slate-100">
