@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
+
+type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -11,19 +13,22 @@ import {
   ProdutoSimples,
   ClienteSimples,
   StatusPedido,
+  FormaPagamento,
   PedidoAtualizarRequest,
+  VendasFiltroCompleto,
 } from './models/vendas.models';
 import { VendasTableComponent } from './components/vendas-table/vendas-table.component';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
+import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/vendas-filtros-modal.component';
 
 
 
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],
@@ -43,11 +48,25 @@ export class VendasComponent implements OnInit {
   salvando = false;
   loadingModal = false;
 
+  // ── Período ────────────────────────────────────────────────
+  periodoAtivo: Periodo = 'mes';
+  customInicio = '';
+  customFim    = '';
+
+  readonly periodos: { label: string; value: Periodo }[] = [
+    { label: 'Este mês',  value: 'mes'       },
+    { label: 'Trimestre', value: 'trimestre' },
+    { label: 'Semestre',  value: 'semestre'  },
+    { label: 'Este ano',  value: 'ano'       },
+    { label: 'Período',   value: 'custom'    },
+  ];
+
   // ── Filtros ────────────────────────────────────────────────
   busca = '';
-  statusFiltro: StatusPedido | 'TODOS' = 'TODOS';
-  filtroInicio = '';
-  filtroFim = '';
+  filtro: VendasFiltroCompleto = {
+    status: 'TODOS', formaPagamento: 'TODOS',
+    inicio: '', fim: '', minValor: null, maxValor: null,
+  };
 
   // ── Modais ─────────────────────────────────────────────────
   showModalCriar = false;
@@ -57,7 +76,6 @@ export class VendasComponent implements OnInit {
   pedidoSelecionado: PedidoResponse | null = null;
 
   // ── Donut "Por Status" ─────────────────────────────────────
-  donutSeries: number[] = [];
   donutChart: any = { type: 'donut', height: 200, fontFamily: 'inherit' };
   donutColors = ['#22c55e', '#f59e0b', '#ef4444'];
   donutLabels = ['Pago', 'Pendente', 'Cancelado'];
@@ -68,7 +86,6 @@ export class VendasComponent implements OnInit {
   donutTooltip: any = { y: { formatter: (v: number) => this.formatCurrency(v) } };
 
   // ── Barras horizontais "Top Clientes" ──────────────────────
-  barHSeries: any[] = [];
   barHChart: any = { type: 'bar', height: 220, toolbar: { show: false }, fontFamily: 'inherit' };
   barHPlotOptions: any = { bar: { horizontal: true, barHeight: '60%', borderRadius: 3 } };
   barHColors = ['#3b82f6'];
@@ -97,6 +114,45 @@ export class VendasComponent implements OnInit {
   // ── Lifecycle ──────────────────────────────────────────────
   ngOnInit(): void {
     this.carregarPedidos();
+    this.selectPeriodo('mes');
+  }
+
+  // ── Período ────────────────────────────────────────────────
+  selectPeriodo(p: Periodo): void {
+    this.periodoAtivo = p;
+    if (p === 'custom') {
+      this.customInicio = this.filtro.inicio;
+      this.customFim    = this.filtro.fim;
+    } else {
+      this.aplicarPeriodo(p);
+    }
+  }
+
+  private aplicarPeriodo(p: Periodo): void {
+    const hoje = new Date();
+    let start  = new Date(hoje);
+    if (p === 'mes')       start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    else if (p === 'trimestre') start.setMonth(hoje.getMonth() - 2);
+    else if (p === 'semestre')  start.setMonth(hoje.getMonth() - 5);
+    else if (p === 'ano')       start.setFullYear(hoje.getFullYear() - 1);
+    this.filtro = { ...this.filtro, inicio: start.toISOString().split('T')[0], fim: hoje.toISOString().split('T')[0] };
+    this.cdr.detectChanges();
+  }
+
+  aplicarPeriodoCustom(): void {
+    if (this.customInicio && this.customFim) {
+      this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
+      this.cdr.detectChanges();
+    }
+  }
+
+  periodoButtonClass(value: Periodo): Record<string, boolean> {
+    const active = this.periodoAtivo === value;
+    return {
+      'bg-blue-600 text-white font-semibold':           active,
+      'text-gray-500 hover:bg-slate-100 font-medium':   !active,
+      'px-3 py-1.5 text-xs rounded-lg transition-colors': true,
+    };
   }
 
   carregarPedidos(): void {
@@ -104,7 +160,6 @@ export class VendasComponent implements OnInit {
     this.service.getPedidos().subscribe({
       next: (pedidos) => {
         this.pedidos = pedidos;
-        this.atualizarGraficos();
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -117,16 +172,8 @@ export class VendasComponent implements OnInit {
 
   // ── KPIs (calculados a partir da lista) ────────────────────
   get vendasMes(): number {
-    const agora = new Date();
-    return this.pedidos
-      .filter((p) => {
-        const data = new Date(p.createdAt);
-        return (
-          data.getMonth() === agora.getMonth() &&
-          data.getFullYear() === agora.getFullYear() &&
-          (p.status === 'PAGO' || p.status === 'CONFIRMADO')
-        );
-      })
+    return this.pedidosFiltrados
+      .filter(p => p.status === 'PAGO' || p.status === 'CONFIRMADO')
       .reduce((acc, p) => acc + Number(p.valorTotal), 0);
   }
 
@@ -149,49 +196,53 @@ export class VendasComponent implements OnInit {
         p.clienteNome.toLowerCase().includes(termo) ||
         p.itens.some((i) => i.produtoNome.toLowerCase().includes(termo));
 
-      const matchStatus =
-        this.statusFiltro === 'TODOS' || p.status === this.statusFiltro;
+      const matchStatus = this.filtro.status === 'TODOS' || p.status === this.filtro.status;
+      const matchPgto   = this.filtro.formaPagamento === 'TODOS' || p.formaPagamento === this.filtro.formaPagamento;
 
-      const data = p.createdAt ? p.createdAt.split('T')[0] : '';
-      const matchInicio = !this.filtroInicio || data >= this.filtroInicio;
-      const matchFim = !this.filtroFim || data <= this.filtroFim;
+      const data        = p.createdAt ? p.createdAt.split('T')[0] : '';
+      const matchInicio = !this.filtro.inicio || data >= this.filtro.inicio;
+      const matchFim    = !this.filtro.fim    || data <= this.filtro.fim;
 
-      return matchBusca && matchStatus && matchInicio && matchFim;
+      const valor    = Number(p.valorTotal);
+      const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
+      const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
+
+      return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
     });
   }
 
   get temFiltroAtivo(): boolean {
-    return !!(this.filtroInicio || this.filtroFim || this.statusFiltro !== 'TODOS');
+    const f = this.filtro;
+    const temFiltroModal = f.status !== 'TODOS' || f.formaPagamento !== 'TODOS' || f.minValor !== null || f.maxValor !== null;
+    const temPeriodoCustom = this.periodoAtivo === 'custom' && !!(f.inicio || f.fim);
+    return temFiltroModal || temPeriodoCustom;
+  }
+
+  // ── Gráficos (reativos ao filtro) ─────────────────────────
+  get donutSeries(): number[] {
+    const soma = (fn: (p: PedidoResponse) => boolean) =>
+      this.pedidosFiltrados.filter(fn).reduce((acc, p) => acc + Number(p.valorTotal), 0);
+    return [
+      soma(p => p.status === 'PAGO'),
+      soma(p => p.status === 'CONFIRMADO' || p.status === 'PENDENTE'),
+      soma(p => p.status === 'CANCELADO'),
+    ];
   }
 
   get donutTotal(): number {
     return this.donutSeries.reduce((a, b) => a + b, 0);
   }
 
-  // ── Gráficos ───────────────────────────────────────────────
-  private atualizarGraficos(): void {
-    const soma = (filtro: (p: PedidoResponse) => boolean) =>
-      this.pedidos.filter(filtro).reduce((acc, p) => acc + Number(p.valorTotal), 0);
-
-    this.donutSeries = [
-      soma((p) => p.status === 'PAGO'),
-      soma((p) => ['CONFIRMADO', 'PENDENTE', 'ORCAMENTO'].includes(p.status)),
-      soma((p) => p.status === 'CANCELADO'),
-    ];
-
+  get barHSeries(): any[] {
     const mapa = new Map<string, number>();
-    for (const p of this.pedidos) {
-      if (p.status === 'CANCELADO') continue;
+    for (const p of this.pedidosFiltrados) {
+      if (p.status === 'CANCELADO' || p.status === 'ORCAMENTO') continue;
       mapa.set(p.clienteNome, (mapa.get(p.clienteNome) ?? 0) + Number(p.valorTotal));
     }
-
     const top6 = Array.from(mapa.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, 6);
-
-    this.barHSeries = [
-      { name: 'Total', data: top6.map(([nome, valor]) => ({ x: nome, y: valor })) },
-    ];
+    return [{ name: 'Total', data: top6.map(([nome, valor]) => ({ x: nome, y: valor })) }];
   }
 
   // ── Modal Criar ────────────────────────────────────────────
@@ -221,7 +272,6 @@ export class VendasComponent implements OnInit {
 
   onPedidoCriado(pedido: PedidoResponse): void {
     this.pedidos = [pedido, ...this.pedidos];
-    this.atualizarGraficos();
     this.showModalCriar = false;
     this.messageService.add({
       severity: 'success',
@@ -343,18 +393,26 @@ export class VendasComponent implements OnInit {
     this.showModalFiltros = false;
   }
 
-  onAplicarFiltros(filtros: { inicio: string; fim: string; status: StatusPedido | 'TODOS' }): void {
-    this.filtroInicio = filtros.inicio;
-    this.filtroFim = filtros.fim;
-    this.statusFiltro = filtros.status;
+  onAplicarFiltros(filtros: VendasFiltroCompleto): void {
+    this.filtro = filtros;
     this.showModalFiltros = false;
   }
 
   onLimparFiltros(): void {
-    this.filtroInicio = '';
-    this.filtroFim = '';
-    this.statusFiltro = 'TODOS';
+    this.filtro = { status: 'TODOS', formaPagamento: 'TODOS', inicio: '', fim: '', minValor: null, maxValor: null };
     this.showModalFiltros = false;
+  }
+
+  aplicarFiltroCustom(): void {
+    if (this.filtro.inicio && this.filtro.fim) this.cdr.detectChanges();
+  }
+
+  
+  limparFiltroButtonClass(_: Periodo): Record<string, boolean> {
+    return {
+      'px-3 py-1.5 text-xs rounded-lg transition-colors font-medium': true,
+      'text-red-500 hover:bg-red-50 border border-red-200': true,
+    };
   }
 
 
@@ -363,7 +421,6 @@ export class VendasComponent implements OnInit {
     this.pedidos = this.pedidos.map((p) =>
       p.id === pedidoAtualizado.id ? pedidoAtualizado : p
     );
-    this.atualizarGraficos();
   }
 
   numeroVenda(index: number): string {

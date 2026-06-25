@@ -6,19 +6,71 @@
     <h1 class="text-2xl font-bold text-gray-900">Vendas</h1>
     <p class="text-sm text-gray-400 mt-0.5">Histórico e gestão de vendas</p>
   </div>
-  <button
-    (click)="abrirModalCriar()"
-    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
-    <span class="material-symbols-outlined text-[18px]">add</span>
-    Nova Venda
-  </button>
+  <div class="flex items-center gap-2">
+    <button
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
+    <button
+      (click)="abrirModalCriar()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Nova Venda
+    </button>
+  </div>
+</div>
+
+<!-- Filtro de Período -->
+<div class="bg-white rounded-xl border border-slate-200 px-4 py-3 mb-6 flex items-center gap-2 flex-wrap">
+  <span class="text-[11px] font-semibold text-gray-400 tracking-widest mr-1">PERÍODO</span>
+
+  @for (p of periodos; track p.value) {
+    <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
+      {{ p.label }}
+    </button>
+  }
+
+ 
+
+   @if (periodoAtivo === 'custom') {
+    <div class="flex items-center gap-2 ml-1">
+      <span class="text-xs text-gray-400">De</span>
+      <input type="date" [(ngModel)]="customInicio"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <span class="text-xs text-gray-400">até</span>
+      <input type="date" [(ngModel)]="customFim"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <button (click)="aplicarPeriodoCustom()"
+        class="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+        Aplicar
+      </button>
+    </div>
+  }
+
+  @if (periodoAtivo === 'custom') {
+    <button (click)="onLimparFiltros()" [ngClass]="limparFiltroButtonClass(periodoAtivo)">
+      <span class="material-symbols-outlined text-[13px] align-middle mr-0.5">close</span>
+      Limpar filtro
+    </button>
+  }
+
+
+  <div class="ml-auto text-xs text-gray-400">{{ filtro.inicio }} – {{ filtro.fim }}</div>
 </div>
 
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
   <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vendas este mês</p>
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vendas no período</p>
     <p class="text-3xl font-bold text-blue-600">{{ formatCurrency(vendasMes) }}</p>
   </div>
 
@@ -134,7 +186,7 @@
 
     <!-- Dropdown status -->
     <select
-      [(ngModel)]="statusFiltro"
+      [(ngModel)]="filtro.status"
       class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
       <option value="TODOS">Todos os status</option>
       <option value="ORCAMENTO">Orçamento</option>
@@ -143,20 +195,6 @@
       <option value="PAGO">Pago</option>
       <option value="CANCELADO">Cancelado</option>
     </select>
-
-    <!-- Botão filtros avançados -->
-    <button
-      (click)="abrirModalFiltros()"
-      class="flex items-center gap-2 px-3 py-2 text-sm font-medium border rounded-lg transition-colors"
-      [ngClass]="temFiltroAtivo
-        ? 'border-blue-400 text-blue-600 bg-blue-50'
-        : 'border-slate-200 text-gray-600 hover:bg-slate-50'">
-      <span class="material-symbols-outlined text-[16px]">tune</span>
-      Filtros
-      @if (temFiltroAtivo) {
-        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-      }
-    </button>
 
     <!-- Contador -->
     <span class="ml-auto text-xs text-gray-400">
@@ -207,13 +245,12 @@
 />
 
 
-<!-- Modal Filtros (descomentar após criar o component) -->
-<!-- <app-vendas-filtros-modal
+<!-- Modal Filtros -->
+<app-vendas-filtros-modal
   [visible]="showModalFiltros"
-  [filtroInicio]="filtroInicio"
-  [filtroFim]="filtroFim"
-  [statusFiltro]="statusFiltro"
+  [pedidos]="pedidos"
+  [filtroAtual]="filtro"
   (fechar)="fecharModalFiltros()"
   (aplicar)="onAplicarFiltros($event)"
   (limpar)="onLimparFiltros()"
-/> -->
+/>

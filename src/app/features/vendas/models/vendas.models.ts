@@ -69,6 +69,15 @@ export interface VendasFiltro {
     fim: string;
 }
 
+export interface VendasFiltroCompleto {
+  status: StatusPedido | 'TODOS';
+  formaPagamento: FormaPagamento | 'TODOS';
+  inicio: string;
+  fim: string;
+  minValor: number | null;
+  maxValor: number | null;
+}
+
 export interface ClienteResponse {
     id: string;
     nome: string;
