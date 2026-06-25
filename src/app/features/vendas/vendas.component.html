@@ -205,11 +205,15 @@
 
   <!-- Tabela -->
   <div class="p-1">
-    <app-vendas-table
-      [pedidos]="pedidosFiltrados"
+    <app-data-table
+      [columns]="colunasPedidos"
+      [rows]="pedidosFiltrados"
       [loading]="loading"
+      [actions]="acoesPedidos"
+      emptyMessage="Nenhuma venda encontrada"
       (verDetalhe)="abrirDetalhe($event)"
       (editar)="abrirEdicao($event)"
+      (excluir)="onExcluirPedido($event)"
     />
   </div>
 

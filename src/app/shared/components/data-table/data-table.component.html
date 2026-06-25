@@ -1,0 +1,125 @@
+<p-confirmDialog />
+
+<p-table
+  [value]="rows"
+  [loading]="loading"
+  dataKey="id"
+  [tableStyle]="{ 'min-width': '60rem' }"
+  styleClass="p-datatable-sm"
+>
+
+  <!-- Cabeçalho -->
+  <ng-template #header>
+    <tr>
+      @for (col of columns; track col.field) {
+        <th [style.width]="col.width ?? 'auto'">{{ col.header }}</th>
+      }
+      @if (showActions) {
+        <th style="width: 10%"></th>
+      }
+    </tr>
+  </ng-template>
+
+  <!-- Linhas -->
+  <ng-template #body let-row let-ri="rowIndex">
+    <tr>
+      @for (col of columns; track col.field) {
+        <td
+          [class.font-mono]="col.type === 'mono'"
+          [class.text-sm]="true"
+          [class.truncate]="col.truncate"
+          [class.max-w-xs]="col.truncate"
+        >
+          @switch (col.type) {
+
+            @case ('tag') {
+              <p-tag
+                [value]="col.tagLabelFn ? col.tagLabelFn(row[col.field], row) : row[col.field]"
+                [severity]="col.tagSeverityFn ? col.tagSeverityFn(row[col.field], row) : 'secondary'"
+              />
+            }
+
+            @case ('currency') {
+              <span class="font-semibold text-gray-800">
+                {{ formatCurrency(getCellValue(col, row, ri)) }}
+              </span>
+            }
+
+            @case ('date') {
+              <span class="text-gray-600">
+                {{ formatDate(getCellValue(col, row, ri)) }}
+              </span>
+            }
+
+            @case ('mono') {
+              <span class="text-gray-500">
+                {{ getCellValue(col, row, ri) }}
+              </span>
+            }
+
+            @default {
+              <span [class.text-gray-500]="col.type === 'computed'"
+                    [class.text-gray-800]="col.type !== 'computed'">
+                {{ getCellValue(col, row, ri) }}
+              </span>
+            }
+
+          }
+        </td>
+      }
+
+      @if (showActions) {
+        <td>
+          <div class="flex items-center gap-1">
+            @if (actions.showView !== false) {
+              <button
+                pButton pRipple
+                type="button"
+                icon="pi pi-eye"
+                text rounded
+                severity="secondary"
+                pTooltip="Visualizar"
+                tooltipPosition="top"
+                (click)="verDetalhe.emit(row)"
+              ></button>
+            }
+            @if (actions.showEdit !== false) {
+              <button
+                pButton pRipple
+                type="button"
+                icon="pi pi-pencil"
+                text rounded
+                severity="secondary"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                (click)="editar.emit(row)"
+              ></button>
+            }
+            @if (actions.showDelete !== false) {
+              <button
+                pButton pRipple
+                type="button"
+                icon="pi pi-trash"
+                text rounded
+                severity="danger"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                (click)="confirmarExclusao(row)"
+              ></button>
+            }
+          </div>
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <!-- Empty state -->
+  <ng-template #emptymessage>
+    <tr>
+      <td [attr.colspan]="totalCols" class="text-center py-10 text-gray-400 text-sm">
+        {{ emptyMessage }}
+      </td>
+    </tr>
+  </ng-template>
+
+</p-table>
