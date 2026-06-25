@@ -1,0 +1,453 @@
+import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
+
+type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgApexchartsModule } from 'ng-apexcharts';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { forkJoin } from 'rxjs';
+import { VendasService } from './vendas.service';
+import {
+  PedidoResponse,
+  ProdutoSimples,
+  ClienteSimples,
+  StatusPedido,
+  FormaPagamento,
+  PedidoAtualizarRequest,
+  VendasFiltroCompleto,
+} from './models/vendas.models';
+import { VendasTableComponent } from './components/vendas-table/vendas-table.component';
+import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
+import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
+import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
+import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/vendas-filtros-modal.component';
+
+
+
+@Component({
+  selector: 'app-vendas',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent],
+  templateUrl: './vendas.component.html',
+  styleUrl: './vendas.component.scss',
+  providers: [MessageService],
+})
+export class VendasComponent implements OnInit {
+  private service = inject(VendasService);
+  private cdr = inject(ChangeDetectorRef);
+  private messageService = inject(MessageService);
+
+  // ── Dados ──────────────────────────────────────────────────
+  pedidos: PedidoResponse[] = [];
+  produtos: ProdutoSimples[] = [];
+  clientes: ClienteSimples[] = [];
+
+  // ── Loading ────────────────────────────────────────────────
+  loading = true;
+  salvando = false;
+  loadingModal = false;
+
+  // ── Período ────────────────────────────────────────────────
+  periodoAtivo: Periodo = 'mes';
+  customInicio = '';
+  customFim    = '';
+
+  readonly periodos: { label: string; value: Periodo }[] = [
+    { label: 'Este mês',  value: 'mes'       },
+    { label: 'Trimestre', value: 'trimestre' },
+    { label: 'Semestre',  value: 'semestre'  },
+    { label: 'Este ano',  value: 'ano'       },
+    { label: 'Período',   value: 'custom'    },
+  ];
+
+  // ── Filtros ────────────────────────────────────────────────
+  busca = '';
+  filtro: VendasFiltroCompleto = {
+    status: 'TODOS', formaPagamento: 'TODOS',
+    inicio: '', fim: '', minValor: null, maxValor: null,
+  };
+
+  // ── Modais ─────────────────────────────────────────────────
+  showModalCriar = false;
+  showModalDetalhe = false;
+  showModalEdicao = false;
+  showModalFiltros = false;
+  pedidoSelecionado: PedidoResponse | null = null;
+
+  // ── Donut "Por Status" ─────────────────────────────────────
+  donutChart: any = { type: 'donut', height: 200, fontFamily: 'inherit' };
+  donutColors = ['#22c55e', '#f59e0b', '#ef4444'];
+  donutLabels = ['Pago', 'Pendente', 'Cancelado'];
+  donutLegend: any = { show: false };
+  donutDataLabels: any = { enabled: false };
+  donutPlotOptions: any = { pie: { donut: { size: '72%' } } };
+  donutStroke: any = { width: 0 };
+  donutTooltip: any = { y: { formatter: (v: number) => this.formatCurrency(v) } };
+
+  // ── Barras horizontais "Top Clientes" ──────────────────────
+  barHChart: any = { type: 'bar', height: 220, toolbar: { show: false }, fontFamily: 'inherit' };
+  barHPlotOptions: any = { bar: { horizontal: true, barHeight: '60%', borderRadius: 3 } };
+  barHColors = ['#3b82f6'];
+  barHDataLabels: any = { enabled: false };
+  barHGrid: any = {
+    borderColor: '#f1f5f9',
+    strokeDashArray: 4,
+    xaxis: { lines: { show: true } },
+    yaxis: { lines: { show: false } },
+  };
+  barHXaxis: any = {
+    labels: {
+      formatter: (v: number) => this.formatCurrency(v),
+      style: { colors: '#94a3b8', fontSize: '11px' },
+    },
+  };
+  barHYaxis: any = { labels: { style: { colors: '#64748b', fontSize: '12px' } } };
+  barHTooltip: any = { y: { formatter: (v: number) => this.formatCurrency(v) } };
+
+
+  tipos: { val: "PEDIDO" | "ORCAMENTO"; label: string }[] = [
+  { val: "PEDIDO", label: "Venda" },
+  { val: "ORCAMENTO", label: "Orçamento" }
+];
+
+  // ── Lifecycle ──────────────────────────────────────────────
+  ngOnInit(): void {
+    this.carregarPedidos();
+    this.selectPeriodo('mes');
+  }
+
+  // ── Período ────────────────────────────────────────────────
+  selectPeriodo(p: Periodo): void {
+    this.periodoAtivo = p;
+    if (p === 'custom') {
+      this.customInicio = this.filtro.inicio;
+      this.customFim    = this.filtro.fim;
+    } else {
+      this.aplicarPeriodo(p);
+    }
+  }
+
+  private aplicarPeriodo(p: Periodo): void {
+    const hoje = new Date();
+    let start  = new Date(hoje);
+    if (p === 'mes')       start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    else if (p === 'trimestre') start.setMonth(hoje.getMonth() - 2);
+    else if (p === 'semestre')  start.setMonth(hoje.getMonth() - 5);
+    else if (p === 'ano')       start.setFullYear(hoje.getFullYear() - 1);
+    this.filtro = { ...this.filtro, inicio: start.toISOString().split('T')[0], fim: hoje.toISOString().split('T')[0] };
+    this.cdr.detectChanges();
+  }
+
+  aplicarPeriodoCustom(): void {
+    if (this.customInicio && this.customFim) {
+      this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
+      this.cdr.detectChanges();
+    }
+  }
+
+  periodoButtonClass(value: Periodo): Record<string, boolean> {
+    const active = this.periodoAtivo === value;
+    return {
+      'bg-blue-600 text-white font-semibold':           active,
+      'text-gray-500 hover:bg-slate-100 font-medium':   !active,
+      'px-3 py-1.5 text-xs rounded-lg transition-colors': true,
+    };
+  }
+
+  carregarPedidos(): void {
+    this.loading = true;
+    this.service.getPedidos().subscribe({
+      next: (pedidos) => {
+        this.pedidos = pedidos;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // ── KPIs (calculados a partir da lista) ────────────────────
+  get vendasMes(): number {
+    return this.pedidosFiltrados
+      .filter(p => p.status === 'PAGO' || p.status === 'CONFIRMADO')
+      .reduce((acc, p) => acc + Number(p.valorTotal), 0);
+  }
+
+  get totalRegistros(): number {
+    return this.pedidos.length;
+  }
+
+  get totalPendentes(): number {
+    return this.pedidos.filter(
+      (p) => p.formaPagamento === 'FIADO' && p.status !== 'PAGO'
+    ).length;
+  }
+
+  // ── Filtro client-side ─────────────────────────────────────
+  get pedidosFiltrados(): PedidoResponse[] {
+    return this.pedidos.filter((p) => {
+      const termo = this.busca.toLowerCase();
+      const matchBusca =
+        !this.busca ||
+        p.clienteNome.toLowerCase().includes(termo) ||
+        p.itens.some((i) => i.produtoNome.toLowerCase().includes(termo));
+
+      const matchStatus = this.filtro.status === 'TODOS' || p.status === this.filtro.status;
+      const matchPgto   = this.filtro.formaPagamento === 'TODOS' || p.formaPagamento === this.filtro.formaPagamento;
+
+      const data        = p.createdAt ? p.createdAt.split('T')[0] : '';
+      const matchInicio = !this.filtro.inicio || data >= this.filtro.inicio;
+      const matchFim    = !this.filtro.fim    || data <= this.filtro.fim;
+
+      const valor    = Number(p.valorTotal);
+      const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
+      const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
+
+      return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+    });
+  }
+
+  get temFiltroAtivo(): boolean {
+    const f = this.filtro;
+    const temFiltroModal = f.status !== 'TODOS' || f.formaPagamento !== 'TODOS' || f.minValor !== null || f.maxValor !== null;
+    const temPeriodoCustom = this.periodoAtivo === 'custom' && !!(f.inicio || f.fim);
+    return temFiltroModal || temPeriodoCustom;
+  }
+
+  // ── Gráficos (reativos ao filtro) ─────────────────────────
+  get donutSeries(): number[] {
+    const soma = (fn: (p: PedidoResponse) => boolean) =>
+      this.pedidosFiltrados.filter(fn).reduce((acc, p) => acc + Number(p.valorTotal), 0);
+    return [
+      soma(p => p.status === 'PAGO'),
+      soma(p => p.status === 'CONFIRMADO' || p.status === 'PENDENTE'),
+      soma(p => p.status === 'CANCELADO'),
+    ];
+  }
+
+  get donutTotal(): number {
+    return this.donutSeries.reduce((a, b) => a + b, 0);
+  }
+
+  get barHSeries(): any[] {
+    const mapa = new Map<string, number>();
+    for (const p of this.pedidosFiltrados) {
+      if (p.status === 'CANCELADO' || p.status === 'ORCAMENTO') continue;
+      mapa.set(p.clienteNome, (mapa.get(p.clienteNome) ?? 0) + Number(p.valorTotal));
+    }
+    const top6 = Array.from(mapa.entries())
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6);
+    return [{ name: 'Total', data: top6.map(([nome, valor]) => ({ x: nome, y: valor })) }];
+  }
+
+  // ── Modal Criar ────────────────────────────────────────────
+  abrirModalCriar(): void {
+    this.showModalCriar = true;
+    this.loadingModal = true;
+    forkJoin({
+      produtos: this.service.getProdutos(),
+      clientes: this.service.getClientes(),
+    }).subscribe({
+      next: ({ produtos, clientes }) => {
+        this.produtos = produtos;
+        this.clientes = clientes;
+        this.loadingModal = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingModal = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  fecharModalCriar(): void {
+    this.showModalCriar = false;
+  }
+
+  onPedidoCriado(pedido: PedidoResponse): void {
+    this.pedidos = [pedido, ...this.pedidos];
+    this.showModalCriar = false;
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Pedido criado',
+      detail: `Venda para ${pedido.clienteNome} registrada com sucesso`,
+      life: 3000,
+    });
+    this.cdr.detectChanges();
+  }
+
+  // ── Modal Detalhe ──────────────────────────────────────────
+  abrirDetalhe(pedido: PedidoResponse): void {
+    this.pedidoSelecionado = pedido;
+    this.showModalDetalhe = true;
+  }
+
+  fecharDetalhe(): void {
+    this.showModalDetalhe = false;
+    this.pedidoSelecionado = null;
+  }
+
+  onPagar(id: string): void {
+    this.salvando = true;
+    this.service.patchPagarPedido(id).subscribe({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharDetalhe();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Pago',
+          detail: 'Pagamento registrado com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onCancelar(id: string): void {
+    this.salvando = true;
+    this.service.patchCancelarPedido(id).subscribe({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharDetalhe();
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Cancelado',
+          detail: 'Pedido cancelado',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+
+  // --- Modal Edição ----------------------
+
+  abrirEdicao(pedido: PedidoResponse): void {
+    this.pedidoSelecionado = pedido;
+    this.showModalEdicao = true;
+  }
+
+  fecharEdicao(): void {
+    this.showModalEdicao = false;
+    this.pedidoSelecionado = null;
+  }
+
+  onSalvarEdicao(pedido: PedidoAtualizarRequest): void {
+    const id = this.pedidoSelecionado!.id;
+    this.onEditar(id, pedido);
+  }
+
+  onEditar(id: string, pedido: PedidoAtualizarRequest): void {
+    this.salvando = true;
+    this.service.putEditarVenda(id, pedido).subscribe ({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharEdicao();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Editado',
+          detail: 'Pagamento registrado com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      }, 
+        error: () => {
+          this.salvando = false;
+          this.cdr.detectChanges();
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao editar venda',
+            life: 3000
+          });
+        },
+    });
+  }
+
+  // ── Modal Filtros ──────────────────────────────────────────
+  abrirModalFiltros(): void {
+    this.showModalFiltros = true;
+  }
+
+
+  fecharModalFiltros(): void {
+    this.showModalFiltros = false;
+  }
+
+  onAplicarFiltros(filtros: VendasFiltroCompleto): void {
+    this.filtro = filtros;
+    this.showModalFiltros = false;
+  }
+
+  onLimparFiltros(): void {
+    this.filtro = { status: 'TODOS', formaPagamento: 'TODOS', inicio: '', fim: '', minValor: null, maxValor: null };
+    this.showModalFiltros = false;
+  }
+
+  aplicarFiltroCustom(): void {
+    if (this.filtro.inicio && this.filtro.fim) this.cdr.detectChanges();
+  }
+
+  
+  limparFiltroButtonClass(_: Periodo): Record<string, boolean> {
+    return {
+      'px-3 py-1.5 text-xs rounded-lg transition-colors font-medium': true,
+      'text-red-500 hover:bg-red-50 border border-red-200': true,
+    };
+  }
+
+
+  // ── Helpers ────────────────────────────────────────────────
+  private atualizarNaLista(pedidoAtualizado: PedidoResponse): void {
+    this.pedidos = this.pedidos.map((p) =>
+      p.id === pedidoAtualizado.id ? pedidoAtualizado : p
+    );
+  }
+
+  numeroVenda(index: number): string {
+    return 'V' + String(index + 1).padStart(3, '0');
+  }
+
+  formatCurrency(v: number): string {
+    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatData(iso: string): string {
+    return new Date(iso).toLocaleDateString('pt-BR');
+  }
+
+  formatProdutos(pedido: PedidoResponse): string {
+    return pedido.itens.map((i) => `${i.produtoNome} × ${i.quantidade}`).join(', ');
+  }
+
+  statusBadgeClass(status: StatusPedido): Record<string, boolean> {
+    return {
+      'px-2.5 py-1 rounded-lg text-xs font-semibold': true,
+      'bg-green-100 text-green-700': status === 'PAGO',
+      'bg-yellow-100 text-yellow-700': status === 'CONFIRMADO' || status === 'PENDENTE',
+      'bg-gray-100 text-gray-600': status === 'ORCAMENTO',
+      'bg-red-100 text-red-600': status === 'CANCELADO',
+    };
+  }
+
+  
+}

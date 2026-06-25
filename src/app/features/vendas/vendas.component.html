@@ -1,0 +1,256 @@
+<p-toast position="top-right" />
+
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Vendas</h1>
+    <p class="text-sm text-gray-400 mt-0.5">Histórico e gestão de vendas</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <button
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
+    <button
+      (click)="abrirModalCriar()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Nova Venda
+    </button>
+  </div>
+</div>
+
+<!-- Filtro de Período -->
+<div class="bg-white rounded-xl border border-slate-200 px-4 py-3 mb-6 flex items-center gap-2 flex-wrap">
+  <span class="text-[11px] font-semibold text-gray-400 tracking-widest mr-1">PERÍODO</span>
+
+  @for (p of periodos; track p.value) {
+    <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
+      {{ p.label }}
+    </button>
+  }
+
+ 
+
+   @if (periodoAtivo === 'custom') {
+    <div class="flex items-center gap-2 ml-1">
+      <span class="text-xs text-gray-400">De</span>
+      <input type="date" [(ngModel)]="customInicio"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <span class="text-xs text-gray-400">até</span>
+      <input type="date" [(ngModel)]="customFim"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <button (click)="aplicarPeriodoCustom()"
+        class="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+        Aplicar
+      </button>
+    </div>
+  }
+
+  @if (periodoAtivo === 'custom') {
+    <button (click)="onLimparFiltros()" [ngClass]="limparFiltroButtonClass(periodoAtivo)">
+      <span class="material-symbols-outlined text-[13px] align-middle mr-0.5">close</span>
+      Limpar filtro
+    </button>
+  }
+
+
+  <div class="ml-auto text-xs text-gray-400">{{ filtro.inicio }} – {{ filtro.fim }}</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vendas no período</p>
+    <p class="text-3xl font-bold text-blue-600">{{ formatCurrency(vendasMes) }}</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Total de registros</p>
+    <p class="text-3xl font-bold text-gray-900">{{ totalRegistros }}</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Pendentes</p>
+    <p class="text-3xl font-bold text-orange-500">{{ totalPendentes }}</p>
+  </div>
+
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4 mb-6">
+
+  <!-- Donut Por Status -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-sm font-semibold text-gray-800 mb-0.5">Por Status</p>
+    <p class="text-xs text-gray-400 mb-2">Valor total das vendas</p>
+
+    @if (donutSeries.length > 0 && donutSeries.some(v => v > 0)) {
+      <div class="flex justify-center">
+        <apx-chart
+          [series]="donutSeries"
+          [chart]="donutChart"
+          [colors]="donutColors"
+          [labels]="donutLabels"
+          [legend]="donutLegend"
+          [dataLabels]="donutDataLabels"
+          [plotOptions]="donutPlotOptions"
+          [stroke]="donutStroke"
+          [tooltip]="donutTooltip"
+        />
+      </div>
+    } @else {
+      <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+        <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">donut_large</span>
+        Sem dados
+      </div>
+    }
+
+    <!-- Legenda -->
+    <div class="mt-4 space-y-2.5">
+      @for (item of [
+        { label: 'Pago',      cor: 'bg-green-500', idx: 0 },
+        { label: 'Pendente',  cor: 'bg-amber-400',  idx: 1 },
+        { label: 'Cancelado', cor: 'bg-red-500',    idx: 2 }
+      ]; track item.label) {
+        <div class="flex items-center justify-between text-sm">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full inline-block" [ngClass]="item.cor"></span>
+            <span class="text-gray-600">{{ item.label }}</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-gray-800">{{ formatCurrency(donutSeries[item.idx] ?? 0) }}</span>
+            <span class="text-xs text-gray-400 w-8 text-right">
+              {{ donutTotal > 0 ? ((donutSeries[item.idx] / donutTotal) * 100 | number:'1.0-0') + '%' : '0%' }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Top Clientes -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-sm font-semibold text-gray-800 mb-0.5">Top Clientes</p>
+    <p class="text-xs text-gray-400 mb-3">Maior volume de compras no período</p>
+
+    @if (barHSeries.length > 0 && barHSeries[0]?.data?.length > 0) {
+      <apx-chart
+        [series]="barHSeries"
+        [chart]="barHChart"
+        [plotOptions]="barHPlotOptions"
+        [colors]="barHColors"
+        [dataLabels]="barHDataLabels"
+        [grid]="barHGrid"
+        [xaxis]="barHXaxis"
+        [yaxis]="barHYaxis"
+        [tooltip]="barHTooltip"
+      />
+    } @else {
+      <div class="h-[220px] flex items-center justify-center text-gray-400 text-sm">
+        <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">bar_chart</span>
+        Sem dados no período
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Filtros + Tabela -->
+<div class="bg-white rounded-xl border border-slate-200">
+
+  <!-- Barra de filtros -->
+  <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
+
+    <!-- Busca -->
+    <div class="flex-1 min-w-[220px] relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
+        search
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="busca"
+        placeholder="Buscar por cliente, n° ou produto..."
+        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+      />
+    </div>
+
+    <!-- Dropdown status -->
+    <select
+      [(ngModel)]="filtro.status"
+      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
+      <option value="TODOS">Todos os status</option>
+      <option value="ORCAMENTO">Orçamento</option>
+      <option value="PENDENTE">Pendente</option>
+      <option value="CONFIRMADO">Confirmado</option>
+      <option value="PAGO">Pago</option>
+      <option value="CANCELADO">Cancelado</option>
+    </select>
+
+    <!-- Contador -->
+    <span class="ml-auto text-xs text-gray-400">
+      {{ pedidosFiltrados.length }} registro(s)
+    </span>
+
+  </div>
+
+  <!-- Tabela -->
+  <div class="p-1">
+    <app-vendas-table
+      [pedidos]="pedidosFiltrados"
+      [loading]="loading"
+      (verDetalhe)="abrirDetalhe($event)"
+      (editar)="abrirEdicao($event)"
+    />
+  </div>
+
+</div>
+
+<!-- Modal Nova Venda (descomentar após criar o component) -->
+  <app-novo-pedido-modal
+    [visible]="showModalCriar"
+    [produtos]="produtos"
+    [clientes]="clientes"
+    [loadingDados]="loadingModal"
+    (fechar)="fecharModalCriar()"
+    (pedidoCriado)="onPedidoCriado($event)"
+  />
+
+<!-- Modal Detalhe (descomentar após criar o component) -->
+  <app-pedido-detalhe-modal
+    [visible]="showModalDetalhe"
+    [pedido]="pedidoSelecionado"
+    [salvando]="salvando"
+    (fechar)="fecharDetalhe()"
+    (pagar)="onPagar($event)"
+    (cancelar)="onCancelar($event)"
+  />
+
+<!-- Modal Edição -->
+<app-pedido-edicao-modal
+  [visible]="showModalEdicao"
+  [pedido]="pedidoSelecionado"
+  [salvando]="salvando"
+  (fechar)="fecharEdicao()"
+  (salvar)="onSalvarEdicao($event)"
+/>
+
+
+<!-- Modal Filtros -->
+<app-vendas-filtros-modal
+  [visible]="showModalFiltros"
+  [pedidos]="pedidos"
+  [filtroAtual]="filtro"
+  (fechar)="fecharModalFiltros()"
+  (aplicar)="onAplicarFiltros($event)"
+  (limpar)="onLimparFiltros()"
+/>
