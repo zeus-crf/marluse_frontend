@@ -6,7 +6,7 @@ import { VendasService } from '../../vendas.service';
 import {
   PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido
 } from '../../models/vendas.models';
-import { SelectComponent, SelectOption } from '../select-component/select.component';
+import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
 
 
 interface ItemForm {

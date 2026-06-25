@@ -70,6 +70,8 @@ export class VendasService {
             .pipe(map(r => r.data))
     }
 
-  
+    deletePedido(id: string): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    }
 
 }

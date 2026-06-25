@@ -1,0 +1,150 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '620px' }"
+  [contentStyle]="{ padding: '0' }"
+  header="Detalhes da Locação">
+
+<hr>
+
+  @if (!locacao) {
+    <div class="flex justify-center items-center py-16">
+      <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
+    </div>
+  } @else {
+    <div class="flex flex-col">
+
+      <!-- ── Cabeçalho interno: cliente + status ────────────── -->
+      <div class="flex items-start justify-between px-6 py-4 bg-slate-50 border-b border-slate-100">
+        <div>
+          <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Cliente</p>
+          <p class="text-[17px] font-bold text-gray-900 leading-snug">{{ locacao.clienteNome }}</p>
+        </div>
+        <p-tag
+          [value]="getStatusLabel(locacao.status)"
+          [severity]="getSeverity(locacao.status)"
+          [rounded]="true"
+          styleClass="text-[11px] px-2.5 py-1 font-semibold" />
+      </div>
+
+      <div class="px-6 py-5 flex flex-col gap-5">
+
+        <!-- ── Datas e pagamento ──────────────────────────────── -->
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+
+          <div>
+            <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Retirada</p>
+            <p class="text-sm font-medium text-gray-800">{{ formatData(locacao.dataRetirada) }}</p>
+          </div>
+
+          <div>
+            <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Devolução prevista</p>
+            <p class="text-sm font-medium"
+              [class.text-red-600]="locacao.status === 'ATRASADA'"
+              [class.text-gray-800]="locacao.status !== 'ATRASADA'">
+              {{ formatData(locacao.dataDevolucaoPrevista) }}
+            </p>
+          </div>
+
+          @if (locacao.dataDevolucaoReal) {
+            <div>
+              <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Devolução real</p>
+              <p class="text-sm font-medium text-green-700">{{ formatData(locacao.dataDevolucaoReal) }}</p>
+            </div>
+          }
+
+          <div>
+            <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Pagamento</p>
+            <p class="text-sm font-medium text-gray-800">{{ getPagamentoLabel(locacao.formaPagamento) }}</p>
+          </div>
+
+          <div>
+            <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Criado em</p>
+            <p class="text-sm font-medium text-gray-500">{{ formatData(locacao.createdAt) }}</p>
+          </div>
+
+        </div>
+
+        <!-- ── Itens ──────────────────────────────────────────── -->
+        <div>
+          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Equipamentos</p>
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+
+            <div class="grid grid-cols-[1fr_52px_90px_90px] gap-2 bg-slate-50 border-b border-slate-100 px-4 py-[7px]">
+              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Item</div>
+              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Qtd.</div>
+              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Diária</div>
+              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Subtotal</div>
+            </div>
+
+            @for (item of locacao.itens; track item.id) {
+              <div class="grid grid-cols-[1fr_52px_90px_90px] gap-2 px-4 py-2.5 border-b border-slate-100 last:border-0 items-center">
+                <p class="text-[13px] font-medium text-gray-800 truncate">{{ item.produtoNome }}</p>
+                <p class="text-[12px] text-gray-500 text-right">{{ item.quantidade }}×</p>
+                <p class="text-[12px] text-gray-500 text-right font-mono">{{ formatCurrency(item.precoDiaria) }}</p>
+                <p class="text-[12px] font-semibold text-gray-800 text-right font-mono">{{ formatCurrency(item.subtotal) }}</p>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <!-- ── Observação ─────────────────────────────────────── -->
+        @if (locacao.observacao) {
+          <div>
+            <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1.5">Observação</p>
+            <p class="text-[13px] text-gray-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 leading-relaxed">
+              {{ locacao.observacao }}
+            </p>
+          </div>
+        }
+
+        <!-- ── Total ──────────────────────────────────────────── -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Total da locação</span>
+          <span class="text-[22px] font-bold text-gray-900 font-mono">{{ formatCurrency(locacao.valorTotal) }}</span>
+        </div>
+
+        <!-- ── Ações ──────────────────────────────────────────── -->
+        <div class="flex justify-end gap-2 pt-1 border-t border-slate-100">
+
+          <button type="button" (click)="fechar.emit()"
+            class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+            Fechar
+          </button>
+
+          @if (podeCancelar) {
+            <button type="button"
+              (click)="cancelar.emit(locacao)"
+              [disabled]="salvando"
+              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <i class="pi pi-times-circle text-xs"></i>
+              Cancelar locação
+            </button>
+          }
+
+          @if (podeDevolver) {
+            <button type="button"
+              (click)="devolver.emit(locacao)"
+              [disabled]="salvando"
+              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              @if (salvando) {
+                <i class="pi pi-spin pi-spinner text-xs"></i>
+                Processando...
+              } @else {
+                <i class="pi pi-check-circle text-xs"></i>
+                Confirmar devolução
+              }
+            </button>
+          }
+
+        </div>
+
+      </div>
+    </div>
+  }
+
+</p-dialog>

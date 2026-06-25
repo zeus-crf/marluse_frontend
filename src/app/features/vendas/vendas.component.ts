@@ -17,7 +17,8 @@ import {
   PedidoAtualizarRequest,
   VendasFiltroCompleto,
 } from './models/vendas.models';
-import { VendasTableComponent } from './components/vendas-table/vendas-table.component';
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { TableColumn, TableActionConfig } from '../../shared/components/data-table/data-table.models';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
@@ -28,7 +29,7 @@ import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/v
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, VendasTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],
@@ -107,9 +108,65 @@ export class VendasComponent implements OnInit {
 
 
   tipos: { val: "PEDIDO" | "ORCAMENTO"; label: string }[] = [
-  { val: "PEDIDO", label: "Venda" },
-  { val: "ORCAMENTO", label: "Orçamento" }
-];
+    { val: "PEDIDO", label: "Venda" },
+    { val: "ORCAMENTO", label: "Orçamento" },
+  ];
+
+  // ── Configuração DataTable ─────────────────────────────────
+  readonly colunasPedidos: TableColumn[] = [
+    {
+      field: '__numero',
+      header: 'N°',
+      width: '8%',
+      type: 'mono',
+      valueFn: (_, i) => 'V' + String((i ?? 0) + 1).padStart(3, '0'),
+    },
+    { field: 'createdAt',   header: 'Data',     width: '12%', type: 'date' },
+    { field: 'clienteNome', header: 'Cliente',   width: '20%', type: 'text' },
+    {
+      field: '__produtos',
+      header: 'Produtos',
+      width: '30%',
+      type: 'computed',
+      truncate: true,
+      valueFn: (p: PedidoResponse) =>
+        p.itens.map((i: any) => `${i.produtoNome} × ${i.quantidade}`).join(', '),
+    },
+    { field: 'valorTotal', header: 'Total', width: '14%', type: 'currency' },
+    {
+      field: 'status',
+      header: 'Status',
+      width: '10%',
+      type: 'tag',
+      tagSeverityFn: (val: StatusPedido) => this.getSeverity(val),
+      tagLabelFn:    (val: StatusPedido) => this.getStatusLabel(val),
+    },
+  ];
+
+  readonly acoesPedidos: TableActionConfig = {
+    showView: true, showEdit: true, showDelete: true,
+    deleteHeader: 'Confirmar exclusão',
+    deleteMessageFn: (p: PedidoResponse) =>
+      `Deseja excluir a venda de ${p.clienteNome} no valor de ${Number(p.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
+  };
+
+  getSeverity(status: StatusPedido): 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (status) {
+      case 'PAGO':       return 'success';
+      case 'CONFIRMADO':
+      case 'PENDENTE':   return 'warn';
+      case 'CANCELADO':  return 'danger';
+      case 'ORCAMENTO':  return 'secondary';
+    }
+  }
+
+  getStatusLabel(status: StatusPedido): string {
+    const labels: Record<StatusPedido, string> = {
+      ORCAMENTO: 'Orçamento', PENDENTE: 'Pendente',
+      CONFIRMADO: 'Confirmado', PAGO: 'Pago', CANCELADO: 'Cancelado',
+    };
+    return labels[status];
+  }
 
   // ── Lifecycle ──────────────────────────────────────────────
   ngOnInit(): void {
@@ -380,6 +437,31 @@ export class VendasComponent implements OnInit {
             life: 3000
           });
         },
+    });
+  }
+
+  // ── Excluir Pedido ─────────────────────────────────────────
+  onExcluirPedido(pedido: PedidoResponse): void {
+    this.service.deletePedido(pedido.id).subscribe({
+      next: () => {
+        this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Excluído',
+          detail: `Venda de ${pedido.clienteNome} excluída com sucesso`,
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível excluir a venda',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
     });
   }
 

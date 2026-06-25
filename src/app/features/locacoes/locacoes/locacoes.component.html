@@ -1,1 +1,372 @@
-<p>locacoes works!</p>
+<p-toast position="top-right" />
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Locações</h1>
+    <p class="text-sm text-gray-400 mt-0.5">Gestão de equipamentos alugados</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <button
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
+    <button
+      (click)="abrirModalCriar()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Nova Locação
+    </button>
+  </div>
+</div>
+
+<!-- ── Período ─────────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-slate-200 px-4 py-3 mb-6 flex items-center gap-2 flex-wrap">
+  <span class="text-[11px] font-semibold text-gray-400 tracking-widest mr-1">PERÍODO</span>
+
+  @for (p of periodos; track p.value) {
+    <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
+      {{ p.label }}
+    </button>
+  }
+
+ 
+
+   @if (periodoAtivo === 'custom') {
+    <div class="flex items-center gap-2 ml-1">
+      <span class="text-xs text-gray-400">De</span>
+      <input type="date" [(ngModel)]="customInicio"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <span class="text-xs text-gray-400">até</span>
+      <input type="date" [(ngModel)]="customFim"
+        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <button (click)="aplicarPeriodoCustom()"
+        class="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+        Aplicar
+      </button>
+    </div>
+  }
+
+  @if (temFiltroAtivo) {
+    <button
+      type="button"
+      (click)="onLimparFiltros()"
+      class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+      <i class="pi pi-times text-[10px]"></i>
+      Limpar filtros
+    </button>
+  }
+
+
+  <div class="ml-auto text-xs text-gray-400">{{ filtro.inicio }} – {{ filtro.fim }}</div>
+</div>
+
+<!-- ── Alertas de Urgência ─────────────────────────────────── -->
+@if (temAlertas) {
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+
+    <!-- Card: Atrasadas -->
+    @if (alertasAtrasadas.length > 0) {
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="flex items-center gap-2.5 px-4 py-3 bg-red-50 border-b border-red-100">
+          <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>
+          <span class="text-xs font-semibold text-red-800 tracking-wide uppercase">
+            Atrasadas — devolução não realizada
+          </span>
+          <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+            {{ alertasAtrasadas.length }}
+          </span>
+        </div>
+        @for (loc of alertasAtrasadas; track loc.id) {
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
+            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-[11px] font-semibold text-red-700 flex-shrink-0 select-none">
+              {{ loc.clienteNome.slice(0, 2).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ loc.clienteNome }}</p>
+              <p class="text-[11px] text-gray-400 truncate">
+                {{ loc.itens[0]?.produtoNome ?? '—' }}
+                @if (loc.itens.length > 1) {
+                  <span>+{{ loc.itens.length - 1 }}</span>
+                }
+                · devia em {{ loc.dataDevolucaoPrevista | date:'dd/MM' }}
+              </p>
+            </div>
+            <span class="text-xs font-semibold text-red-600 whitespace-nowrap flex-shrink-0">
+              +{{ diasEmAtraso(loc) }}d
+            </span>
+            <button
+              (click)="onDevolver(loc)"
+              [disabled]="salvando"
+              class="text-[11px] font-medium px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors whitespace-nowrap flex-shrink-0">
+              Devolver
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Card: Vencendo em breve -->
+    @if (alertasVencendo.length > 0) {
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="flex items-center gap-2.5 px-4 py-3 bg-amber-50 border-b border-amber-100">
+          <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+          <span class="text-xs font-semibold text-amber-800 tracking-wide uppercase">
+            Vencem nos próximos 3 dias
+          </span>
+          <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+            {{ alertasVencendo.length }}
+          </span>
+        </div>
+        @for (loc of alertasVencendo; track loc.id) {
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors">
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-[11px] font-semibold text-amber-700 flex-shrink-0 select-none">
+              {{ loc.clienteNome.slice(0, 2).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ loc.clienteNome }}</p>
+              <p class="text-[11px] text-gray-400 truncate">
+                {{ loc.itens[0]?.produtoNome ?? '—' }}
+                @if (loc.itens.length > 1) {
+                  <span>+{{ loc.itens.length - 1 }}</span>
+                }
+                · vence em {{ loc.dataDevolucaoPrevista | date:'dd/MM' }}
+              </p>
+            </div>
+            <span class="text-xs font-semibold text-amber-600 whitespace-nowrap flex-shrink-0">
+              @if (diasParaVencer(loc) === 0) { Hoje }
+              @else { {{ diasParaVencer(loc) }}d }
+            </span>
+            <button
+              (click)="abrirDetalhe(loc)"
+              class="text-[11px] font-medium px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors whitespace-nowrap flex-shrink-0">
+              Ver
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+}
+
+<!-- ── KPIs ─────────────────────────────────────────────────── -->
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+  <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+      <span class="material-symbols-outlined text-[20px] text-blue-600">inventory_2</span>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-gray-900">{{ totalAtivas }}</p>
+      <p class="text-[11px] text-gray-400 font-medium">Ativas</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+      <span class="material-symbols-outlined text-[20px] text-red-500">alarm</span>
+    </div>
+    <div>
+      <p class="text-2xl font-bold transition-colors"
+        [ngClass]="totalAtrasadas > 0 ? 'text-red-600' : 'text-gray-900'">
+        {{ totalAtrasadas }}
+      </p>
+      <p class="text-[11px] text-gray-400 font-medium">Atrasadas</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+      <span class="material-symbols-outlined text-[20px] text-green-600">check_circle</span>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-gray-900">{{ totalDevolvidas }}</p>
+      <p class="text-[11px] text-gray-400 font-medium">Devolvidas</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+      <span class="material-symbols-outlined text-[20px] text-slate-500">payments</span>
+    </div>
+    <div>
+      <p class="text-lg font-bold text-gray-900 leading-tight">{{ formatCurrency(faturamentoMes) }}</p>
+      <p class="text-[11px] text-gray-400 font-medium">Faturamento no período</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Gráficos ────────────────────────────────────────────── -->
+<div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-4 mb-6">
+
+  <!-- Faturamento mensal -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-sm font-semibold text-gray-800">Faturamento mensal</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Receita por mês no período selecionado</p>
+      </div>
+      <span class="material-symbols-outlined text-[18px] text-slate-300">bar_chart</span>
+    </div>
+    <div style="height: 200px">
+      <apx-chart
+        [series]="barSeries"
+        [chart]="barChart"
+        [xaxis]="barXAxis"
+        [yaxis]="barYAxis"
+        [plotOptions]="barPlotOptions"
+        [dataLabels]="barDataLabels"
+        [grid]="barGrid"
+        [tooltip]="barTooltip"
+        [colors]="['#2563eb']"
+      />
+    </div>
+  </div>
+
+  <!-- Distribuição de status -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-sm font-semibold text-gray-800">Status</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Distribuição no período</p>
+      </div>
+      <span class="material-symbols-outlined text-[18px] text-slate-300">donut_large</span>
+    </div>
+    <div style="height: 200px">
+      <apx-chart
+        [series]="donutSeries"
+        [chart]="donutChart"
+        [labels]="donutLabels"
+        [colors]="donutColors"
+        [legend]="donutLegend"
+        [dataLabels]="donutDataLabels"
+        [plotOptions]="donutPlotOptions"
+        [stroke]="donutStroke"
+      />
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Tabela ──────────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+  <!-- Toolbar -->
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-100 flex-wrap">
+
+    <!-- Busca -->
+    <div class="relative flex-1 min-w-[200px]">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
+        search
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="busca"
+        (ngModelChange)="recalcularGraficos()"
+        placeholder="Buscar por cliente ou equipamento…"
+        class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-slate-50 text-gray-700 placeholder-gray-400"
+      />
+    </div>
+
+    <!-- Pills de status rápido -->
+    <div class="flex gap-1.5 flex-wrap">
+      @for (s of [
+        { label: 'Todas',      value: 'TODOS'     },
+        { label: 'Ativas',     value: 'ATIVA'     },
+        { label: 'Atrasadas',  value: 'ATRASADA'  },
+        { label: 'Devolvidas', value: 'DEVOLVIDA' },
+        { label: 'Canceladas', value: 'CANCELADA' }
+      ]; track s.value) {
+        <button
+          (click)="filtro.status = $any(s.value)"
+          class="text-[11px] px-2.5 py-1 rounded-lg border transition-colors font-medium"
+          [ngClass]="filtro.status === s.value
+            ? 'bg-blue-600 text-white border-blue-600'
+            : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+          {{ s.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Botão filtros -->
+    <button
+      type="button"
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium rounded-lg border transition-colors cursor-pointer"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-500 text-blue-600 bg-blue-50 hover:bg-blue-100'
+        : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+      <i class="pi pi-filter text-[11px]"></i>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+          <!-- {{ [filtro.status !== 'TODOS', filtro.formaPagamento !== 'TODOS', filtro.minValor !== null, filtro.maxValor !== null].filter(Boolean).length }} -->
+        </span>
+      }
+    </button>
+
+    <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">
+      {{ locacoesFiltradas.length }} registro(s)
+    </span>
+  </div>
+
+  <!-- Tabela de dados -->
+  <div class="p-1">
+    <app-data-table
+      [columns]="colunasLocacoes"
+      [rows]="locacoesFiltradas"
+      [loading]="loading"
+      [actions]="acoesLocacoes"
+      emptyMessage="Nenhuma locação encontrada"
+      (extra)="abrirModalEdicao($any($event))"
+      (verDetalhe)="abrirDetalhe($any($event))"
+      (apagar)="onApagar($any($event))"
+    />
+  </div>
+
+</div>
+
+<!-- Modal Nova Locação — a implementar -->
+<app-nova-locacao-modal
+  [visible]="showModalCriar"
+  [produtos]="produtos"
+  [clientes]="clientes"
+  [loadingDados]="loadingModal"
+  (fechar)="fecharModalCriar()"
+  (locacaoCriada)="onLocacaoCriada($event)"
+/>
+
+<app-locacao-detalhe-modal
+  [visible]="showModalDetalhe"
+  [locacao]="locacaoSelecionada"
+  [salvando]="salvando"
+  (fechar)="fecharDetalhe()"
+  (devolver)="onDevolver($event)"
+  (cancelar)="onCancelar($event)"
+/>
+
+<app-locacao-edicao-modal
+  [visible]="showModalEdicao"
+  [locacao]="locacaoSelecionada"
+  [salvando]="salvandoEdicao"
+  (fechar)="fecharModalEdicao()"
+  (salvar)="onLocacaoEditada($event)"
+/>
+
+<app-locacao-filtros-modal
+  [visible]="showModalFiltros"
+  [filtroAtual]="filtro"
+  (fechar)="fecharModalFiltros()"
+  (aplicar)="onAplicarFiltros($event)"
+  (limpar)="onLimparFiltros()"
+/>

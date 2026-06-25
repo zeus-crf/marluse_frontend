@@ -1,0 +1,99 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fecharModal()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '520px' }"
+  [contentStyle]="{ padding: '0' }"
+  header="Editar Locação">
+
+<hr>
+
+  @if (!locacao) {
+    <div class="flex justify-center items-center py-12">
+      <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
+    </div>
+  } @else {
+
+    <div class="flex flex-col gap-5 px-6 py-5">
+
+      <!-- ── Info read-only ─────────────────────────────────── -->
+      <div class="grid grid-cols-2 gap-x-6 gap-y-3 px-4 py-3.5 bg-slate-50 rounded-lg border border-slate-200">
+
+        <div>
+          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Cliente</p>
+          <p class="text-[13px] font-medium text-gray-800 truncate">{{ locacao.clienteNome }}</p>
+        </div>
+
+        <div>
+          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Total</p>
+          <p class="text-[13px] font-semibold text-gray-800 font-mono">{{ formatCurrency(locacao.valorTotal) }}</p>
+        </div>
+
+        <div>
+          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Retirada</p>
+          <p class="text-[13px] font-medium text-gray-800">{{ formatData(locacao.dataRetirada) }}</p>
+        </div>
+
+        <div>
+          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Devolução prevista</p>
+          <p class="text-[13px] font-medium text-gray-800">{{ formatData(locacao.dataDevolucaoPrevista) }}</p>
+        </div>
+
+      </div>
+
+      <!-- ── Forma de pagamento ─────────────────────────────── -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Forma de pagamento</div>
+        <div class="flex flex-wrap gap-[6px]">
+          @for (f of formasPagamento; track f.valor) {
+            <button type="button"
+              (click)="formaPagamento = f.valor"
+              class="px-[14px] py-[5px] text-[12px] font-medium border rounded-full transition-all duration-150 cursor-pointer"
+              [class.border-blue-500]="formaPagamento === f.valor"
+              [class.bg-blue-50]="formaPagamento === f.valor"
+              [class.text-blue-600]="formaPagamento === f.valor"
+              [class.border-slate-200]="formaPagamento !== f.valor"
+              [class.text-gray-500]="formaPagamento !== f.valor"
+              [class.bg-transparent]="formaPagamento !== f.valor">
+              {{ f.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- ── Observação ─────────────────────────────────────── -->
+      <div>
+        <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>
+        <textarea
+          [(ngModel)]="observacao"
+          rows="3"
+          placeholder="Observações sobre a locação (opcional)…"
+          class="w-full bg-white border border-slate-200 rounded-md px-3 py-[9px] text-[13px] text-gray-800 outline-none resize-y focus:border-blue-400 transition-colors">
+        </textarea>
+      </div>
+
+      <!-- ── Ações ──────────────────────────────────────────── -->
+      <div class="flex justify-end gap-2 pt-1 border-t border-slate-100">
+        <button type="button" (click)="fecharModal()"
+          class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button" (click)="onSalvar()"
+          [disabled]="!formValida || salvando"
+          class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+          @if (salvando) {
+            <i class="pi pi-spin pi-spinner text-xs"></i>
+            Salvando...
+          } @else {
+            <i class="pi pi-check text-xs"></i>
+            Salvar alterações
+          }
+        </button>
+      </div>
+
+    </div>
+  }
+
+</p-dialog>
