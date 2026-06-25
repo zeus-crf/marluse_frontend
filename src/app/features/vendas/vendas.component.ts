@@ -17,8 +17,8 @@ import {
   PedidoAtualizarRequest,
   VendasFiltroCompleto,
 } from './models/vendas.models';
-import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { TableColumn, TableActionConfig } from '../../../shared/components/data-table/data-table.models';
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { TableColumn, TableActionConfig } from '../../shared/components/data-table/data-table.models';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';

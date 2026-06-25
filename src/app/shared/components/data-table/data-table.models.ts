@@ -23,12 +23,30 @@ export interface TableColumn {
 export interface TableActionConfig {
   /** Exibir botão de visualizar (padrão: true) */
   showView?: boolean;
-  /** Exibir botão de editar (padrão: true) */
+  /** Exibir botão de ação secundária / editar (padrão: true) */
   showEdit?: boolean;
-  /** Exibir botão de excluir (padrão: true) */
+  /** Exibir botão de ação destrutiva / excluir (padrão: true) */
   showDelete?: boolean;
-  /** Mensagem do confirm de exclusão — recebe a linha como argumento */
+
+  /** Ícone do botão de visualizar (padrão: 'pi pi-eye') */
+  viewIcon?: string;
+  /** Tooltip do botão de visualizar (padrão: 'Visualizar') */
+  viewTooltip?: string;
+
+  /** Ícone do botão de editar (padrão: 'pi pi-pencil') */
+  editIcon?: string;
+  /** Tooltip do botão de editar (padrão: 'Editar') */
+  editTooltip?: string;
+
+  /** Ícone do botão de excluir (padrão: 'pi pi-trash') */
+  deleteIcon?: string;
+  /** Tooltip do botão de excluir (padrão: 'Excluir') */
+  deleteTooltip?: string;
+
+  /** Mensagem do confirm — recebe a linha como argumento */
   deleteMessageFn?: (row: any) => string;
-  /** Cabeçalho do confirm de exclusão */
+  /** Cabeçalho do confirm */
   deleteHeader?: string;
+  /** Texto do botão de aceitar no confirm (padrão: 'Excluir') */
+  deleteAcceptLabel?: string;
 }

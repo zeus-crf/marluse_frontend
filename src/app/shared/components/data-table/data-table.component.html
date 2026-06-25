@@ -75,10 +75,10 @@
               <button
                 pButton pRipple
                 type="button"
-                icon="pi pi-eye"
+                [icon]="viewIcon"
                 text rounded
                 severity="secondary"
-                pTooltip="Visualizar"
+                [pTooltip]="viewTooltip"
                 tooltipPosition="top"
                 (click)="verDetalhe.emit(row)"
               ></button>
@@ -87,10 +87,10 @@
               <button
                 pButton pRipple
                 type="button"
-                icon="pi pi-pencil"
+                [icon]="editIcon"
                 text rounded
                 severity="secondary"
-                pTooltip="Editar"
+                [pTooltip]="editTooltip"
                 tooltipPosition="top"
                 (click)="editar.emit(row)"
               ></button>
@@ -99,10 +99,10 @@
               <button
                 pButton pRipple
                 type="button"
-                icon="pi pi-trash"
+                [icon]="deleteIcon"
                 text rounded
                 severity="danger"
-                pTooltip="Excluir"
+                [pTooltip]="deleteTooltip"
                 tooltipPosition="top"
                 (click)="confirmarExclusao(row)"
               ></button>

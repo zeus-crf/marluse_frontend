@@ -52,6 +52,13 @@ export class DataTableComponent {
     return this.columns.length + (this.showActions ? 1 : 0);
   }
 
+  get viewIcon():   string { return this.actions.viewIcon   ?? 'pi pi-eye'; }
+  get viewTooltip():string { return this.actions.viewTooltip ?? 'Visualizar'; }
+  get editIcon():   string { return this.actions.editIcon   ?? 'pi pi-pencil'; }
+  get editTooltip():string { return this.actions.editTooltip ?? 'Editar'; }
+  get deleteIcon(): string { return this.actions.deleteIcon  ?? 'pi pi-trash'; }
+  get deleteTooltip():string { return this.actions.deleteTooltip ?? 'Excluir'; }
+
   confirmarExclusao(row: any): void {
     const message = this.actions.deleteMessageFn
       ? this.actions.deleteMessageFn(row)
@@ -59,10 +66,10 @@ export class DataTableComponent {
 
     this.confirmationService.confirm({
       message,
-      header: this.actions.deleteHeader ?? 'Confirmar exclusão',
-      icon: 'pi pi-trash',
-      acceptLabel: 'Excluir',
-      rejectLabel: 'Cancelar',
+      header:       this.actions.deleteHeader      ?? 'Confirmar exclusão',
+      icon:         this.actions.deleteIcon        ?? 'pi pi-trash',
+      acceptLabel:  this.actions.deleteAcceptLabel ?? 'Confirmar',
+      rejectLabel:  'Cancelar',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', outlined: true },
       accept: () => this.excluir.emit(row),
