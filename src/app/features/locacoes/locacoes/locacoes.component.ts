@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
+import { NgApexchartsModule } from 'ng-apexcharts';
 import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
@@ -15,13 +16,17 @@ import {
   StatusLocacao,
 } from '../models/locacoes.models';
 import { NovaLocacaoModalComponent } from "../nova-locacao-modal/nova-locacao-modal.component";
+import { LocacaoDetalheModalComponent } from "../locacao-datalhe-modal/locacao-detalhe-modal.component";
+import { LocacaoEdicaoModalComponent } from "../locacao-edicao-modal/locacao-edicao-modal.component";
+import { LocacaoFiltrosModalComponent } from "../locacao-filtros-modal/locacao-filtros-modal.component";
+import { LocacaoEdicaoPayload } from "./locacoes.service";
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 
 @Component({
   selector: 'app-locacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DataTableComponent, NovaLocacaoModalComponent],
+  imports: [CommonModule, FormsModule, ToastModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent],
   templateUrl: './locacoes.component.html',
   styleUrl: './locacoes.component.scss',
   providers: [MessageService],
@@ -62,11 +67,36 @@ export class LocacoesComponent implements OnInit {
     inicio: '', fim: '', minValor: null, maxValor: null,
   };
 
+  // ── Gráficos ApexCharts ────────────────────────────────────
+  // Bar — faturamento
+  barSeries:      any[] = [];
+  barChart:       any = { type: 'bar', height: 200, toolbar: { show: false }, fontFamily: 'inherit' };
+  barPlotOptions: any = { bar: { columnWidth: '55%', borderRadius: 3, borderRadiusApplication: 'end' } };
+  barColors           = ['#3b82f6'];
+  barDataLabels:  any = { enabled: false };
+  barGrid:        any = { borderColor: '#f1f5f9', strokeDashArray: 4 };
+  barXaxis:       any = { categories: [], axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#94a3b8', fontSize: '12px' } } };
+  barYaxis:       any = { labels: { formatter: (v: number) => v >= 1000 ? `R$ ${(v / 1000).toFixed(0)}k` : `R$ ${v}`, style: { colors: '#94a3b8', fontSize: '11px' } } };
+  barTooltip:     any = { y: { formatter: (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) } };
+
+  // Donut — status
+  donutSeries:      number[]  = [];
+  donutChart:       any = { type: 'donut', height: 200, fontFamily: 'inherit' };
+  donutColors:      string[]  = [];
+  donutLabels:      string[]  = [];
+  donutLegend:      any = { position: 'bottom', fontSize: '11px', itemMargin: { horizontal: 6 } };
+  donutDataLabels:  any = { enabled: false };
+  donutPlotOptions: any = { pie: { donut: { size: '65%' } } };
+  donutStroke:      any = { width: 0 };
+  donutTooltip:     any = { y: { formatter: (v: number) => `${v} locação(ões)` } };
+
   // ── Modais ─────────────────────────────────────────────────
   showModalCriar   = false;
   showModalDetalhe = false;
+  showModalEdicao  = false;
   showModalFiltros = false;
   locacaoSelecionada: LocacaoResponse | null = null;
+  salvandoEdicao = false;
 
   // ── Configuração DataTable ─────────────────────────────────
   readonly colunasLocacoes: TableColumn[] = [
@@ -101,8 +131,11 @@ export class LocacoesComponent implements OnInit {
   ];
 
   readonly acoesLocacoes: TableActionConfig = {
-    showView:   true,
-    showEdit:   true,
+    showExtra:    true,
+    extraIcon:    'pi pi-pencil',
+    extraTooltip: 'Editar',
+    showView:     true,
+    showEdit:     true,
     editIcon:    'pi pi-check-circle',
     editTooltip: 'Devolver',
     showDelete:  true,
@@ -127,6 +160,7 @@ export class LocacoesComponent implements OnInit {
       next: (locacoes) => {
         this.locacoes = locacoes;
         this.loading  = false;
+        this.recalcularGraficos();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -159,12 +193,14 @@ export class LocacoesComponent implements OnInit {
       inicio: start.toISOString().split('T')[0],
       fim:    hoje.toISOString().split('T')[0],
     };
+    this.recalcularGraficos();
     this.cdr.detectChanges();
   }
 
   aplicarPeriodoCustom(): void {
     if (this.customInicio && this.customFim) {
       this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
+      this.recalcularGraficos();
       this.cdr.detectChanges();
     }
   }
@@ -177,6 +213,14 @@ export class LocacoesComponent implements OnInit {
       'px-3 py-1.5 text-xs rounded-lg transition-colors': true,
     };
   }
+
+    limparFiltroButtonClass(_: Periodo): Record<string, boolean> {
+    return {
+      'px-3 py-1.5 text-xs rounded-lg transition-colors font-medium': true,
+      'text-red-500 hover:bg-red-50 border border-red-200': true,
+    };
+  }
+
 
   // ── KPIs ───────────────────────────────────────────────────
   get totalAtivas(): number {
@@ -195,6 +239,94 @@ export class LocacoesComponent implements OnInit {
     return this.locacoesFiltradas
       .filter(l => l.status !== 'CANCELADA')
       .reduce((acc, l) => acc + Number(l.valorTotal), 0);
+  }
+
+  // ── Gráficos ───────────────────────────────────────────────
+
+  /** Recalcula e atualiza os dois gráficos ApexCharts. Chamar após qualquer mudança de dados/filtro. */
+  recalcularGraficos(): void {
+    this.recalcularBarFaturamento();
+    this.recalcularDonutStatus();
+  }
+
+  private recalcularBarFaturamento(): void {
+    const filtradas   = this.locacoesFiltradas;
+    const inicio      = this.filtro.inicio;
+    const fim         = this.filtro.fim;
+    const diasPeriodo = (inicio && fim)
+      ? Math.round((new Date(fim).getTime() - new Date(inicio).getTime()) / 86_400_000)
+      : 365;
+    const isDia = diasPeriodo <= 31;
+
+    const buckets = new Map<string, number>();
+    for (const l of filtradas) {
+      if (l.status !== 'DEVOLVIDA') continue;
+      const chave = isDia ? l.dataRetirada.slice(0, 10) : l.dataRetirada.slice(0, 7);
+      buckets.set(chave, (buckets.get(chave) ?? 0) + Number(l.valorTotal));
+    }
+
+    // Preenche buckets zerados para eixo contínuo
+    if (inicio && fim) {
+      const cur = new Date(inicio);
+      const end = new Date(fim);
+      while (cur <= end) {
+        const k = isDia ? cur.toISOString().slice(0, 10) : cur.toISOString().slice(0, 7);
+        if (!buckets.has(k)) buckets.set(k, 0);
+        isDia ? cur.setDate(cur.getDate() + 1) : cur.setMonth(cur.getMonth() + 1);
+      }
+    }
+
+    const chaves  = [...buckets.keys()].sort();
+    const valores = chaves.map(c => +(buckets.get(c) ?? 0).toFixed(2));
+    const labels  = chaves.map(c => {
+      if (isDia) {
+        const d = new Date(c + 'T00:00:00');
+        return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit' });
+      }
+      const [ano, mes] = c.split('-');
+      return new Date(+ano, +mes - 1)
+        .toLocaleString('pt-BR', { month: 'short' })
+        .replace('.', '')
+        .replace(/^\w/, x => x.toUpperCase());
+    });
+
+    this.barSeries = [{ name: 'Faturamento', data: valores }];
+    this.barXaxis  = {
+      ...this.barXaxis,
+      categories: labels,
+      labels: {
+        rotate:       isDia ? -45 : 0,
+        rotateAlways: isDia,
+        style: { colors: '#94a3b8', fontSize: isDia ? '10px' : '12px' },
+      },
+    };
+  }
+
+  private recalcularDonutStatus(): void {
+    const filtradas = this.locacoesFiltradas;
+    const colorMap: Record<string, string> = {
+      ATIVA:     '#3b82f6',
+      ATRASADA:  '#ef4444',
+      DEVOLVIDA: '#22c55e',
+      CANCELADA: '#94a3b8',
+      ORCAMENTO: '#f59e0b',
+    };
+    const labelMap: Record<string, string> = {
+      ATIVA: 'Ativa', ATRASADA: 'Atrasada',
+      DEVOLVIDA: 'Devolvida', CANCELADA: 'Cancelada', ORCAMENTO: 'Orçamento',
+    };
+    const counts: Record<string, number> = {
+      ATIVA:     filtradas.filter(l => l.status === 'ATIVA').length,
+      ATRASADA:  filtradas.filter(l => l.status === 'ATRASADA').length,
+      DEVOLVIDA: filtradas.filter(l => l.status === 'DEVOLVIDA').length,
+      CANCELADA: filtradas.filter(l => l.status === 'CANCELADA').length,
+      ORCAMENTO: filtradas.filter(l => l.status === 'ORCAMENTO').length,
+    };
+    const entries = Object.entries(counts).filter(([, v]) => v > 0);
+
+    this.donutSeries = entries.map(([, v]) => v);
+    this.donutLabels = entries.map(([k]) => labelMap[k]);
+    this.donutColors = entries.map(([k]) => colorMap[k]);
   }
 
   // ── Alertas de urgência ────────────────────────────────────
@@ -300,6 +432,42 @@ export class LocacoesComponent implements OnInit {
     this.locacaoSelecionada  = null;
   }
 
+  // ── Modal Edição ───────────────────────────────────────────
+  abrirModalEdicao(locacao: LocacaoResponse): void {
+    this.locacaoSelecionada = locacao;
+    this.showModalEdicao    = true;
+  }
+
+  fecharModalEdicao(): void {
+    this.showModalEdicao    = false;
+    this.locacaoSelecionada = null;
+  }
+
+  onLocacaoEditada(payload: LocacaoEdicaoPayload): void {
+    if (!this.locacaoSelecionada) return;
+    this.salvandoEdicao = true;
+    this.service.patchEditar(this.locacaoSelecionada.id, payload).subscribe({
+      next: (atualizada) => {
+        this.atualizarNaLista(atualizada);
+        this.salvandoEdicao = false;
+        this.showModalEdicao = false;
+        this.locacaoSelecionada = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Atualizado',
+          detail: `Locação de ${atualizada.clienteNome} atualizada`,
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvandoEdicao = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível atualizar a locação', life: 3000 });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   // ── Modal Filtros ──────────────────────────────────────────
   abrirModalFiltros(): void  { this.showModalFiltros = true; }
   fecharModalFiltros(): void { this.showModalFiltros = false; }
@@ -307,11 +475,13 @@ export class LocacoesComponent implements OnInit {
   onAplicarFiltros(filtros: LocacoesFiltroCompleto): void {
     this.filtro = filtros;
     this.showModalFiltros = false;
+    this.recalcularGraficos();
   }
 
   onLimparFiltros(): void {
     this.filtro = { status: 'TODOS', formaPagamento: 'TODOS', inicio: '', fim: '', minValor: null, maxValor: null };
     this.showModalFiltros = false;
+    this.selectPeriodo('mes');
   }
 
   // ── Ações da tabela ────────────────────────────────────────

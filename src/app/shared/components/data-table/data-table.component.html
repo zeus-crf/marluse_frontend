@@ -71,6 +71,18 @@
       @if (showActions) {
         <td>
           <div class="flex items-center gap-1">
+            @if (actions.showExtra) {
+              <button
+                pButton pRipple
+                type="button"
+                [icon]="extraIcon"
+                text rounded
+                severity="secondary"
+                [pTooltip]="extraTooltip"
+                tooltipPosition="top"
+                (click)="extra.emit(row)"
+              ></button>
+            }
             @if (actions.showView !== false) {
               <button
                 pButton pRipple

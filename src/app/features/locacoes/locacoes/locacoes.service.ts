@@ -2,7 +2,12 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { map, Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
-import { ClienteSimples, LocacaoRequest, LocacaoResponse, ProdutoSimples, StatusLocacao } from "../models/locacoes.models";
+import { ClienteSimples, FormaPagamento, LocacaoRequest, LocacaoResponse, ProdutoSimples, StatusLocacao } from "../models/locacoes.models";
+
+export interface LocacaoEdicaoPayload {
+  formaPagamento: FormaPagamento;
+  observacao: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class LocacaoService {
@@ -33,6 +38,11 @@ export class LocacaoService {
 
   postLocacao(request: LocacaoRequest): Observable<LocacaoResponse> {
     return this.http.post<{ data: LocacaoResponse }>(`${this.baseUrl}`, request)
+      .pipe(map(r => r.data));
+  }
+
+  patchEditar(id: string, payload: LocacaoEdicaoPayload): Observable<LocacaoResponse> {
+    return this.http.patch<{ data: LocacaoResponse }>(`${this.baseUrl}/${id}`, payload)
       .pipe(map(r => r.data));
   }
 

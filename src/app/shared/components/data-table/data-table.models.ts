@@ -43,6 +43,13 @@ export interface TableActionConfig {
   /** Tooltip do botão de excluir (padrão: 'Excluir') */
   deleteTooltip?: string;
 
+  /** Exibir botão de ação extra (padrão: false) */
+  showExtra?: boolean;
+  /** Ícone do botão extra (padrão: 'pi pi-pencil') */
+  extraIcon?: string;
+  /** Tooltip do botão extra (padrão: 'Editar') */
+  extraTooltip?: string;
+
   /** Mensagem do confirm — recebe a linha como argumento */
   deleteMessageFn?: (row: any) => string;
   /** Cabeçalho do confirm */

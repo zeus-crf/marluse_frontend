@@ -38,7 +38,9 @@
     </button>
   }
 
-  @if (periodoAtivo === 'custom') {
+ 
+
+   @if (periodoAtivo === 'custom') {
     <div class="flex items-center gap-2 ml-1">
       <span class="text-xs text-gray-400">De</span>
       <input type="date" [(ngModel)]="customInicio"
@@ -52,6 +54,17 @@
       </button>
     </div>
   }
+
+  @if (temFiltroAtivo) {
+    <button
+      type="button"
+      (click)="onLimparFiltros()"
+      class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+      <i class="pi pi-times text-[10px]"></i>
+      Limpar filtros
+    </button>
+  }
+
 
   <div class="ml-auto text-xs text-gray-400">{{ filtro.inicio }} – {{ filtro.fim }}</div>
 </div>
@@ -193,6 +206,55 @@
 
 </div>
 
+<!-- ── Gráficos ────────────────────────────────────────────── -->
+<div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-4 mb-6">
+
+  <!-- Faturamento mensal -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-sm font-semibold text-gray-800">Faturamento mensal</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Receita por mês no período selecionado</p>
+      </div>
+      <span class="material-symbols-outlined text-[18px] text-slate-300">bar_chart</span>
+    </div>
+    <apx-chart
+      [series]="barSeries"
+      [chart]="barChart"
+      [plotOptions]="barPlotOptions"
+      [colors]="barColors"
+      [dataLabels]="barDataLabels"
+      [grid]="barGrid"
+      [xaxis]="barXaxis"
+      [yaxis]="barYaxis"
+      [tooltip]="barTooltip"
+    />
+  </div>
+
+  <!-- Distribuição de status -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-sm font-semibold text-gray-800">Status</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Distribuição no período</p>
+      </div>
+      <span class="material-symbols-outlined text-[18px] text-slate-300">donut_large</span>
+    </div>
+    <apx-chart
+      [series]="donutSeries"
+      [chart]="donutChart"
+      [colors]="donutColors"
+      [labels]="donutLabels"
+      [legend]="donutLegend"
+      [dataLabels]="donutDataLabels"
+      [plotOptions]="donutPlotOptions"
+      [stroke]="donutStroke"
+      [tooltip]="donutTooltip"
+    />
+  </div>
+
+</div>
+
 <!-- ── Tabela ──────────────────────────────────────────────── -->
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
@@ -232,6 +294,23 @@
       }
     </div>
 
+    <!-- Botão filtros -->
+    <button
+      type="button"
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium rounded-lg border transition-colors cursor-pointer"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-500 text-blue-600 bg-blue-50 hover:bg-blue-100'
+        : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+      <i class="pi pi-filter text-[11px]"></i>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+          <!-- {{ [filtro.status !== 'TODOS', filtro.formaPagamento !== 'TODOS', filtro.minValor !== null, filtro.maxValor !== null].filter(Boolean).length }} -->
+        </span>
+      }
+    </button>
+
     <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">
       {{ locacoesFiltradas.length }} registro(s)
     </span>
@@ -245,6 +324,7 @@
       [loading]="loading"
       [actions]="acoesLocacoes"
       emptyMessage="Nenhuma locação encontrada"
+      (extra)="abrirModalEdicao($event)"
       (verDetalhe)="abrirDetalhe($event)"
       (editar)="onDevolver($event)"
       (excluir)="onCancelar($event)"
@@ -263,12 +343,28 @@
   (locacaoCriada)="onLocacaoCriada($event)"
 />
 
-<!-- Modal Detalhe — a implementar -->
-<!-- <app-locacao-detalhe-modal
+<app-locacao-detalhe-modal
   [visible]="showModalDetalhe"
   [locacao]="locacaoSelecionada"
   [salvando]="salvando"
   (fechar)="fecharDetalhe()"
+  (editar)="fecharDetalhe(); abrirModalEdicao($event)"
   (devolver)="onDevolver($event)"
   (cancelar)="onCancelar($event)"
-/> -->
+/>
+
+<app-locacao-edicao-modal
+  [visible]="showModalEdicao"
+  [locacao]="locacaoSelecionada"
+  [salvando]="salvandoEdicao"
+  (fechar)="fecharModalEdicao()"
+  (salvar)="onLocacaoEditada($event)"
+/>
+
+<app-locacao-filtros-modal
+  [visible]="showModalFiltros"
+  [filtroAtual]="filtro"
+  (fechar)="fecharModalFiltros()"
+  (aplicar)="onAplicarFiltros($event)"
+  (limpar)="onLimparFiltros()"
+/>

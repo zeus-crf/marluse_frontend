@@ -42,9 +42,10 @@ export class DataTableComponent {
   @Output() verDetalhe = new EventEmitter<any>();
   @Output() editar     = new EventEmitter<any>();
   @Output() excluir    = new EventEmitter<any>();
+  @Output() extra      = new EventEmitter<any>();
 
   get showActions(): boolean {
-    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete);
+    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete || this.actions.showExtra);
   }
 
   /** Total de colunas + coluna de ações (se existir) */
@@ -58,6 +59,8 @@ export class DataTableComponent {
   get editTooltip():string { return this.actions.editTooltip ?? 'Editar'; }
   get deleteIcon(): string { return this.actions.deleteIcon  ?? 'pi pi-trash'; }
   get deleteTooltip():string { return this.actions.deleteTooltip ?? 'Excluir'; }
+  get extraIcon():  string { return this.actions.extraIcon   ?? 'pi pi-pencil'; }
+  get extraTooltip():string { return this.actions.extraTooltip ?? 'Editar'; }
 
   confirmarExclusao(row: any): void {
     const message = this.actions.deleteMessageFn
