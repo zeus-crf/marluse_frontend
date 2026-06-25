@@ -1,0 +1,239 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fecharModal()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '700px' }"
+  [contentStyle]="{ padding: '20px 24px 24px' }"
+  [header]="isOrcamento ? 'Novo Orçamento' : 'Nova Locação'">
+
+  @if (loadingDados) {
+    <div class="flex justify-center items-center py-16">
+      <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-[18px]">
+
+      <!-- TIPO -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Tipo</div>
+        <div class="flex">
+          @for (opt of tipoOpcoes; track opt.val; let i = $index) {
+            <button type="button"
+              (click)="tipo = opt.val"
+              class="flex-1 py-[7px] text-[12.5px] font-medium border transition-all duration-150 cursor-pointer"
+              [style.border-radius]="i === 0 ? '6px 0 0 6px' : '0 6px 6px 0'"
+              [style.margin-left]="i === 1 ? '-1px' : '0'"
+              [class.bg-blue-600]="tipo === opt.val"
+              [class.text-white]="tipo === opt.val"
+              [class.border-blue-600]="tipo === opt.val"
+              [class.bg-white]="tipo !== opt.val"
+              [class.text-gray-500]="tipo !== opt.val"
+              [class.border-slate-200]="tipo !== opt.val">
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- DATAS -->
+      <div class="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+
+        <div>
+          <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
+            Data de retirada
+          </label>
+          <input type="date" [(ngModel)]="dataRetirada"
+            class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-sm text-gray-700 outline-none focus:border-blue-400 transition-colors" />
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
+            Devolução prevista
+          </label>
+          <input type="date" [(ngModel)]="dataDevolucaoPrevista"
+            class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-sm text-gray-700 outline-none focus:border-blue-400 transition-colors" />
+        </div>
+
+        <!-- Badge de dias calculados -->
+        <div class="pb-[1px]">
+          @if (dias > 0) {
+            <div class="flex items-center gap-1.5 px-3 py-[7px] rounded-md bg-blue-50 border border-blue-100 whitespace-nowrap">
+              <i class="pi pi-calendar text-[12px] text-blue-500"></i>
+              <span class="text-[12.5px] font-semibold text-blue-600">{{ dias }}d</span>
+            </div>
+          } @else {
+            <div class="flex items-center gap-1.5 px-3 py-[7px] rounded-md bg-slate-50 border border-slate-200 whitespace-nowrap">
+              <i class="pi pi-calendar text-[12px] text-gray-300"></i>
+              <span class="text-[12.5px] font-medium text-gray-300">— d</span>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- CLIENTE -->
+      <div>
+        <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
+          Cliente
+        </label>
+        <app-select
+          [(ngModel)]="clienteId"
+          [options]="clienteOptions"
+          placeholder="Selecionar cliente…" />
+      </div>
+
+      <!-- ITENS -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Equipamentos</div>
+
+        <div class="border border-slate-200 rounded-md overflow-hidden">
+
+          <!-- Cabeçalho -->
+          <div class="grid grid-cols-[1fr_68px_110px_110px_56px] gap-2 bg-slate-50 border-b border-slate-200 px-3 py-[7px]">
+            <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Equipamento</div>
+            <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Qtd.</div>
+            <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Diária (R$)</div>
+            <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">
+              Subtotal
+              @if (dias > 0) {
+                <span class="ml-1 font-normal text-blue-400">({{ dias }}d)</span>
+              }
+            </div>
+            <div></div>
+          </div>
+
+          <!-- Linhas de item -->
+          @for (item of itens; track trackByIndex($index); let i = $index) {
+            <div class="grid grid-cols-[1fr_68px_110px_110px_56px] gap-2 px-3 py-2 border-b border-slate-100 last:border-0 items-center">
+
+              <app-select
+                [(ngModel)]="item.produtoId"
+                (ngModelChange)="onProdutoChange(item)"
+                [options]="produtoOptions"
+                placeholder="Equipamento…" />
+
+              <input type="number" [(ngModel)]="item.quantidade" min="1"
+                class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
+
+              <input type="number" [(ngModel)]="item.precoUnitario" min="0" step="0.01"
+                class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
+
+              <div class="text-[12px] font-semibold text-right whitespace-nowrap font-mono"
+                [class.text-gray-800]="rowTotal(item) > 0"
+                [class.text-gray-300]="rowTotal(item) === 0">
+                {{ rowTotal(item) > 0 ? formatCurrency(rowTotal(item)) : '—' }}
+              </div>
+
+              <div class="flex items-center justify-center gap-1">
+                <button type="button" (click)="incrementarQty(item)"
+                  class="w-6 h-6 flex items-center justify-center text-[14px] leading-none text-gray-400 hover:text-blue-500 border border-slate-200 rounded transition-colors">
+                  +
+                </button>
+                <button type="button" (click)="decrementarQty(i)"
+                  class="w-6 h-6 flex items-center justify-center text-[16px] leading-none text-gray-300 hover:text-red-500 border border-slate-200 rounded transition-colors">
+                  ×
+                </button>
+              </div>
+
+            </div>
+          }
+
+          <button type="button" (click)="adicionarLinha()"
+            class="w-full flex items-center gap-[6px] px-3 py-2 text-[12px] text-gray-400 hover:bg-slate-50 transition-colors font-[inherit] border-t border-slate-100">
+            <i class="pi pi-plus text-[10px]"></i>
+            Adicionar equipamento
+          </button>
+
+        </div>
+      </div>
+
+      <!-- OBSERVAÇÃO -->
+      <div>
+        <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>
+        <textarea
+          [(ngModel)]="observacao"
+          rows="2"
+          placeholder="Observações sobre a locação (opcional)…"
+          class="w-full bg-white border border-slate-200 rounded-md px-3 py-[9px] text-[13px] text-gray-800 font-[inherit] outline-none resize-y focus:border-blue-400 transition-colors">
+        </textarea>
+      </div>
+
+      <!-- PAGAMENTO + TOTAL -->
+      <div class="grid grid-cols-[1fr_auto] gap-4 items-end">
+
+        <div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Pagamento</div>
+          <div class="flex flex-wrap gap-[6px]">
+            @for (f of formasPagamento; track f.valor) {
+              <button type="button"
+                (click)="formaPagamento = f.valor"
+                class="px-[14px] py-[5px] text-[12px] font-medium border rounded-full transition-all duration-150 cursor-pointer font-[inherit]"
+                [class.border-blue-500]="formaPagamento === f.valor"
+                [class.bg-blue-50]="formaPagamento === f.valor"
+                [class.text-blue-600]="formaPagamento === f.valor"
+                [class.border-slate-200]="formaPagamento !== f.valor"
+                [class.text-gray-500]="formaPagamento !== f.valor"
+                [class.bg-transparent]="formaPagamento !== f.valor">
+                {{ f.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1">Total estimado</div>
+          <div class="text-[24px] font-bold font-mono leading-none transition-colors"
+            [class.text-blue-600]="total > 0"
+            [class.text-gray-300]="total === 0">
+            {{ formatCurrency(total) }}
+          </div>
+          @if (dias > 0 && total > 0) {
+            <div class="text-[11px] text-gray-400 mt-0.5">{{ dias }} dia{{ dias !== 1 ? 's' : '' }}</div>
+          }
+        </div>
+
+      </div>
+
+      <!-- AVISO ORÇAMENTO -->
+      @if (isOrcamento) {
+        <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200">
+          <i class="pi pi-info-circle text-amber-500 text-[14px] flex-shrink-0"></i>
+          <p class="text-[12px] text-amber-700 leading-snug">
+            Orçamentos <strong>não</strong> reservam estoque nem geram lançamento financeiro.
+            Converta para locação ativa quando confirmado pelo cliente.
+          </p>
+        </div>
+      }
+
+      <!-- AÇÕES -->
+      <div class="flex justify-end gap-2 pt-[4px] border-t border-slate-100">
+        <button type="button" (click)="fecharModal()"
+          class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer font-[inherit]">
+          Cancelar
+        </button>
+        <button type="button" (click)="salvar()"
+          [disabled]="!formValida || salvando"
+          class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-[inherit]"
+          [class.bg-amber-500]="isOrcamento"
+          [class.hover:bg-amber-600]="isOrcamento"
+          [class.bg-blue-600]="!isOrcamento"
+          [class.hover:bg-blue-700]="!isOrcamento">
+          @if (salvando) {
+            <i class="pi pi-spin pi-spinner text-xs"></i>
+            Salvando...
+          } @else if (isOrcamento) {
+            <i class="pi pi-file text-xs"></i>
+            Salvar Orçamento
+          } @else {
+            <i class="pi pi-check text-xs"></i>
+            Confirmar Locação
+          }
+        </button>
+      </div>
+
+    </div>
+  }
+
+</p-dialog>

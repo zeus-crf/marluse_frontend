@@ -14,13 +14,14 @@ import {
   ProdutoSimples,
   StatusLocacao,
 } from '../models/locacoes.models';
+import { NovaLocacaoModalComponent } from "../nova-locacao-modal/nova-locacao-modal.component";
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 
 @Component({
   selector: 'app-locacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DataTableComponent],
+  imports: [CommonModule, FormsModule, ToastModule, DataTableComponent, NovaLocacaoModalComponent],
   templateUrl: './locacoes.component.html',
   styleUrl: './locacoes.component.scss',
   providers: [MessageService],
@@ -410,12 +411,13 @@ export class LocacoesComponent implements OnInit {
       case 'DEVOLVIDA':  return 'secondary';
       case 'ATRASADA':   return 'danger';
       case 'CANCELADA':  return 'warn';
+      case 'ORCAMENTO': return 'secondary'
     }
   }
 
   getStatusLabel(status: StatusLocacao): string {
     const labels: Record<StatusLocacao, string> = {
-      ATIVA: 'Ativa', DEVOLVIDA: 'Devolvida', ATRASADA: 'Atrasada', CANCELADA: 'Cancelada',
+      ATIVA: 'Ativa', DEVOLVIDA: 'Devolvida', ATRASADA: 'Atrasada', CANCELADA: 'Cancelada', ORCAMENTO: 'orcamento' ,
     };
     return labels[status];
   }

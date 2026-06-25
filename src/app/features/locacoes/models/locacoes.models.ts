@@ -1,4 +1,4 @@
-export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA';
+export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA' | 'ORCAMENTO';
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO' | 'FIADO';
 
 export interface ItemLocacaoResponse {
@@ -37,6 +37,7 @@ export interface LocacaoRequest {
   dataDevolucaoPrevista: string;  // ISO date: "yyyy-MM-dd"
   itens: ItemLocacaoRequest[];
   observacao?: string | null;
+  status?: StatusLocacao | null;  // opcional — backend padrão ATIVA; use ORCAMENTO para orçamento
 }
 
 /** Dados do item no formulário de criação */
