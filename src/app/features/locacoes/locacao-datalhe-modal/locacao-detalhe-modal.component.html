@@ -8,6 +8,8 @@
   [contentStyle]="{ padding: '0' }"
   header="Detalhes da Locação">
 
+<hr>
+
   @if (!locacao) {
     <div class="flex justify-center items-center py-16">
       <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
@@ -113,15 +115,6 @@
             class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
             Fechar
           </button>
-
-          @if (podeEditar) {
-            <button type="button"
-              (click)="editar.emit(locacao)"
-              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-medium text-gray-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-              <i class="pi pi-pencil text-xs"></i>
-              Editar
-            </button>
-          }
 
           @if (podeCancelar) {
             <button type="button"

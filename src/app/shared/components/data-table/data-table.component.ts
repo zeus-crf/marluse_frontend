@@ -39,13 +39,14 @@ export class DataTableComponent {
     deleteHeader: 'Confirmar exclusão',
   };
 
-  @Output() verDetalhe = new EventEmitter<any>();
-  @Output() editar     = new EventEmitter<any>();
-  @Output() excluir    = new EventEmitter<any>();
-  @Output() extra      = new EventEmitter<any>();
+  @Output() verDetalhe = new EventEmitter<unknown>();
+  @Output() editar     = new EventEmitter<unknown>();
+  @Output() excluir    = new EventEmitter<unknown>();
+  @Output() extra      = new EventEmitter<unknown>();
+  @Output() apagar     = new EventEmitter<unknown>();
 
   get showActions(): boolean {
-    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete || this.actions.showExtra);
+    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete || this.actions.showExtra || this.actions.showApagar);
   }
 
   /** Total de colunas + coluna de ações (se existir) */
@@ -59,8 +60,10 @@ export class DataTableComponent {
   get editTooltip():string { return this.actions.editTooltip ?? 'Editar'; }
   get deleteIcon(): string { return this.actions.deleteIcon  ?? 'pi pi-trash'; }
   get deleteTooltip():string { return this.actions.deleteTooltip ?? 'Excluir'; }
-  get extraIcon():  string { return this.actions.extraIcon   ?? 'pi pi-pencil'; }
+  get extraIcon():   string { return this.actions.extraIcon    ?? 'pi pi-pencil'; }
   get extraTooltip():string { return this.actions.extraTooltip ?? 'Editar'; }
+  get apagarIcon():  string { return this.actions.apagarIcon   ?? 'pi pi-trash'; }
+  get apagarTooltip():string{ return this.actions.apagarTooltip ?? 'Apagar'; }
 
   confirmarExclusao(row: any): void {
     const message = this.actions.deleteMessageFn
@@ -79,6 +82,23 @@ export class DataTableComponent {
     });
   }
 
+  confirmarApagar(row: any): void {
+    const message = this.actions.apagarMessageFn
+      ? this.actions.apagarMessageFn(row)
+      : 'Esta ação é permanente e não pode ser desfeita. Confirma?';
+
+    this.confirmationService.confirm({
+      message,
+      header:       this.actions.apagarHeader      ?? 'Apagar permanentemente',
+      icon:         'pi pi-exclamation-triangle',
+      acceptLabel:  this.actions.apagarAcceptLabel ?? 'Apagar',
+      rejectLabel:  'Cancelar',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', outlined: true },
+      accept: () => this.apagar.emit(row),
+    });
+  }
+
   // ── Helpers de célula ──────────────────────────────────────
 
   getCellValue(col: TableColumn, row: any, index: number): any {
@@ -92,6 +112,8 @@ export class DataTableComponent {
 
   formatDate(iso: string | Date): string {
     if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('pt-BR');
+    // Força parse como horário local (evita shift de fuso UTC-3)
+    const d = typeof iso === 'string' ? new Date(iso + 'T00:00:00') : iso;
+    return d.toLocaleDateString('pt-BR');
   }
 }

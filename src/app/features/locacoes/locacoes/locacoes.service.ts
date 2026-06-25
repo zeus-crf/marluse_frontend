@@ -36,8 +36,9 @@ export class LocacaoService {
       .pipe(map(r => r.data));
   }
 
-  postLocacao(request: LocacaoRequest): Observable<LocacaoResponse> {
-    return this.http.post<{ data: LocacaoResponse }>(`${this.baseUrl}`, request)
+  postLocacao(request: LocacaoRequest, isOrcamento = false): Observable<LocacaoResponse> {
+    const params = isOrcamento ? { params: { isOrcamento: 'true' } } : {};
+    return this.http.post<{ data: LocacaoResponse }>(`${this.baseUrl}`, request, params)
       .pipe(map(r => r.data));
   }
 
@@ -54,6 +55,10 @@ export class LocacaoService {
   patchCancelar(id: string): Observable<LocacaoResponse> {
     return this.http.patch<{ data: LocacaoResponse }>(`${this.baseUrl}/${id}/cancelar`, {})
       .pipe(map(r => r.data));
+  }
+
+  deletar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   // Recursos compartilhados — reutilizam endpoints de pedidos enquanto não há endpoint próprio

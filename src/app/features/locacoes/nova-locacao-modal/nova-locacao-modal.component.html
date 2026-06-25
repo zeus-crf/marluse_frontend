@@ -5,15 +5,17 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '700px' }"
-  [contentStyle]="{ padding: '20px 24px 24px' }"
+  [contentStyle]="{ padding: '0' }"
   [header]="isOrcamento ? 'Novo Orçamento' : 'Nova Locação'">
 
+<hr>
+
   @if (loadingDados) {
-    <div class="flex justify-center items-center py-16">
+    <div class="flex justify-center items-center py-12">
       <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
     </div>
   } @else {
-    <div class="flex flex-col gap-[18px]">
+    <div class="flex flex-col gap-[18px] px-6 py-5">
 
       <!-- TIPO -->
       <div>

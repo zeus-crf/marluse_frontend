@@ -5,15 +5,18 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '520px' }"
-  [contentStyle]="{ padding: '20px 24px 24px' }"
+  [contentStyle]="{ padding: '0' }"
   header="Editar Locação">
+
+<hr>
 
   @if (!locacao) {
     <div class="flex justify-center items-center py-12">
       <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
     </div>
   } @else {
-    <div class="flex flex-col gap-5">
+
+    <div class="flex flex-col gap-5 px-6 py-5">
 
       <!-- ── Info read-only ─────────────────────────────────── -->
       <div class="grid grid-cols-2 gap-x-6 gap-y-3 px-4 py-3.5 bg-slate-50 rounded-lg border border-slate-200">

@@ -133,14 +133,14 @@ export class NovaLocacaoModalComponent {
         const status: StatusLocacao = this.tipo === 'ORCAMENTO' ? 'ORCAMENTO' : 'ATIVA';
 
         this.service.postLocacao({
-            clienteId:            this.clienteId || undefined,
-            formaPagamento:       this.formaPagamento as FormaPagamento,
-            dataRetirada:         this.dataRetirada,
+            clienteId:             this.clienteId || undefined,
+            formaPagamento:        this.formaPagamento as FormaPagamento,
+            dataRetirada:          this.dataRetirada,
             dataDevolucaoPrevista: this.dataDevolucaoPrevista,
-            itens:                this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
-            observacao:           this.observacao || null,
-            status,                                           // ✅ agora existe em LocacaoRequest
-        }).subscribe({
+            itens:                 this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+            observacao:            this.observacao || null,
+            status,
+        }, this.tipo === 'ORCAMENTO').subscribe({
             next: (locacao) => {
                 this.locacaoCriada.emit(locacao);             // ✅ evento com nome correto
                 this.resetForm();

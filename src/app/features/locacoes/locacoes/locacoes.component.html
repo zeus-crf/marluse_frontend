@@ -218,17 +218,19 @@
       </div>
       <span class="material-symbols-outlined text-[18px] text-slate-300">bar_chart</span>
     </div>
-    <apx-chart
-      [series]="barSeries"
-      [chart]="barChart"
-      [plotOptions]="barPlotOptions"
-      [colors]="barColors"
-      [dataLabels]="barDataLabels"
-      [grid]="barGrid"
-      [xaxis]="barXaxis"
-      [yaxis]="barYaxis"
-      [tooltip]="barTooltip"
-    />
+    <div style="height: 200px">
+      <apx-chart
+        [series]="barSeries"
+        [chart]="barChart"
+        [xaxis]="barXAxis"
+        [yaxis]="barYAxis"
+        [plotOptions]="barPlotOptions"
+        [dataLabels]="barDataLabels"
+        [grid]="barGrid"
+        [tooltip]="barTooltip"
+        [colors]="['#2563eb']"
+      />
+    </div>
   </div>
 
   <!-- Distribuição de status -->
@@ -240,17 +242,18 @@
       </div>
       <span class="material-symbols-outlined text-[18px] text-slate-300">donut_large</span>
     </div>
-    <apx-chart
-      [series]="donutSeries"
-      [chart]="donutChart"
-      [colors]="donutColors"
-      [labels]="donutLabels"
-      [legend]="donutLegend"
-      [dataLabels]="donutDataLabels"
-      [plotOptions]="donutPlotOptions"
-      [stroke]="donutStroke"
-      [tooltip]="donutTooltip"
-    />
+    <div style="height: 200px">
+      <apx-chart
+        [series]="donutSeries"
+        [chart]="donutChart"
+        [labels]="donutLabels"
+        [colors]="donutColors"
+        [legend]="donutLegend"
+        [dataLabels]="donutDataLabels"
+        [plotOptions]="donutPlotOptions"
+        [stroke]="donutStroke"
+      />
+    </div>
   </div>
 
 </div>
@@ -269,6 +272,7 @@
       <input
         type="text"
         [(ngModel)]="busca"
+        (ngModelChange)="recalcularGraficos()"
         placeholder="Buscar por cliente ou equipamento…"
         class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-slate-50 text-gray-700 placeholder-gray-400"
       />
@@ -324,10 +328,9 @@
       [loading]="loading"
       [actions]="acoesLocacoes"
       emptyMessage="Nenhuma locação encontrada"
-      (extra)="abrirModalEdicao($event)"
-      (verDetalhe)="abrirDetalhe($event)"
-      (editar)="onDevolver($event)"
-      (excluir)="onCancelar($event)"
+      (extra)="abrirModalEdicao($any($event))"
+      (verDetalhe)="abrirDetalhe($any($event))"
+      (apagar)="onApagar($any($event))"
     />
   </div>
 
@@ -348,7 +351,6 @@
   [locacao]="locacaoSelecionada"
   [salvando]="salvando"
   (fechar)="fecharDetalhe()"
-  (editar)="fecharDetalhe(); abrirModalEdicao($event)"
   (devolver)="onDevolver($event)"
   (cancelar)="onCancelar($event)"
 />

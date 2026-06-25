@@ -56,4 +56,17 @@ export interface TableActionConfig {
   deleteHeader?: string;
   /** Texto do botão de aceitar no confirm (padrão: 'Excluir') */
   deleteAcceptLabel?: string;
+
+  /** Exibir botão de apagar (exclusão permanente) */
+  showApagar?: boolean;
+  /** Ícone do botão apagar (padrão: 'pi pi-trash') */
+  apagarIcon?: string;
+  /** Tooltip do botão apagar (padrão: 'Apagar') */
+  apagarTooltip?: string;
+  /** Mensagem do confirm de apagar */
+  apagarMessageFn?: (row: any) => string;
+  /** Cabeçalho do confirm de apagar */
+  apagarHeader?: string;
+  /** Texto do botão aceitar no confirm de apagar */
+  apagarAcceptLabel?: string;
 }

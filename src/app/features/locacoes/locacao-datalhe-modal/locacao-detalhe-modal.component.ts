@@ -17,16 +17,9 @@ export class LocacaoDetalheModalComponent {
     @Input() locacao: LocacaoResponse | null = null;
     @Input() salvando = false;
 
-    @Output() fechar  = new EventEmitter<void>();
-    @Output() editar  = new EventEmitter<LocacaoResponse>();
+    @Output() fechar   = new EventEmitter<void>();
     @Output() devolver = new EventEmitter<LocacaoResponse>();
     @Output() cancelar = new EventEmitter<LocacaoResponse>();
-
-    get podeEditar(): boolean {
-        return !!this.locacao &&
-               this.locacao.status !== 'DEVOLVIDA' &&
-               this.locacao.status !== 'CANCELADA';
-    }
 
     get podeDevolver(): boolean {
         return !!this.locacao &&

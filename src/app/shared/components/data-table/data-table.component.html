@@ -119,6 +119,18 @@
                 (click)="confirmarExclusao(row)"
               ></button>
             }
+            @if (actions.showApagar) {
+              <button
+                pButton pRipple
+                type="button"
+                [icon]="apagarIcon"
+                text rounded
+                severity="danger"
+                [pTooltip]="apagarTooltip"
+                tooltipPosition="top"
+                (click)="confirmarApagar(row)"
+              ></button>
+            }
           </div>
         </td>
       }

@@ -2,7 +2,16 @@ import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
-import { NgApexchartsModule } from 'ng-apexcharts';
+import {
+  NgApexchartsModule,
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexXAxis,
+  ApexPlotOptions,
+  ApexTooltip,
+  ApexNonAxisChartSeries,
+  ApexLegend,
+} from 'ng-apexcharts';
 import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
@@ -67,29 +76,6 @@ export class LocacoesComponent implements OnInit {
     inicio: '', fim: '', minValor: null, maxValor: null,
   };
 
-  // ── Gráficos ApexCharts ────────────────────────────────────
-  // Bar — faturamento
-  barSeries:      any[] = [];
-  barChart:       any = { type: 'bar', height: 200, toolbar: { show: false }, fontFamily: 'inherit' };
-  barPlotOptions: any = { bar: { columnWidth: '55%', borderRadius: 3, borderRadiusApplication: 'end' } };
-  barColors           = ['#3b82f6'];
-  barDataLabels:  any = { enabled: false };
-  barGrid:        any = { borderColor: '#f1f5f9', strokeDashArray: 4 };
-  barXaxis:       any = { categories: [], axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#94a3b8', fontSize: '12px' } } };
-  barYaxis:       any = { labels: { formatter: (v: number) => v >= 1000 ? `R$ ${(v / 1000).toFixed(0)}k` : `R$ ${v}`, style: { colors: '#94a3b8', fontSize: '11px' } } };
-  barTooltip:     any = { y: { formatter: (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) } };
-
-  // Donut — status
-  donutSeries:      number[]  = [];
-  donutChart:       any = { type: 'donut', height: 200, fontFamily: 'inherit' };
-  donutColors:      string[]  = [];
-  donutLabels:      string[]  = [];
-  donutLegend:      any = { position: 'bottom', fontSize: '11px', itemMargin: { horizontal: 6 } };
-  donutDataLabels:  any = { enabled: false };
-  donutPlotOptions: any = { pie: { donut: { size: '65%' } } };
-  donutStroke:      any = { width: 0 };
-  donutTooltip:     any = { y: { formatter: (v: number) => `${v} locação(ões)` } };
-
   // ── Modais ─────────────────────────────────────────────────
   showModalCriar   = false;
   showModalDetalhe = false;
@@ -135,16 +121,15 @@ export class LocacoesComponent implements OnInit {
     extraIcon:    'pi pi-pencil',
     extraTooltip: 'Editar',
     showView:     true,
-    showEdit:     true,
-    editIcon:    'pi pi-check-circle',
-    editTooltip: 'Devolver',
-    showDelete:  true,
-    deleteIcon:    'pi pi-times-circle',
-    deleteTooltip: 'Cancelar',
-    deleteHeader:  'Confirmar cancelamento',
-    deleteAcceptLabel: 'Cancelar locação',
-    deleteMessageFn: (l: LocacaoResponse) =>
-      `Cancelar a locação de ${l.clienteNome}? O estoque será restaurado.`,
+    showEdit:     false,
+    showDelete:   false,
+    showApagar:   true,
+    apagarIcon:   'pi pi-trash',
+    apagarTooltip: 'Apagar',
+    apagarHeader: 'Apagar permanentemente',
+    apagarAcceptLabel: 'Apagar',
+    apagarMessageFn: (l: LocacaoResponse) =>
+      `Apagar a locação de ${l.clienteNome}? Esta ação não pode ser desfeita.`,
   };
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -184,14 +169,23 @@ export class LocacoesComponent implements OnInit {
   private aplicarPeriodo(p: Periodo): void {
     const hoje  = new Date();
     let   start = new Date(hoje);
-    if      (p === 'mes')       start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    else if (p === 'trimestre') start.setMonth(hoje.getMonth() - 2);
-    else if (p === 'semestre')  start.setMonth(hoje.getMonth() - 5);
-    else if (p === 'ano')       start.setFullYear(hoje.getFullYear() - 1);
+    // Para "este mês" o fim é o último dia do mês (inclui locações com retirada futura no mesmo mês).
+    // Para os demais períodos o fim é hoje (janelas retroativas).
+    let   fim   = new Date(hoje);
+    if (p === 'mes') {
+      start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      fim   = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0); // último dia do mês
+    } else if (p === 'trimestre') {
+      start.setMonth(hoje.getMonth() - 2);
+    } else if (p === 'semestre') {
+      start.setMonth(hoje.getMonth() - 5);
+    } else if (p === 'ano') {
+      start.setFullYear(hoje.getFullYear() - 1);
+    }
     this.filtro = {
       ...this.filtro,
       inicio: start.toISOString().split('T')[0],
-      fim:    hoje.toISOString().split('T')[0],
+      fim:    fim.toISOString().split('T')[0],
     };
     this.recalcularGraficos();
     this.cdr.detectChanges();
@@ -222,90 +216,105 @@ export class LocacoesComponent implements OnInit {
   }
 
 
-  // ── KPIs ───────────────────────────────────────────────────
+  // ── KPIs ──────────────────────────────────────────────────
+  // Todos reagem ao período selecionado (e a pagamento/valor/busca).
+  // A tabela mostra mais porque não tem filtro de período — intencional para urgência.
   get totalAtivas(): number {
-    return this.locacoesFiltradas.filter(l => l.status === 'ATIVA').length;
+    return this.locacoesParaKPIs.filter(l => l.status === 'ATIVA').length;
   }
 
   get totalAtrasadas(): number {
-    return this.locacoesFiltradas.filter(l => this.isAtrasada(l)).length;
+    return this.locacoesParaKPIs.filter(l => this.isAtrasada(l)).length;
   }
 
   get totalDevolvidas(): number {
-    return this.locacoesFiltradas.filter(l => l.status === 'DEVOLVIDA').length;
+    return this.locacoesParaKPIs.filter(l => l.status === 'DEVOLVIDA').length;
   }
 
   get faturamentoMes(): number {
-    return this.locacoesFiltradas
-      .filter(l => l.status !== 'CANCELADA')
+    return this.locacoesParaKPIs
+      .filter(l => l.status !== 'CANCELADA' && l.status !== 'ORCAMENTO')
       .reduce((acc, l) => acc + Number(l.valorTotal), 0);
   }
 
-  // ── Gráficos ───────────────────────────────────────────────
+  // ── Gráficos (ApexCharts — cacheados) ─────────────────────
+  barSeries:      ApexAxisChartSeries  = [{ name: 'Faturamento', data: [] }];
+  barXAxis:       ApexXAxis            = { categories: [] };
+  barChart:       ApexChart            = {
+    type: 'bar', height: 200, toolbar: { show: false }, fontFamily: 'inherit',
+  };
+  barPlotOptions: ApexPlotOptions      = { bar: { borderRadius: 3, columnWidth: '60%', borderRadiusApplication: 'end' } };
+  barTooltip:     ApexTooltip          = {
+    y: { formatter: (v: number) =>
+      Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+  };
+  barDataLabels:  any = { enabled: false };
+  barGrid:        any = { borderColor: '#f1f5f9', strokeDashArray: 4 };
+  barYAxis:       any = { labels: { formatter: (v: number) => v >= 1000 ? `R$ ${(v / 1000).toFixed(0)}k` : `R$ ${v}`, style: { colors: '#94a3b8', fontSize: '11px' } } };
 
-  /** Recalcula e atualiza os dois gráficos ApexCharts. Chamar após qualquer mudança de dados/filtro. */
+  donutSeries:      ApexNonAxisChartSeries = [];
+  donutLabels:      string[]               = [];
+  donutColors:      string[]               = [];
+  donutChart:       ApexChart              = {
+    type: 'donut', height: 200, toolbar: { show: false }, fontFamily: 'inherit',
+  };
+  donutLegend:      ApexLegend = { position: 'bottom', fontSize: '11px' };
+  donutDataLabels:  any        = { enabled: false };
+  donutPlotOptions: any        = { pie: { donut: { size: '65%' } } };
+  donutStroke:      any        = { width: 0 };
+
   recalcularGraficos(): void {
     this.recalcularBarFaturamento();
     this.recalcularDonutStatus();
+    this.cdr.detectChanges();
   }
 
   private recalcularBarFaturamento(): void {
-    const filtradas   = this.locacoesFiltradas;
-    const inicio      = this.filtro.inicio;
-    const fim         = this.filtro.fim;
+    const inicio = this.filtro.inicio;
+    const fim    = this.filtro.fim;
     const diasPeriodo = (inicio && fim)
       ? Math.round((new Date(fim).getTime() - new Date(inicio).getTime()) / 86_400_000)
       : 365;
-    const isDia = diasPeriodo <= 31;
+    const granularidade: 'dia' | 'mes' = diasPeriodo <= 31 ? 'dia' : 'mes';
 
     const buckets = new Map<string, number>();
-    for (const l of filtradas) {
+    for (const l of this.locacoesParaGraficos) {
       if (l.status !== 'DEVOLVIDA') continue;
-      const chave = isDia ? l.dataRetirada.slice(0, 10) : l.dataRetirada.slice(0, 7);
+      const chave = this.bucketKey(l.dataRetirada, granularidade);
       buckets.set(chave, (buckets.get(chave) ?? 0) + Number(l.valorTotal));
     }
 
-    // Preenche buckets zerados para eixo contínuo
     if (inicio && fim) {
       const cur = new Date(inicio);
       const end = new Date(fim);
       while (cur <= end) {
-        const k = isDia ? cur.toISOString().slice(0, 10) : cur.toISOString().slice(0, 7);
+        const k = this.bucketKey(cur.toISOString().split('T')[0], granularidade);
         if (!buckets.has(k)) buckets.set(k, 0);
-        isDia ? cur.setDate(cur.getDate() + 1) : cur.setMonth(cur.getMonth() + 1);
+        if (granularidade === 'dia') cur.setDate(cur.getDate() + 1);
+        else cur.setMonth(cur.getMonth() + 1);
       }
     }
 
     const chaves  = [...buckets.keys()].sort();
-    const valores = chaves.map(c => +(buckets.get(c) ?? 0).toFixed(2));
-    const labels  = chaves.map(c => {
-      if (isDia) {
-        const d = new Date(c + 'T00:00:00');
-        return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit' });
-      }
-      const [ano, mes] = c.split('-');
-      return new Date(+ano, +mes - 1)
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .replace(/^\w/, x => x.toUpperCase());
-    });
+    const labels  = chaves.map(c => this.bucketLabel(c, granularidade));
+    const isDia   = granularidade === 'dia';
 
-    this.barSeries = [{ name: 'Faturamento', data: valores }];
-    this.barXaxis  = {
-      ...this.barXaxis,
+    this.barXAxis  = {
       categories: labels,
+      axisBorder: { show: false },
+      axisTicks:  { show: false },
       labels: {
         rotate:       isDia ? -45 : 0,
         rotateAlways: isDia,
         style: { colors: '#94a3b8', fontSize: isDia ? '10px' : '12px' },
       },
     };
+    this.barSeries = [{ name: 'Faturamento', data: chaves.map(c => +(buckets.get(c) ?? 0).toFixed(2)) }];
   }
 
   private recalcularDonutStatus(): void {
-    const filtradas = this.locacoesFiltradas;
     const colorMap: Record<string, string> = {
-      ATIVA:     '#3b82f6',
+      ATIVA:     '#2563eb',
       ATRASADA:  '#ef4444',
       DEVOLVIDA: '#22c55e',
       CANCELADA: '#94a3b8',
@@ -316,17 +325,35 @@ export class LocacoesComponent implements OnInit {
       DEVOLVIDA: 'Devolvida', CANCELADA: 'Cancelada', ORCAMENTO: 'Orçamento',
     };
     const counts: Record<string, number> = {
-      ATIVA:     filtradas.filter(l => l.status === 'ATIVA').length,
-      ATRASADA:  filtradas.filter(l => l.status === 'ATRASADA').length,
-      DEVOLVIDA: filtradas.filter(l => l.status === 'DEVOLVIDA').length,
-      CANCELADA: filtradas.filter(l => l.status === 'CANCELADA').length,
-      ORCAMENTO: filtradas.filter(l => l.status === 'ORCAMENTO').length,
+      ATIVA:     this.locacoesParaGraficos.filter(l => l.status === 'ATIVA').length,
+      ATRASADA:  this.locacoesParaGraficos.filter(l => l.status === 'ATRASADA').length,
+      DEVOLVIDA: this.locacoesParaGraficos.filter(l => l.status === 'DEVOLVIDA').length,
+      CANCELADA: this.locacoesParaGraficos.filter(l => l.status === 'CANCELADA').length,
+      ORCAMENTO: this.locacoesParaGraficos.filter(l => l.status === 'ORCAMENTO').length,
     };
     const entries = Object.entries(counts).filter(([, v]) => v > 0);
-
     this.donutSeries = entries.map(([, v]) => v);
     this.donutLabels = entries.map(([k]) => labelMap[k]);
     this.donutColors = entries.map(([k]) => colorMap[k]);
+  }
+
+  /** Gera a chave do bucket para uma data ISO */
+  private bucketKey(iso: string, g: 'dia' | 'mes'): string {
+    if (g === 'dia') return iso.slice(0, 10);
+    return iso.slice(0, 7);
+  }
+
+  /** Formata a chave do bucket em label legível */
+  private bucketLabel(chave: string, g: 'dia' | 'mes'): string {
+    if (g === 'dia') {
+      const date = new Date(chave + 'T00:00:00');
+      return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit' });
+    }
+    const [ano, mes] = chave.split('-');
+    return new Date(+ano, +mes - 1)
+      .toLocaleString('pt-BR', { month: 'short' })
+      .replace('.', '')
+      .replace(/^\w/, c => c.toUpperCase());
   }
 
   // ── Alertas de urgência ────────────────────────────────────
@@ -355,6 +382,8 @@ export class LocacoesComponent implements OnInit {
   }
 
   // ── Filtro client-side ─────────────────────────────────────
+  // Tabela: aplica todos os filtros incluindo período.
+  // Locações atrasadas de meses anteriores já aparecem nos alertas de urgência no topo.
   get locacoesFiltradas(): LocacaoResponse[] {
     return this.locacoes.filter(l => {
       const termo      = this.busca.toLowerCase();
@@ -365,15 +394,63 @@ export class LocacoesComponent implements OnInit {
       const matchStatus = this.filtro.status === 'TODOS' || l.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
 
-      const data        = l.dataRetirada ?? '';
-      const matchInicio = !this.filtro.inicio || data >= this.filtro.inicio;
-      const matchFim    = !this.filtro.fim    || data <= this.filtro.fim;
+      const dataRef = l.status === 'ORCAMENTO'
+        ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : (l.dataRetirada ?? '');
+      const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
+      const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
 
       const valor    = Number(l.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
       return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+    });
+  }
+
+  // Gráficos: igual à tabela + filtro de período + filtro de status
+  private get locacoesParaGraficos(): LocacaoResponse[] {
+    return this.locacoes.filter(l => {
+      const matchStatus = this.filtro.status === 'TODOS' || l.status === this.filtro.status;
+      const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
+
+      // ORCAMENTO: filtra por createdAt; ausente → exibe sempre
+      const dataRef = l.status === 'ORCAMENTO'
+        ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : (l.dataRetirada ?? '');
+      const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
+      const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+
+      const valor    = Number(l.valorTotal);
+      const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
+      const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
+
+      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+    });
+  }
+
+  // KPIs: período + pagamento + valor + busca — SEM filtro de status
+  // (cada KPI já filtra pelo seu próprio status; assim totalAtrasadas não zera
+  //  quando o usuário filtra por status=ATIVA na tabela)
+  private get locacoesParaKPIs(): LocacaoResponse[] {
+    const termo = this.busca.toLowerCase();
+    return this.locacoes.filter(l => {
+      const matchBusca  = !this.busca ||
+        l.clienteNome.toLowerCase().includes(termo) ||
+        l.itens.some(i => i.produtoNome.toLowerCase().includes(termo));
+      const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
+
+      const dataRef = l.status === 'ORCAMENTO'
+        ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : (l.dataRetirada ?? '');
+      const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
+      const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+
+      const valor    = Number(l.valorTotal);
+      const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
+      const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
+
+      return matchBusca && matchPgto && matchInicio && matchFim && matchMin && matchMax;
     });
   }
 
@@ -412,6 +489,7 @@ export class LocacoesComponent implements OnInit {
   onLocacaoCriada(locacao: LocacaoResponse): void {
     this.locacoes = [locacao, ...this.locacoes];
     this.showModalCriar = false;
+    this.recalcularGraficos();
     this.messageService.add({
       severity: 'success',
       summary: 'Locação criada',
@@ -452,6 +530,7 @@ export class LocacoesComponent implements OnInit {
         this.salvandoEdicao = false;
         this.showModalEdicao = false;
         this.locacaoSelecionada = null;
+        this.recalcularGraficos();
         this.messageService.add({
           severity: 'success',
           summary: 'Atualizado',
@@ -500,6 +579,7 @@ export class LocacoesComponent implements OnInit {
       next: (atualizada) => {
         this.atualizarNaLista(atualizada);
         this.salvando = false;
+        this.recalcularGraficos();
         this.messageService.add({
           severity: 'success',
           summary: 'Devolvido',
@@ -516,12 +596,36 @@ export class LocacoesComponent implements OnInit {
     });
   }
 
+  onApagar(locacao: LocacaoResponse): void {
+    this.salvando = true;
+    this.service.deletar(locacao.id).subscribe({
+      next: () => {
+        this.locacoes = this.locacoes.filter(l => l.id !== locacao.id);
+        this.salvando = false;
+        this.recalcularGraficos();
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Apagado',
+          detail: `Locação de ${locacao.clienteNome} removida permanentemente`,
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível apagar a locação', life: 3000 });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   onCancelar(locacao: LocacaoResponse): void {
     this.salvando = true;
     this.service.patchCancelar(locacao.id).subscribe({
       next: (atualizada) => {
         this.atualizarNaLista(atualizada);
         this.salvando = false;
+        this.recalcularGraficos();
         this.messageService.add({
           severity: 'warn',
           summary: 'Cancelado',
@@ -587,7 +691,7 @@ export class LocacoesComponent implements OnInit {
 
   getStatusLabel(status: StatusLocacao): string {
     const labels: Record<StatusLocacao, string> = {
-      ATIVA: 'Ativa', DEVOLVIDA: 'Devolvida', ATRASADA: 'Atrasada', CANCELADA: 'Cancelada', ORCAMENTO: 'orcamento' ,
+      ATIVA: 'Ativa', DEVOLVIDA: 'Devolvida', ATRASADA: 'Atrasada', CANCELADA: 'Cancelada', ORCAMENTO: 'Orçamento' ,
     };
     return labels[status];
   }
