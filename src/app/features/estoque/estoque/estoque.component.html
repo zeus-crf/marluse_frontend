@@ -1,1 +1,240 @@
-<p>estoque works!</p>
+<p-toast />
+
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Estoque</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Gerenciamento de produtos e níveis de estoque</p>
+  </div>
+    <div class="flex items-center gap-2">
+      @if (temFiltroAtivo) {
+      <button (click)="onLimparFiltros()">Limpar filtros</button>
+    }
+  <button
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
+
+    
+  <button
+      (click)="abrirModalNovo()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Novo Produto
+    </button>
+    </div>
+</div>
+
+<!-- ── KPIs ────────────────────────────────────────────────────────── -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+  <!-- Valor em estoque -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Valor em estoque</span>
+      <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+        <i class="pi pi-box text-blue-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(valorTotalEstoque) }}</p>
+    <p class="text-xs text-gray-400 mt-1">{{ produtos.length }} produto(s) ativo(s)</p>
+  </div>
+
+  <!-- Estoque baixo -->
+  <div class="bg-white rounded-xl border border-amber-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Estoque baixo</span>
+      <span class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+        <i class="pi pi-exclamation-triangle text-amber-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-amber-600">{{ totalBaixo }}</p>
+    <p class="text-xs text-gray-400 mt-1">abaixo do mínimo</p>
+  </div>
+
+  <!-- Itens zerados -->
+  <div class="bg-white rounded-xl border border-red-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Itens zerados</span>
+      <span class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+        <i class="pi pi-times-circle text-red-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-red-600">{{ totalZerado }}</p>
+    <p class="text-xs text-gray-400 mt-1">sem estoque</p>
+  </div>
+
+  <!-- Valor crítico -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Valor crítico</span>
+      <span class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+        <i class="pi pi-chart-bar text-orange-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(valorCritico) }}</p>
+    <p class="text-xs text-gray-400 mt-1">em itens críticos</p>
+  </div>
+
+</div>
+
+<!-- ── GRÁFICOS + BUSCA ────────────────────────────────────────────── -->
+
+<!-- Linha de busca + tabs (sempre visível) -->
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 mb-4">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+
+    <!-- Busca + botão filtros -->
+    <div class="flex gap-2 flex-1">
+      <div class="relative flex-1">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none pb-2"></i>
+        <input
+          pInputText
+          [(ngModel)]="busca"
+          placeholder="Buscar produto..."
+          class="w-full text-sm" style="padding-left: 2.25rem"
+        />
+      </div>
+      <p-button
+        icon="pi pi-sliders-h"
+        [severity]="temFiltroAtivo ? 'info' : 'secondary'"
+        [outlined]="!temFiltroAtivo"
+        [pTooltip]="temFiltroAtivo ? 'Filtros (' + contadorFiltros + ')' : 'Filtros'"
+        tooltipPosition="top"
+        [badge]="temFiltroAtivo ? contadorFiltros.toString() : ''"
+        badgeSeverity="danger"
+        (onClick)="showModalFiltros = true"
+      />
+    </div>
+
+    <!-- Tabs de status -->
+    <div class="flex gap-1 flex-wrap">
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          (click)="tabAtiva = tab.value"
+          class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          [class.bg-gray-900]="tabAtiva === tab.value"
+          [class.text-white]="tabAtiva === tab.value"
+          [class.bg-gray-100]="tabAtiva !== tab.value"
+          [class.text-gray-600]="tabAtiva !== tab.value"
+        >
+          {{ tab.label }}
+          <span
+            class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full"
+            [class.bg-white]="tabAtiva === tab.value"
+            [class.text-gray-900]="tabAtiva === tab.value"
+            [class.bg-gray-200]="tabAtiva !== tab.value"
+            [class.text-gray-600]="tabAtiva !== tab.value"
+          >
+            {{ countPorTab[tab.value] }}
+          </span>
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <div class="flex items-center gap-3">
+    @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltro()"
+        class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+    <p class="text-xs text-gray-400">
+      Exibindo {{ produtosFiltrados.length }} de {{ produtos.length }} produto(s)
+    </p>
+  </div>
+
+</div>
+
+<!-- Gráficos (donut sempre, bar a partir de 5 produtos) -->
+<div class="mb-6" [class.grid]="mostrarBarChart" [class.grid-cols-1]="mostrarBarChart" [class.lg:grid-cols-[1fr_260px]]="mostrarBarChart" [class.gap-4]="mostrarBarChart">
+
+  <!-- Bar chart — top 10 por quantidade -->
+  @if (mostrarBarChart) {
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Quantidade por produto (top 10)</p>
+      <apx-chart
+        [series]="barSeries"
+        [chart]="barChart"
+        [xaxis]="barXAxis"
+        [yaxis]="barYAxis"
+        [grid]="barGrid"
+        [dataLabels]="barDataLabels"
+        [plotOptions]="barPlotOptions"
+        [legend]="barLegend"
+        [colors]="barColors"
+        [tooltip]="barTooltip"
+      />
+    </div>
+  }
+
+  <!-- Donut chart -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center justify-center">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Distribuição</p>
+    @if (produtos.length > 0) {
+      <apx-chart
+        [series]="donutSeries"
+        [chart]="donutChart"
+        [labels]="donutLabels"
+        [colors]="donutColors"
+        [legend]="donutLegend"
+        [dataLabels]="donutDataLabels"
+        [plotOptions]="donutPlotOptions"
+        [stroke]="donutStroke"
+        [tooltip]="donutTooltip"
+        [responsive]="donutResponsive"
+      />
+    } @else {
+      <div class="flex flex-col items-center justify-center h-36 text-gray-300 gap-2">
+        <i class="pi pi-box text-4xl"></i>
+        <span class="text-xs">Sem dados</span>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ── TABELA ───────────────────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+  <app-data-table
+    [columns]="colunasProdutos"
+    [rows]="produtosFiltrados"
+    [loading]="loading"
+    [actions]="acoesProdutos"
+    emptyMessage="Nenhum produto encontrado"
+    (editar)="abrirModalEditar($any($event))"
+    (excluir)="onInativar($any($event))"
+  />
+</div>
+
+<!-- ── MODAL FILTROS ────────────────────────────────────────────────── -->
+<app-estoque-filtros-modal
+  [visible]="showModalFiltros"
+  [filtroAtual]="filtro"
+  (fechar)="showModalFiltros = false"
+  (aplicar)="onAplicarFiltro($event)"
+  (limpar)="onLimparFiltro()"
+/>
+
+<!-- ── MODAL PRODUTO ─────────────────────────────────────────────────── -->
+<app-novo-produto-modal
+  [visible]="showModal"
+  [produto]="produtoEdit"
+  [salvando]="salvando"
+  (fechar)="fecharModal()"
+  (salvar)="onSalvar($any($event))"
+/>
