@@ -1,1 +1,204 @@
-<p>clientes works!</p>
+<p-toast />
+
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Gerenciamento de clientes cadastrados</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <button
+      (click)="abrirModalNovo()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Novo cliente
+    </button>
+  </div>
+</div>
+
+<!-- ── KPIs ─────────────────────────────────────────────────────────── -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+  <!-- Total de clientes -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total de clientes</span>
+      <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+        <i class="pi pi-users text-blue-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-gray-900">{{ clientes.length }}</p>
+    <p class="text-xs text-gray-400 mt-1">{{ totalAtivos }} ativo(s)</p>
+  </div>
+
+  <!-- Pessoa Física -->
+  <div class="bg-white rounded-xl border border-green-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Pessoa Física</span>
+      <span class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+        <i class="pi pi-user text-green-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-green-600">{{ totalPF }}</p>
+    <p class="text-xs text-gray-400 mt-1">consumidores finais</p>
+  </div>
+
+  <!-- Pessoa Jurídica -->
+  <div class="bg-white rounded-xl border border-violet-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Pessoa Jurídica</span>
+      <span class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+        <i class="pi pi-building text-violet-500 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-violet-600">{{ totalPJ }}</p>
+    <p class="text-xs text-gray-400 mt-1">empresas cadastradas</p>
+  </div>
+
+  <!-- Inativos -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Inativos</span>
+      <span class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center">
+        <i class="pi pi-user-minus text-slate-400 text-sm"></i>
+      </span>
+    </div>
+    <p class="text-2xl font-bold text-gray-400">{{ clientes.length - totalAtivos }}</p>
+    <p class="text-xs text-gray-400 mt-1">fora do sistema</p>
+  </div>
+
+</div>
+
+<!-- ── BARRA DE BUSCA + TABS ─────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 mb-4">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+
+    <!-- Busca + botão filtros -->
+    <div class="flex gap-2 flex-1">
+      <div class="relative flex-1">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none pb-2"></i>
+        <input
+          pInputText
+          [(ngModel)]="busca"
+          placeholder="Buscar por nome ou CPF/CNPJ..."
+          class="w-full text-sm"
+          style="padding-left: 2.25rem"
+        />
+      </div>
+      <p-button
+        icon="pi pi-sliders-h"
+        [severity]="temFiltroAtivo ? 'info' : 'secondary'"
+        [outlined]="!temFiltroAtivo"
+        [pTooltip]="temFiltroAtivo ? 'Filtros (' + contadorFiltros + ')' : 'Filtros'"
+        tooltipPosition="top"
+        [badge]="temFiltroAtivo ? contadorFiltros.toString() : ''"
+        badgeSeverity="danger"
+        (onClick)="showModalFiltros = true"
+      />
+    </div>
+
+    <!-- Tabs PF / PJ / Todos -->
+    <div class="flex gap-1 flex-wrap">
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          (click)="tabAtiva = tab.value"
+          class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+          [class.bg-gray-900]="tabAtiva === tab.value"
+          [class.text-white]="tabAtiva === tab.value"
+          [class.bg-gray-100]="tabAtiva !== tab.value"
+          [class.text-gray-600]="tabAtiva !== tab.value"
+        >
+          {{ tab.label }}
+          <span
+            class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full"
+            [class.bg-white]="tabAtiva === tab.value"
+            [class.text-gray-900]="tabAtiva === tab.value"
+            [class.bg-gray-200]="tabAtiva !== tab.value"
+            [class.text-gray-600]="tabAtiva !== tab.value"
+          >
+            {{ countPorTab[tab.value] }}
+          </span>
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <div class="flex items-center gap-3">
+    @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltros()"
+        class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+    <p class="text-xs text-gray-400">
+      Exibindo {{ clientesFiltrados.length }} de {{ clientes.length }} cliente(s)
+    </p>
+  </div>
+
+</div>
+
+<!-- ── GRÁFICOS ──────────────────────────────────────────────────────── -->
+<div class="mb-6" [class.grid]="mostrarBarChart" [class.grid-cols-1]="mostrarBarChart" [class.lg:grid-cols-[1fr_260px]]="mostrarBarChart" [class.gap-4]="mostrarBarChart">
+
+  <!-- Bar chart — top clientes por gasto -->
+  @if (mostrarBarChart) {
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Clientes que mais gastaram</p>
+      <apx-chart
+        [series]="barSeries"
+        [chart]="barChart"
+        [xaxis]="barXAxis"
+        [yaxis]="barYAxis"
+        [grid]="barGrid"
+        [dataLabels]="barDataLabels"
+        [plotOptions]="barPlotOptions"
+        [legend]="barLegend"
+        [colors]="barColors"
+        [tooltip]="barTooltip"
+      />
+    </div>
+  }
+
+  <!-- Donut PF vs PJ -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center justify-center">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">PF vs PJ</p>
+    @if (clientes.length > 0) {
+      <apx-chart
+        [series]="donutSeries"
+        [chart]="donutChart"
+        [labels]="donutLabels"
+        [colors]="donutColors"
+        [legend]="donutLegend"
+        [dataLabels]="donutDataLabels"
+        [plotOptions]="donutPlotOptions"
+        [stroke]="donutStroke"
+        [tooltip]="donutTooltip"
+        [responsive]="donutResponsive"
+      />
+    } @else {
+      <div class="flex flex-col items-center justify-center h-36 text-gray-300 gap-2">
+        <i class="pi pi-users text-4xl"></i>
+        <span class="text-xs">Sem dados</span>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ── TABELA ─────────────────────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+  <app-data-table
+    [columns]="colunasClientes"
+    [rows]="clientesFiltrados"
+    [loading]="loading"
+    [actions]="acoesClientes"
+    emptyMessage="Nenhum cliente encontrado"
+    (editar)="abrirModalEditar($any($event))"
+    (excluir)="onInativar($any($event))"
+  />
+</div>
