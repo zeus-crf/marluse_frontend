@@ -211,9 +211,9 @@
       [loading]="loading"
       [actions]="acoesPedidos"
       emptyMessage="Nenhuma venda encontrada"
-      (verDetalhe)="abrirDetalhe($event)"
-      (editar)="abrirEdicao($event)"
-      (excluir)="onExcluirPedido($event)"
+      (verDetalhe)="abrirDetalhe($any($event))"
+      (editar)="abrirEdicao($any($event))"
+      (excluir)="onExcluirPedido($any($event))"
     />
   </div>
 
