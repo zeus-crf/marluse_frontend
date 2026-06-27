@@ -230,7 +230,7 @@ export class VendasComponent implements OnInit {
   // ── KPIs (calculados a partir da lista) ────────────────────
   get vendasMes(): number {
     return this.pedidosFiltrados
-      .filter(p => p.status === 'PAGO' || p.status === 'CONFIRMADO')
+      .filter(p => p.status === 'PAGO')
       .reduce((acc, p) => acc + Number(p.valorTotal), 0);
   }
 
@@ -293,7 +293,7 @@ export class VendasComponent implements OnInit {
   get barHSeries(): any[] {
     const mapa = new Map<string, number>();
     for (const p of this.pedidosFiltrados) {
-      if (p.status === 'CANCELADO' || p.status === 'ORCAMENTO') continue;
+      if (p.status !== 'PAGO') continue;
       mapa.set(p.clienteNome, (mapa.get(p.clienteNome) ?? 0) + Number(p.valorTotal));
     }
     const top6 = Array.from(mapa.entries())
