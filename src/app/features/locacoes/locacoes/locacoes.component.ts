@@ -86,7 +86,14 @@ export class LocacoesComponent implements OnInit {
 
   // ── Configuração DataTable ─────────────────────────────────
   readonly colunasLocacoes: TableColumn[] = [
-    { field: 'clienteNome',          header: 'Cliente',    width: '18%', type: 'text' },
+    {
+      field: 'numero',
+      header: 'N°',
+      width: '7%',
+      type: 'mono',
+      valueFn: (l: LocacaoResponse) => '#' + String(l.numero ?? 0).padStart(3, '0'),
+    },
+    { field: 'clienteNome',          header: 'Cliente',    width: '16%', type: 'text' },
     {
       field: '__equipamentos',
       header: 'Equipamentos',
@@ -387,9 +394,11 @@ export class LocacoesComponent implements OnInit {
   get locacoesFiltradas(): LocacaoResponse[] {
     return this.locacoes.filter(l => {
       const termo      = this.busca.toLowerCase();
+      const numeroStr = String(l.numero ?? 0).padStart(3, '0');
       const matchBusca = !this.busca ||
         l.clienteNome.toLowerCase().includes(termo) ||
-        l.itens.some(i => i.produtoNome.toLowerCase().includes(termo));
+        l.itens.some(i => i.produtoNome.toLowerCase().includes(termo)) ||
+        numeroStr.includes(this.busca.replace('#', '').trim());
 
       const matchStatus = this.filtro.status === 'TODOS' || l.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;

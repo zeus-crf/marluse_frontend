@@ -31,6 +31,9 @@ export class DataTableComponent {
   /** Mensagem exibida quando não há dados */
   @Input() emptyMessage = 'Nenhum registro encontrado';
 
+  /** Número de linhas por página */
+  @Input() pageSize = 10;
+
   /** Configuração dos botões de ação */
   @Input() actions: TableActionConfig = {
     showView:   true,

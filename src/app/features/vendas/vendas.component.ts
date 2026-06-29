@@ -116,11 +116,11 @@ export class VendasComponent implements OnInit {
   // ── Configuração DataTable ─────────────────────────────────
   readonly colunasPedidos: TableColumn[] = [
     {
-      field: '__numero',
+      field: 'numero',
       header: 'N°',
       width: '8%',
       type: 'mono',
-      valueFn: (_, i) => 'V' + String((i ?? 0) + 1).padStart(3, '0'),
+      valueFn: (p: PedidoResponse) => '#' + String(p.numero ?? 0).padStart(3, '0'),
     },
     { field: 'createdAt',   header: 'Data',     width: '12%', type: 'date' },
     { field: 'clienteNome', header: 'Cliente',   width: '20%', type: 'text' },
@@ -254,10 +254,12 @@ export class VendasComponent implements OnInit {
   get pedidosFiltrados(): PedidoResponse[] {
     return this.pedidos.filter((p) => {
       const termo = this.normalizar(this.busca);
+      const numeroStr = String(p.numero ?? 0).padStart(3, '0');
       const matchBusca =
         !this.busca ||
         this.normalizar(p.clienteNome).includes(termo) ||
-        p.itens.some((i) => this.normalizar(i.produtoNome).includes(termo));
+        p.itens.some((i) => this.normalizar(i.produtoNome).includes(termo)) ||
+        numeroStr.includes(this.busca.replace('#', '').trim());
 
       const matchStatus = this.filtro.status === 'TODOS' || p.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || p.formaPagamento === this.filtro.formaPagamento;

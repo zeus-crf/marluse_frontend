@@ -6,6 +6,12 @@
   dataKey="id"
   [tableStyle]="{ 'min-width': '60rem' }"
   styleClass="p-datatable-sm"
+  [paginator]="true"
+  [rows]="pageSize"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="{first}–{last} de {totalRecords}"
+  paginatorLocale="pt-BR"
 >
 
   <!-- Cabeçalho -->

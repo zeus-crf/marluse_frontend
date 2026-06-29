@@ -17,11 +17,12 @@
   } @else {
     <div class="flex flex-col">
 
-      <!-- ── Cabeçalho interno: cliente + status ────────────── -->
+      <!-- ── Cabeçalho interno: cliente + número + status ─────── -->
       <div class="flex items-start justify-between px-6 py-4 bg-slate-50 border-b border-slate-100">
         <div>
           <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-0.5">Cliente</p>
           <p class="text-[17px] font-bold text-gray-900 leading-snug">{{ locacao.clienteNome }}</p>
+          <p class="text-[12px] font-semibold text-blue-500 font-mono mt-0.5">Locação #{{ formatNumero(locacao.numero) }}</p>
         </div>
         <p-tag
           [value]="getStatusLabel(locacao.status)"
