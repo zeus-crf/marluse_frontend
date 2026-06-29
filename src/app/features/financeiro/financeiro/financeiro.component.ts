@@ -6,8 +6,15 @@ import { ToastModule } from 'primeng/toast';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 import { FinanceiroService } from './financeiro.service';
+import { ClientesService } from '../../clientes/clientes/clientes.service';
+import { ClienteSimples } from '../../vendas/models/vendas.models';
+import { NovoLancamentoModalComponent } from '../components/novo-lancamento-modal/novo-lancamento-modal.component';
+import { LancamentoDetalheModalComponent } from '../components/lancamento-detalhe-modal/lancamento-detalhe-modal.component';
+import { LancamentoEdicaoModalComponent } from '../components/lancamento-edicao-modal/lancamento-edicao-modal.component';
+import { FinanceiroFiltrosModalComponent } from '../components/financeiro-filtros-modal/financeiro-filtros-modal.component';
 import {
   LancamentoFinanceiroResponse,
+  LancamentoFinanceiroRequest,
   LancamentoAtualizarRequest,
   ResumoMesResponse,
   TabFiltroFinanceiro,
@@ -28,19 +35,24 @@ import { TableColumn, TableActionConfig } from '../../../shared/components/data-
     ToastModule,
     NgApexchartsModule,
     DataTableComponent,
-    // modais serão adicionados aqui
+    NovoLancamentoModalComponent,
+    LancamentoDetalheModalComponent,
+    LancamentoEdicaoModalComponent,
+    FinanceiroFiltrosModalComponent,
   ],
   templateUrl: './financeiro.component.html',
   styleUrl: './financeiro.component.scss',
   providers: [MessageService],
 })
 export class FinanceiroComponent implements OnInit {
-  private service      = inject(FinanceiroService);
-  private cdr          = inject(ChangeDetectorRef);
-  private messageService = inject(MessageService);
+  private service        = inject(FinanceiroService);
+  private clientesService = inject(ClientesService);
+  private cdr             = inject(ChangeDetectorRef);
+  private messageService  = inject(MessageService);
 
   // ── Dados ──────────────────────────────────────────────────
   lancamentos: LancamentoFinanceiroResponse[] = [];
+  clientes:    ClienteSimples[] = [];
 
   // ── Loading ────────────────────────────────────────────────
   loading  = true;
@@ -65,14 +77,14 @@ export class FinanceiroComponent implements OnInit {
     { label: '12M', value: '12M' },
   ];
 
-  areaChart:       any = { type: 'area', height: 200, toolbar: { show: false }, fontFamily: 'inherit' };
-  areaStroke:      any = { curve: 'smooth', width: 2 };
-  areaColors           = ['#22c55e', '#ef4444'];
-  areaFill:        any = { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02 } };
-  areaDataLabels:  any = { enabled: false };
-  areaGrid:        any = { borderColor: '#f1f5f9', strokeDashArray: 4 };
-  areaTooltip:     any = { y: { formatter: (v: number) => this.formatCurrency(v) } };
-  areaYaxis:       any = {
+  areaChart:      any = { type: 'area', height: 200, toolbar: { show: false }, fontFamily: 'inherit' };
+  areaStroke:     any = { curve: 'smooth', width: 2 };
+  areaColors          = ['#22c55e', '#ef4444'];
+  areaFill:       any = { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02 } };
+  areaDataLabels: any = { enabled: false };
+  areaGrid:       any = { borderColor: '#f1f5f9', strokeDashArray: 4 };
+  areaTooltip:    any = { y: { formatter: (v: number) => this.formatCurrency(v) } };
+  areaYaxis:      any = {
     labels: {
       style: { colors: '#94a3b8', fontSize: '11px' },
       formatter: (v: number) => {
@@ -83,23 +95,18 @@ export class FinanceiroComponent implements OnInit {
     },
   };
 
-  get areaXaxis(): any {
-    return { categories: this.chartMeses, labels: { style: { colors: '#94a3b8', fontSize: '11px' } } };
+  // Campos simples — só atualizam quando chamamos atualizarGrafico()
+  areaSeries: any[] = [];
+  areaXaxis:  any   = {};
+
+  setPeriodoGrafico(p: PeriodoGrafico): void {
+    this.periodoGrafico = p;
+    this.atualizarGrafico();
   }
 
-  get areaSeries(): any[] {
-    const { receitas, despesas } = this.calcularFluxo();
-    return [
-      { name: 'Receita', data: receitas },
-      { name: 'Despesa', data: despesas },
-    ];
-  }
-
-  private chartMeses: string[] = [];
-
-  private calcularFluxo(): { receitas: number[]; despesas: number[] } {
-    const meses = Number(this.periodoGrafico.replace('M', ''));
-    const hoje  = new Date();
+  atualizarGrafico(): void {
+    const meses    = Number(this.periodoGrafico.replace('M', ''));
+    const hoje     = new Date();
     const mesesArr: string[] = [];
     const labels:   string[] = [];
 
@@ -108,8 +115,6 @@ export class FinanceiroComponent implements OnInit {
       mesesArr.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       labels.push(d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
     }
-
-    this.chartMeses = labels;
 
     const receitas = mesesArr.map(m =>
       this.lancamentos
@@ -122,7 +127,14 @@ export class FinanceiroComponent implements OnInit {
         .reduce((acc, l) => acc + Number(l.valor), 0)
     );
 
-    return { receitas, despesas };
+    this.areaSeries = [
+      { name: 'Receita', data: receitas },
+      { name: 'Despesa', data: despesas },
+    ];
+    this.areaXaxis = {
+      categories: labels,
+      labels: { style: { colors: '#94a3b8', fontSize: '11px' } },
+    };
   }
 
   // ── Configuração da tabela ──────────────────────────────────
@@ -186,6 +198,7 @@ export class FinanceiroComponent implements OnInit {
   // ── Lifecycle ──────────────────────────────────────────────
   ngOnInit(): void {
     this.carregar();
+    this.carregarClientes();
   }
 
   carregar(): void {
@@ -194,10 +207,20 @@ export class FinanceiroComponent implements OnInit {
       next: (data) => {
         this.lancamentos = data;
         this.loading = false;
+        this.atualizarGrafico();
         this.cdr.detectChanges();
       },
       error: () => {
         this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private carregarClientes(): void {
+    this.clientesService.getClientes().subscribe({
+      next: (data) => {
+        this.clientes = data.map(c => ({ id: c.id, nome: c.nome }));
         this.cdr.detectChanges();
       },
     });
@@ -292,11 +315,22 @@ export class FinanceiroComponent implements OnInit {
     this.showModalCriar = false;
   }
 
-  onLancamentoCriado(lancamento: LancamentoFinanceiroResponse): void {
-    this.lancamentos = [lancamento, ...this.lancamentos];
-    this.showModalCriar = false;
-    this.toast('success', 'Lançamento criado', lancamento.descricao);
-    this.cdr.detectChanges();
+  onLancamentoCriado(request: LancamentoFinanceiroRequest): void {
+    this.salvando = true;
+    this.service.criar(request).subscribe({
+      next: (criado) => {
+        this.lancamentos = [criado, ...this.lancamentos];
+        this.salvando = false;
+        this.showModalCriar = false;
+        this.toast('success', 'Lançamento criado', criado.descricao);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.toast('error', 'Erro', 'Não foi possível criar o lançamento');
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // ── Modal Detalhe ──────────────────────────────────────────
@@ -308,6 +342,11 @@ export class FinanceiroComponent implements OnInit {
   fecharDetalhe(): void {
     this.showModalDetalhe = false;
     this.lancamentoSelecionado = null;
+  }
+
+  onEditarDoDetalhe(lancamento: LancamentoFinanceiroResponse): void {
+    this.fecharDetalhe();
+    this.abrirEdicao(lancamento);
   }
 
   // ── Pagar ──────────────────────────────────────────────────

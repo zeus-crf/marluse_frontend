@@ -80,7 +80,7 @@
     <div class="flex gap-1">
       @for (p of periodos; track p.value) {
         <button
-          (click)="periodoGrafico = p.value"
+          (click)="setPeriodoGrafico(p.value)"
           class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors"
           [ngClass]="periodoGrafico === p.value
             ? 'bg-blue-600 text-white'
@@ -193,33 +193,37 @@
 
 </div>
 
-<!-- ── Modais (descomentar conforme forem criados) ──────────── -->
-<!-- <app-novo-lancamento-modal
+<!-- ── Modais ────────────────────────────────────────────────── -->
+<app-novo-lancamento-modal
   [visible]="showModalCriar"
+  [salvando]="salvando"
+  [clientes]="clientes"
   (fechar)="fecharModalCriar()"
   (lancamentoCriado)="onLancamentoCriado($event)"
-/> -->
+/>
 
-<!-- <app-lancamento-detalhe-modal
+<app-lancamento-detalhe-modal
   [visible]="showModalDetalhe"
   [lancamento]="lancamentoSelecionado"
   [salvando]="salvando"
   (fechar)="fecharDetalhe()"
   (pagar)="onPagar($event)"
-/> -->
+  (editar)="onEditarDoDetalhe($event)"
+/>
 
-<!-- <app-lancamento-edicao-modal
+<app-lancamento-edicao-modal
   [visible]="showModalEdicao"
   [lancamento]="lancamentoSelecionado"
   [salvando]="salvando"
   (fechar)="fecharEdicao()"
   (salvar)="onSalvarEdicao($event)"
-/> -->
+/>
 
-<!-- <app-financeiro-filtros-modal
+<app-financeiro-filtros-modal
   [visible]="showModalFiltros"
+  [lancamentos]="lancamentos"
   [filtroAtual]="filtro"
   (fechar)="fecharModalFiltros()"
   (aplicar)="onAplicarFiltros($event)"
   (limpar)="limparFiltros()"
-/> -->
+/>
