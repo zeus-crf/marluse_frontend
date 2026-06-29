@@ -1,1 +1,225 @@
-<p>financeiro works!</p>
+<p-toast position="top-right" />
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Financeiro</h1>
+    <p class="text-sm text-gray-400 mt-0.5">Lançamentos, receitas e despesas</p>
+  </div>
+
+  <div class="flex items-center gap-2">
+    @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="limparFiltros()"
+        class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+
+    <button
+      (click)="abrirModalFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
+
+    <button
+      (click)="abrirModalCriar()"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Novo Lançamento
+    </button>
+  </div>
+</div>
+
+<!-- ── KPI Cards ───────────────────────────────────────────── -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Receitas do mês</p>
+    <p class="text-3xl font-bold text-green-600">{{ formatCurrency(resumoMes.receitasMes) }}</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Despesas do mês</p>
+    <p class="text-3xl font-bold text-red-500">{{ formatCurrency(resumoMes.despesasMes) }}</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Saldo do período</p>
+    <p class="text-3xl font-bold"
+       [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'text-blue-600' : 'text-red-500'">
+      {{ formatCurrency(resumoMes.saldoPeriodo) }}
+    </p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vencidos</p>
+    <p class="text-3xl font-bold text-orange-500">{{ formatCurrency(resumoMes.totalVencidos) }}</p>
+    <p class="text-xs text-gray-400 mt-1">{{ resumoMes.qtdVencidos }} lançamento(s)</p>
+  </div>
+
+</div>
+
+<!-- ── Gráfico Fluxo de Caixa ──────────────────────────────── -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <p class="text-sm font-semibold text-gray-800">Fluxo de caixa</p>
+      <p class="text-xs text-gray-400">Receitas e despesas pagas por mês</p>
+    </div>
+    <div class="flex gap-1">
+      @for (p of periodos; track p.value) {
+        <button
+          (click)="periodoGrafico = p.value"
+          class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors"
+          [ngClass]="periodoGrafico === p.value
+            ? 'bg-blue-600 text-white'
+            : 'text-gray-500 hover:bg-slate-100'">
+          {{ p.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (lancamentos.length > 0) {
+    <apx-chart
+      [series]="areaSeries"
+      [chart]="areaChart"
+      [stroke]="areaStroke"
+      [colors]="areaColors"
+      [fill]="areaFill"
+      [dataLabels]="areaDataLabels"
+      [grid]="areaGrid"
+      [xaxis]="areaXaxis"
+      [yaxis]="areaYaxis"
+      [tooltip]="areaTooltip"
+    />
+  } @else {
+    <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+      <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">area_chart</span>
+      Sem dados para exibir
+    </div>
+  }
+
+  <!-- Legenda -->
+  <div class="flex gap-6 mt-2 justify-end">
+    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+      <span class="w-3 h-0.5 bg-green-500 inline-block rounded"></span>Receita
+    </span>
+    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+      <span class="w-3 h-0.5 bg-red-500 inline-block rounded"></span>Despesa
+    </span>
+  </div>
+
+</div>
+
+<!-- ── Tabela ───────────────────────────────────────────────── -->
+<div class="bg-white rounded-xl border border-slate-200">
+
+  <!-- Toolbar -->
+  <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
+
+    <!-- Tabs Tipo -->
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+      @for (tab of [
+        { label: 'Todos',   value: 'TODOS'   },
+        { label: 'Receita', value: 'RECEITA' },
+        { label: 'Despesa', value: 'DESPESA' }
+      ]; track tab.value) {
+        <button
+          (click)="setTab($any(tab.value))"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+          [ngClass]="filtro.tab === tab.value
+            ? 'bg-white text-gray-800 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Busca -->
+    <div class="flex-1 min-w-[220px] relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
+        search
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="filtro.busca"
+        placeholder="Buscar por descrição, categoria ou cliente..."
+        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+      />
+    </div>
+
+    <!-- Status -->
+    <select
+      [(ngModel)]="filtro.status"
+      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
+      <option value="TODOS">Todos os status</option>
+      <option value="PENDENTE">Pendente</option>
+      <option value="PAGO">Pago</option>
+      <option value="VENCIDO">Vencido</option>
+      <option value="CANCELADO">Cancelado</option>
+    </select>
+
+    <!-- Contador -->
+    <span class="ml-auto text-xs text-gray-400">
+      {{ lancamentosFiltrados.length }} registro(s)
+    </span>
+  </div>
+
+  <!-- DataTable -->
+  <div class="p-1">
+    <app-data-table
+      [columns]="colunas"
+      [rows]="lancamentosFiltrados"
+      [loading]="loading"
+      [actions]="acoes"
+      emptyMessage="Nenhum lançamento encontrado"
+      (verDetalhe)="abrirDetalhe($any($event))"
+      (editar)="abrirEdicao($any($event))"
+      (excluir)="onExcluir($any($event))"
+    />
+  </div>
+
+</div>
+
+<!-- ── Modais (descomentar conforme forem criados) ──────────── -->
+<!-- <app-novo-lancamento-modal
+  [visible]="showModalCriar"
+  (fechar)="fecharModalCriar()"
+  (lancamentoCriado)="onLancamentoCriado($event)"
+/> -->
+
+<!-- <app-lancamento-detalhe-modal
+  [visible]="showModalDetalhe"
+  [lancamento]="lancamentoSelecionado"
+  [salvando]="salvando"
+  (fechar)="fecharDetalhe()"
+  (pagar)="onPagar($event)"
+/> -->
+
+<!-- <app-lancamento-edicao-modal
+  [visible]="showModalEdicao"
+  [lancamento]="lancamentoSelecionado"
+  [salvando]="salvando"
+  (fechar)="fecharEdicao()"
+  (salvar)="onSalvarEdicao($event)"
+/> -->
+
+<!-- <app-financeiro-filtros-modal
+  [visible]="showModalFiltros"
+  [filtroAtual]="filtro"
+  (fechar)="fecharModalFiltros()"
+  (aplicar)="onAplicarFiltros($event)"
+  (limpar)="limparFiltros()"
+/> -->
