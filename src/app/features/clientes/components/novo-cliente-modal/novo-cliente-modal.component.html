@@ -1,0 +1,125 @@
+<p-dialog
+  [header]="titulo"
+  [visible]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '520px' }"
+  (onHide)="onFechar()">
+
+  <div class="flex flex-col gap-4 py-2">
+
+    <!-- Nome -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm font-medium text-gray-700">
+        Nome <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="nome"
+        placeholder="Nome completo ou razão social"
+        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+      />
+    </div>
+
+    <!-- Tipo de pessoa (só na criação) -->
+    @if (!modoEdicao) {
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-gray-700">Tipo de pessoa</label>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            (click)="consumidorFinal = true"
+            class="flex-1 py-2 text-sm font-medium rounded-lg border transition-colors"
+            [ngClass]="consumidorFinal
+              ? 'border-green-400 bg-green-50 text-green-700'
+              : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+            <i class="pi pi-user mr-1.5"></i>
+            Pessoa Física (PF)
+          </button>
+          <button
+            type="button"
+            (click)="consumidorFinal = false"
+            class="flex-1 py-2 text-sm font-medium rounded-lg border transition-colors"
+            [ngClass]="!consumidorFinal
+              ? 'border-violet-400 bg-violet-50 text-violet-700'
+              : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+            <i class="pi pi-building mr-1.5"></i>
+            Pessoa Jurídica (PJ)
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- CPF / CNPJ -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm font-medium text-gray-700">
+        {{ consumidorFinal ? 'CPF' : 'CNPJ' }}
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="cpfCnpj"
+        [placeholder]="consumidorFinal ? '000.000.000-00' : '00.000.000/0000-00'"
+        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+      />
+    </div>
+
+    <!-- Telefone + E-mail -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-gray-700">Telefone</label>
+        <input
+          type="text"
+          [(ngModel)]="telefone"
+          placeholder="(00) 00000-0000"
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+        />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-gray-700">E-mail</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          placeholder="email@exemplo.com"
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+        />
+      </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm font-medium text-gray-700">Endereço</label>
+      <input
+        type="text"
+        [(ngModel)]="endereco"
+        placeholder="Rua, número, bairro, cidade"
+        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+      />
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 pt-2">
+      <button
+        type="button"
+        (click)="onFechar()"
+        [disabled]="salvando"
+        class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="onSalvar()"
+        [disabled]="salvando || !nome.trim()"
+        class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+        @if (salvando) {
+          <i class="pi pi-spin pi-spinner text-xs"></i>
+        }
+        {{ modoEdicao ? 'Salvar alterações' : 'Cadastrar cliente' }}
+      </button>
+    </div>
+  </ng-template>
+
+</p-dialog>

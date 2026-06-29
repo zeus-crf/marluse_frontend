@@ -29,22 +29,21 @@ export class PedidoDetalheModalComponent {
         return !!this.pedido && this.pedido.status !== 'CANCELADO';
   }
 
-    getSeverity(status: StatusPedido): 'success' | 'warn' | 'danger' | 'secondary' {
+  getSeverity(status: StatusPedido): 'success' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case 'PAGO':       return 'success';
-      case 'CONFIRMADO':
-      case 'PENDENTE':   return 'warn';
+      case 'CONFIRMADO': return 'warn';
+      case 'PENDENTE':   return 'danger';
       case 'CANCELADO':  return 'danger';
       case 'ORCAMENTO':  return 'secondary';
     }
   }
 
-
   getStatusLabel(status: StatusPedido): string {
     const labels: Record<StatusPedido, string> = {
       ORCAMENTO:  'Orçamento',
-      PENDENTE:   'Pendente',
       CONFIRMADO: 'Confirmado',
+      PENDENTE:   'Vencido',
       PAGO:       'Pago',
       CANCELADO:  'Cancelado',
     };

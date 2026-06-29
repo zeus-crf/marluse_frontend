@@ -33,6 +33,9 @@ import {
   ClienteFiltroCompleto,
   FILTRO_CLIENTE_PADRAO,
 } from '../models/clientes.models';
+import { NovoClienteModalComponent } from "../components/novo-cliente-modal/novo-cliente-modal.component";
+import { ClienteDetalheModalComponent } from '../components/cliente-detalhe-modal/cliente-detalhe-modal.component';
+import { ClientesFiltrosModalComponent } from '../components/clientes-filtros-modal/clientes-filtros-modal.component';
 
 @Component({
   selector: 'app-clientes',
@@ -46,6 +49,9 @@ import {
     InputTextModule,
     NgApexchartsModule,
     DataTableComponent,
+    NovoClienteModalComponent,
+    ClienteDetalheModalComponent,
+    ClientesFiltrosModalComponent,
   ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss',
@@ -69,7 +75,9 @@ export class ClientesComponent implements OnInit {
   showModalFiltros = false;
 
   showModal    = false;
+  showModalDetalhe = false;
   clienteEdit: ClienteResponse | null = null;
+  clienteSelecionado: ClienteResponse | null = null;
 
   // ── Tabs ──────────────────────────────────────────────────
   readonly tabs: { label: string; value: TabFiltroCliente }[] = [
@@ -257,13 +265,25 @@ export class ClientesComponent implements OnInit {
   }
 
   abrirModalEditar(cliente: ClienteResponse): void {
-    this.clienteEdit = cliente;
-    this.showModal   = true;
+    this.showModalDetalhe = false;
+    this.clienteEdit      = cliente;
+    this.showModal        = true;
   }
 
   fecharModal(): void {
     this.showModal   = false;
     this.clienteEdit = null;
+  }
+
+  // ── Modal Detalhe ─────────────────────────────────────────
+  abrirDetalhe(cliente: ClienteResponse): void {
+    this.clienteSelecionado  = cliente;
+    this.showModalDetalhe    = true;
+  }
+
+  fecharDetalhe(): void {
+    this.showModalDetalhe   = false;
+    this.clienteSelecionado = null;
   }
 
   onSalvar(payload: ClienteRequest | ClienteAtualizarRequest): void {

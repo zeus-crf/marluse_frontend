@@ -6,7 +6,17 @@
     <h1 class="text-2xl font-bold text-gray-900">Vendas</h1>
     <p class="text-sm text-gray-400 mt-0.5">Histórico e gestão de vendas</p>
   </div>
+
   <div class="flex items-center gap-2">
+    @if (temFiltroAtivo) {
+    <button
+      type="button"
+      (click)="onLimparFiltros()"
+      class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+      <i class="pi pi-times text-[10px]"></i>
+      Limpar filtros
+    </button>
+  }
     <button
       (click)="abrirModalFiltros()"
       class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
@@ -194,6 +204,14 @@
       <option value="CONFIRMADO">Confirmado</option>
       <option value="PAGO">Pago</option>
       <option value="CANCELADO">Cancelado</option>
+    </select>
+
+    <!-- Ordenação -->
+    <select
+      [(ngModel)]="ordenacao"
+      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
+      <option value="recente">Mais recentes</option>
+      <option value="antigo">Mais antigos</option>
     </select>
 
     <!-- Contador -->

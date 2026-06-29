@@ -1,0 +1,97 @@
+<p-dialog
+  header="Filtros avançados"
+  [visible]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '440px' }"
+  (onHide)="fechar.emit()">
+
+  <div class="flex flex-col gap-5 py-2">
+
+    <!-- Tipo de cliente -->
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-gray-700">Tipo de cliente</label>
+      <div class="flex gap-2">
+        @for (opt of [
+          { valor: 'TODOS', label: 'Todos' },
+          { valor: 'PF',    label: 'Pessoa Física' },
+          { valor: 'PJ',    label: 'Pessoa Jurídica' }
+        ]; track opt.valor) {
+          <button
+            type="button"
+            (click)="tipoCliente = $any(opt.valor)"
+            class="flex-1 py-2 text-xs font-medium rounded-lg border transition-colors"
+            [ngClass]="tipoCliente === opt.valor
+              ? 'border-blue-400 bg-blue-50 text-blue-700'
+              : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Total gasto (min / max) -->
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-gray-700">Total gasto (R$)</label>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <span class="text-xs text-gray-400">Mínimo</span>
+          <input
+            type="number"
+            [(ngModel)]="minCompras"
+            placeholder="0,00"
+            min="0"
+            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs text-gray-400">Máximo</span>
+          <input
+            type="number"
+            [(ngModel)]="maxCompras"
+            placeholder="Sem limite"
+            min="0"
+            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2.5">
+      <i class="pi pi-users text-gray-400 text-sm"></i>
+      <span class="text-sm text-gray-600">
+        <strong class="text-gray-900">{{ totalFiltrado }}</strong> cliente(s) com esses filtros
+      </span>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between pt-2">
+      <button
+        type="button"
+        (click)="onLimpar()"
+        class="px-4 py-2 text-sm font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+        Limpar filtros
+      </button>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="fechar.emit()"
+          class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="onAplicar()"
+          class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+          Aplicar
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+</p-dialog>

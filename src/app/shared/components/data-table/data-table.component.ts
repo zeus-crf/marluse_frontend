@@ -112,8 +112,14 @@ export class DataTableComponent {
 
   formatDate(iso: string | Date): string {
     if (!iso) return '—';
-    // Força parse como horário local (evita shift de fuso UTC-3)
-    const d = typeof iso === 'string' ? new Date(iso + 'T00:00:00') : iso;
+    let d: Date;
+    if (typeof iso === 'string') {
+      // Se já tem hora (contém 'T'), usa direto; senão força meia-noite local
+      d = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
+    } else {
+      d = iso;
+    }
+    if (isNaN(d.getTime())) return '—';
     return d.toLocaleDateString('pt-BR');
   }
 }

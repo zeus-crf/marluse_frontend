@@ -64,6 +64,7 @@ export class VendasComponent implements OnInit {
 
   // ── Filtros ────────────────────────────────────────────────
   busca = '';
+  ordenacao: 'recente' | 'antigo' = 'recente';
   filtro: VendasFiltroCompleto = {
     status: 'TODOS', formaPagamento: 'TODOS',
     inicio: '', fim: '', minValor: null, maxValor: null,
@@ -78,8 +79,8 @@ export class VendasComponent implements OnInit {
 
   // ── Donut "Por Status" ─────────────────────────────────────
   donutChart: any = { type: 'donut', height: 200, fontFamily: 'inherit' };
-  donutColors = ['#22c55e', '#f59e0b', '#ef4444'];
-  donutLabels = ['Pago', 'Pendente', 'Cancelado'];
+  donutColors = ['#22c55e', '#f59e0b', '#ef4444', '#94a3b8'];
+  donutLabels = ['Pago', 'Aguardando', 'Vencido', 'Cancelado'];
   donutLegend: any = { show: false };
   donutDataLabels: any = { enabled: false };
   donutPlotOptions: any = { pie: { donut: { size: '72%' } } };
@@ -153,8 +154,8 @@ export class VendasComponent implements OnInit {
   getSeverity(status: StatusPedido): 'success' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case 'PAGO':       return 'success';
-      case 'CONFIRMADO':
-      case 'PENDENTE':   return 'warn';
+      case 'CONFIRMADO': return 'warn';
+      case 'PENDENTE':   return 'danger';
       case 'CANCELADO':  return 'danger';
       case 'ORCAMENTO':  return 'secondary';
     }
@@ -162,8 +163,11 @@ export class VendasComponent implements OnInit {
 
   getStatusLabel(status: StatusPedido): string {
     const labels: Record<StatusPedido, string> = {
-      ORCAMENTO: 'Orçamento', PENDENTE: 'Pendente',
-      CONFIRMADO: 'Confirmado', PAGO: 'Pago', CANCELADO: 'Cancelado',
+      ORCAMENTO:  'Orçamento',
+      CONFIRMADO: 'Confirmado',
+      PENDENTE:   'Vencido',
+      PAGO:       'Pago',
+      CANCELADO:  'Cancelado',
     };
     return labels[status];
   }
@@ -239,19 +243,21 @@ export class VendasComponent implements OnInit {
   }
 
   get totalPendentes(): number {
-    return this.pedidos.filter(
-      (p) => p.formaPagamento === 'FIADO' && p.status !== 'PAGO'
-    ).length;
+    return this.pedidos.filter(p => p.status === 'PENDENTE').length;
   }
 
   // ── Filtro client-side ─────────────────────────────────────
+  private normalizar(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
   get pedidosFiltrados(): PedidoResponse[] {
     return this.pedidos.filter((p) => {
-      const termo = this.busca.toLowerCase();
+      const termo = this.normalizar(this.busca);
       const matchBusca =
         !this.busca ||
-        p.clienteNome.toLowerCase().includes(termo) ||
-        p.itens.some((i) => i.produtoNome.toLowerCase().includes(termo));
+        this.normalizar(p.clienteNome).includes(termo) ||
+        p.itens.some((i) => this.normalizar(i.produtoNome).includes(termo));
 
       const matchStatus = this.filtro.status === 'TODOS' || p.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || p.formaPagamento === this.filtro.formaPagamento;
@@ -265,6 +271,10 @@ export class VendasComponent implements OnInit {
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
       return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+    }).sort((a, b) => {
+      const da = new Date(a.createdAt ?? 0).getTime();
+      const db = new Date(b.createdAt ?? 0).getTime();
+      return this.ordenacao === 'recente' ? db - da : da - db;
     });
   }
 
@@ -281,7 +291,8 @@ export class VendasComponent implements OnInit {
       this.pedidosFiltrados.filter(fn).reduce((acc, p) => acc + Number(p.valorTotal), 0);
     return [
       soma(p => p.status === 'PAGO'),
-      soma(p => p.status === 'CONFIRMADO' || p.status === 'PENDENTE'),
+      soma(p => p.status === 'CONFIRMADO'),
+      soma(p => p.status === 'PENDENTE'),
       soma(p => p.status === 'CANCELADO'),
     ];
   }

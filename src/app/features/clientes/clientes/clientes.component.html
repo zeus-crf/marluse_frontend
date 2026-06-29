@@ -6,7 +6,29 @@
     <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
     <p class="text-sm text-gray-500 mt-0.5">Gerenciamento de clientes cadastrados</p>
   </div>
+  
   <div class="flex items-center gap-2">
+    @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltros()"
+        class="flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+    <button
+      (click)="showModalFiltros = true"
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
+      [ngClass]="temFiltroAtivo
+        ? 'border-blue-400 text-blue-600 bg-blue-50'
+        : 'border-slate-200 text-gray-600 bg-white hover:bg-slate-50'">
+      <span class="material-symbols-outlined text-[18px]">tune</span>
+      Filtros
+      @if (temFiltroAtivo) {
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      }
+    </button>
     <button
       (click)="abrirModalNovo()"
       class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
@@ -198,7 +220,33 @@
     [loading]="loading"
     [actions]="acoesClientes"
     emptyMessage="Nenhum cliente encontrado"
+    (verDetalhe)="abrirDetalhe($any($event))"
     (editar)="abrirModalEditar($any($event))"
     (excluir)="onInativar($any($event))"
   />
 </div>
+
+<!-- ── MODAIS ─────────────────────────────────────────────────────────── -->
+<app-novo-cliente-modal
+  [visible]="showModal"
+  [clienteEdit]="clienteEdit"
+  [salvando]="salvando"
+  (fechar)="fecharModal()"
+  (salvar)="onSalvar($any($event))"
+/>
+
+<app-cliente-detalhe-modal
+  [visible]="showModalDetalhe"
+  [cliente]="clienteSelecionado"
+  (fechar)="fecharDetalhe()"
+  (editar)="abrirModalEditar($event)"
+/>
+
+<app-clientes-filtros-modal
+  [visible]="showModalFiltros"
+  [clientes]="clientes"
+  [filtroAtual]="filtro"
+  (fechar)="showModalFiltros = false"
+  (aplicar)="onAplicarFiltros($event)"
+  (limpar)="onLimparFiltros()"
+/>
