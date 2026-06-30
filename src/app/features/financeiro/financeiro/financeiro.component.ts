@@ -195,8 +195,8 @@ export class FinanceiroComponent implements OnInit {
       header: 'Status',
       width: '12%',
       type: 'tag',
-      tagSeverityFn: (val: StatusLancamento) => this.statusSeverity(val),
-      tagLabelFn:    (val: StatusLancamento) => this.statusLabel(val),
+      tagSeverityFn: (_: StatusLancamento, row: LancamentoFinanceiroResponse) => this.statusSeverity(this.statusEfetivo(row)),
+      tagLabelFn:    (_: StatusLancamento, row: LancamentoFinanceiroResponse) => this.statusLabel(this.statusEfetivo(row)),
     },
   ];
 
