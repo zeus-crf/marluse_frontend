@@ -48,6 +48,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/financeiro/financeiro/financeiro.component').then(m => m.FinanceiroComponent)
       },
+
+      {
+        path: 'relatorios',
+        loadComponent: () =>
+          import('./features/relatorios/relatorios/relatorios.component').then(m => m.RelatoriosComponent)
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

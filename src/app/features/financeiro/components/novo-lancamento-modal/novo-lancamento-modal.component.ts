@@ -12,11 +12,12 @@ import {
 import { ClienteSimples } from '../../../vendas/models/vendas.models';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-novo-lancamento-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, SelectSearchComponent],
+  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, SelectSearchComponent, DatePickerComponent],
   templateUrl: './novo-lancamento-modal.component.html',
 })
 export class NovoLancamentoModalComponent implements OnChanges {

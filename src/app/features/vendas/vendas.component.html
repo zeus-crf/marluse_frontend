@@ -54,11 +54,9 @@
    @if (periodoAtivo === 'custom') {
     <div class="flex items-center gap-2 ml-1">
       <span class="text-xs text-gray-400">De</span>
-      <input type="date" [(ngModel)]="customInicio"
-        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <div class="w-32"><app-date-picker [(ngModel)]="customInicio" [compact]="true" /></div>
       <span class="text-xs text-gray-400">até</span>
-      <input type="date" [(ngModel)]="customFim"
-        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <div class="w-32"><app-date-picker [(ngModel)]="customFim" [compact]="true" /></div>
       <button (click)="aplicarPeriodoCustom()"
         class="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
         Aplicar
@@ -80,19 +78,46 @@
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vendas no período</p>
-    <p class="text-3xl font-bold text-blue-600">{{ formatCurrency(vendasMes) }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Vendas no período</span>
+      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-blue-600">point_of_sale</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ formatCurrency(vendasMes) }}</p>
+    <div class="flex items-center gap-1 text-xs text-blue-600 font-medium">
+      <span class="material-symbols-outlined text-[13px]">payments</span>
+      valor total confirmado
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Total de registros</p>
-    <p class="text-3xl font-bold text-gray-900">{{ totalRegistros }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total de registros</span>
+      <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-purple-600">receipt_long</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ totalRegistros }}</p>
+    <div class="flex items-center gap-1 text-xs text-purple-600 font-medium">
+      <span class="material-symbols-outlined text-[13px]">list_alt</span>
+      pedidos e orçamentos
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Pendentes</p>
-    <p class="text-3xl font-bold text-orange-500">{{ totalPendentes }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Pendentes</span>
+      <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-orange-500">schedule</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ totalPendentes }}</p>
+    <div class="flex items-center gap-1 text-xs text-orange-500 font-medium">
+      <span class="material-symbols-outlined text-[13px]">hourglass_empty</span>
+      aguardando confirmação
+    </div>
   </div>
 
 </div>

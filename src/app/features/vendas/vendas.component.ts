@@ -24,13 +24,14 @@ import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pe
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
 import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/vendas-filtros-modal.component';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 
 
 
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent, SelectComponent, DatePickerComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],

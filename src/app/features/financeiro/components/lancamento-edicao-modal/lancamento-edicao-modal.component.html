@@ -78,11 +78,7 @@
     <div class="grid grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Data de vencimento <span class="text-red-500">*</span></label>
-        <input
-          type="date"
-          [(ngModel)]="dataVencimento"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700"
-        />
+        <app-date-picker [(ngModel)]="dataVencimento" />
       </div>
 
       <div class="flex flex-col gap-1.5">

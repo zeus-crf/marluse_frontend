@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import {
   LancamentoFinanceiroResponse,
   LancamentoAtualizarRequest,
@@ -13,7 +14,7 @@ import {
 @Component({
   selector: 'app-lancamento-edicao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, SelectComponent],
+  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, DatePickerComponent],
   templateUrl: './lancamento-edicao-modal.component.html',
 })
 export class LancamentoEdicaoModalComponent implements OnChanges {

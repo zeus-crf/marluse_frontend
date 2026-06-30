@@ -43,28 +43,70 @@
 <!-- ── KPI Cards ───────────────────────────────────────────── -->
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Receitas do mês</p>
-    <p class="text-3xl font-bold text-green-600">{{ formatCurrency(resumoMes.receitasMes) }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Receitas do mês</span>
+      <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-green-600">trending_up</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ formatCurrency(resumoMes.receitasMes) }}</p>
+    <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
+      <span class="material-symbols-outlined text-[13px]">payments</span>
+      receitas pagas
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Despesas do mês</p>
-    <p class="text-3xl font-bold text-red-500">{{ formatCurrency(resumoMes.despesasMes) }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Despesas do mês</span>
+      <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-red-500">trending_down</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ formatCurrency(resumoMes.despesasMes) }}</p>
+    <div class="flex items-center gap-1 text-xs text-red-500 font-medium">
+      <span class="material-symbols-outlined text-[13px]">money_off</span>
+      despesas pagas
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Saldo do período</p>
-    <p class="text-3xl font-bold"
-       [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'text-blue-600' : 'text-red-500'">
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Saldo do período</span>
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+           [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'bg-blue-50' : 'bg-red-50'">
+        <span class="material-symbols-outlined text-[18px]"
+              [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'text-blue-600' : 'text-red-500'">
+          account_balance
+        </span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold mb-1"
+       [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'text-gray-900' : 'text-red-500'">
       {{ formatCurrency(resumoMes.saldoPeriodo) }}
     </p>
+    <div class="flex items-center gap-1 text-xs font-medium"
+         [ngClass]="resumoMes.saldoPeriodo >= 0 ? 'text-blue-600' : 'text-red-500'">
+      <span class="material-symbols-outlined text-[13px]">
+        {{ resumoMes.saldoPeriodo >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+      </span>
+      {{ resumoMes.saldoPeriodo >= 0 ? 'saldo positivo' : 'saldo negativo' }}
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vencidos</p>
-    <p class="text-3xl font-bold text-orange-500">{{ formatCurrency(resumoMes.totalVencidos) }}</p>
-    <p class="text-xs text-gray-400 mt-1">{{ resumoMes.qtdVencidos }} lançamento(s)</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Vencidos</span>
+      <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-orange-500">schedule</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ formatCurrency(resumoMes.totalVencidos) }}</p>
+    <div class="flex items-center gap-1 text-xs text-orange-500 font-medium">
+      <span class="material-symbols-outlined text-[13px]">warning</span>
+      {{ resumoMes.qtdVencidos }} lançamento(s) em atraso
+    </div>
   </div>
 
 </div>

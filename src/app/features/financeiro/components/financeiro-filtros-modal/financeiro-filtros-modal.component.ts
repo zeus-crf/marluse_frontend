@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import {
   LancamentoFinanceiroResponse,
   FinanceiroFiltro,
@@ -13,7 +14,7 @@ import {
 @Component({
   selector: 'app-financeiro-filtros-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, DatePickerComponent],
   templateUrl: './financeiro-filtros-modal.component.html',
 })
 export class FinanceiroFiltrosModalComponent implements OnChanges {

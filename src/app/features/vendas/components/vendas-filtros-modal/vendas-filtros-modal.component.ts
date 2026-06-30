@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { FormaPagamento, PedidoResponse, StatusPedido, VendasFiltroCompleto } from '../../models/vendas.models';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-vendas-filtros-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, DatePickerComponent],
   templateUrl: './vendas-filtros-modal.component.html',
 })
 export class VendasFiltrosModalComponent implements OnChanges {

@@ -3,3 +3,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── PrimeNG DatePicker – overrides globais ──────────────────── */
+
+/* Dia selecionado: azul em vez do verde padrão do Aura */
+.p-datepicker-day-selected .p-datepicker-day-cell-content,
+.p-datepicker-day[data-p-selected="true"] .p-datepicker-day-cell-content,
+.p-datepicker-day.p-highlight .p-datepicker-day-cell-content {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-color: #3b82f6 !important;
+}
+
+/* "Hoje" sem destaque verde */
+.p-datepicker-day-today .p-datepicker-day-cell-content {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+/* Ícone do calendário: azul */
+.p-datepicker-calendar-button .pi,
+.p-datepicker-button .pi {
+  color: #3b82f6 !important;
+}

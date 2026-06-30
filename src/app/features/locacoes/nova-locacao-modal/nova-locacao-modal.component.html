@@ -46,16 +46,14 @@
           <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
             Data de retirada
           </label>
-          <input type="date" [(ngModel)]="dataRetirada"
-            class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-sm text-gray-700 outline-none focus:border-blue-400 transition-colors" />
+          <app-date-picker [(ngModel)]="dataRetirada" />
         </div>
 
         <div>
           <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
             Devolução prevista
           </label>
-          <input type="date" [(ngModel)]="dataDevolucaoPrevista"
-            class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-sm text-gray-700 outline-none focus:border-blue-400 transition-colors" />
+          <app-date-picker [(ngModel)]="dataDevolucaoPrevista" />
         </div>
 
         <!-- Badge de dias calculados -->

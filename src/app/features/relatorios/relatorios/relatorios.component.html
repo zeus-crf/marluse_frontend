@@ -1,0 +1,224 @@
+<!-- Header -->
+<div class="flex items-start justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Relatórios</h1>
+    <p class="text-sm text-gray-400 mt-0.5">Análises e indicadores do negócio</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+      @for (p of periodos; track p.value) {
+        <button
+          type="button"
+          (click)="setPeriodo(p.value)"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+          [ngClass]="periodo === p.value ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+          {{ p.label }}
+        </button>
+      }
+    </div>
+    <button
+      type="button"
+      class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+      <span class="material-symbols-outlined text-[16px]">download</span>
+      Exportar PDF
+    </button>
+  </div>
+</div>
+
+<!-- Loading -->
+@if (carregando) {
+  <div class="flex items-center justify-center py-20">
+    <span class="material-symbols-outlined animate-spin text-blue-500 text-3xl">progress_activity</span>
+  </div>
+} @else {
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-4 gap-4 mb-6">
+    @for (card of kpiCards; track card.key) { 
+      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4 ">
+          <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">{{ card.label }}</span>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" [ngClass]="card.bgIcon">
+            <span class="material-symbols-outlined text-[18px]" [ngClass]="card.cor">{{ card.icon }}</span>
+          </div>
+        </div>
+        <div class="text-2xl font-semibold text-gray-900 mb-1">
+          {{ formatCurrency(kpis ? $any(kpis)[card.key] : 0) }}
+        </div>
+        @if (card.key === 'ticketMedio' && kpis) {
+          <div class="flex items-center gap-1 text-xs text-gray-400">
+            <span class="material-symbols-outlined text-[13px]">receipt</span>
+            {{ kpis.totalPedidos }} pedidos no período
+          </div>
+        } @else if (kpis && $any(kpis)[card.varKey] !== null) {
+          <div class="flex items-center gap-1 text-xs font-medium"
+            [ngClass]="isPositive($any(kpis)[card.varKey]) ? 'text-green-600' : 'text-red-500'">
+            <span class="material-symbols-outlined text-[13px]">
+              {{ isPositive($any(kpis)[card.varKey]) ? 'arrow_upward' : 'arrow_downward' }}
+            </span>
+            {{ formatPercent($any(kpis)[card.varKey]) }} vs mês anterior
+          </div>
+        } @else {
+          <div class="text-xs text-gray-300">— sem histórico ainda</div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Gráficos principais -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="bg-white border border-slate-100 rounded-xl p-4">
+      <p class="text-sm font-medium text-gray-900">Receita mensal</p>
+      <p class="text-xs text-gray-400 mb-3">Vendas vs. locações</p>
+      @if (receitaMensal.length > 0) {
+        <apx-chart
+          [series]="chartReceita.series"
+          [chart]="chartReceita.chart"
+          [colors]="chartReceita.colors"
+          [stroke]="chartReceita.stroke"
+          [fill]="chartReceita.fill"
+          [xaxis]="chartReceita.xaxis"
+          [yaxis]="chartReceita.yaxis"
+          [grid]="chartReceita.grid"
+          [dataLabels]="chartReceita.dataLabels"
+          [legend]="chartReceita.legend"
+          [tooltip]="chartReceita.tooltip">
+        </apx-chart>
+      } @else {
+        <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
+          Sem dados no período
+        </div>
+      }
+    </div>
+
+    <div class="bg-white border border-slate-100 rounded-xl p-4">
+      <p class="text-sm font-medium text-gray-900">Margem de lucro</p>
+      <p class="text-xs text-gray-400 mb-3">Receita × despesas</p>
+      @if (receitaMensal.length > 0) {
+        <apx-chart
+          [series]="chartMargem.series"
+          [chart]="chartMargem.chart"
+          [colors]="chartMargem.colors"
+          [stroke]="chartMargem.stroke"
+          [fill]="chartMargem.fill"
+          [xaxis]="chartMargem.xaxis"
+          [yaxis]="chartMargem.yaxis"
+          [grid]="chartMargem.grid"
+          [dataLabels]="chartMargem.dataLabels"
+          [legend]="chartMargem.legend"
+          [tooltip]="chartMargem.tooltip">
+        </apx-chart>
+      } @else {
+        <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
+          Sem dados no período
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Status row -->
+  <div class="grid grid-cols-3 gap-4 mb-4">
+
+    <!-- Status financeiro -->
+    <div class="bg-white border border-slate-100 rounded-xl p-4">
+      <p class="text-sm font-medium text-gray-900">Status financeiro</p>
+      <p class="text-xs text-gray-400 mb-3">Lançamentos</p>
+      @if (statusFinanceiro && totalStatusFinanceiro > 0) {
+        <div class="flex justify-center">
+          <apx-chart
+            [series]="chartStatusFinanceiro.series"
+            [chart]="chartStatusFinanceiro.chart"
+            [labels]="chartStatusFinanceiro.labels"
+            [colors]="chartStatusFinanceiro.colors"
+            [legend]="chartStatusFinanceiro.legend"
+            [dataLabels]="chartStatusFinanceiro.dataLabels"
+            [plotOptions]="chartStatusFinanceiro.plotOptions"
+            [stroke]="chartStatusFinanceiro.stroke"
+            [tooltip]="chartStatusFinanceiro.tooltip">
+          </apx-chart>
+        </div>
+        <div class="flex flex-col gap-2 mt-3">
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+              Pagos
+            </span>
+            <span class="font-semibold text-gray-800">{{ statusFinanceiro.pagos }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+              Pendentes
+            </span>
+            <span class="font-semibold text-gray-800">{{ statusFinanceiro.pendentes }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
+              Vencidos
+            </span>
+            <span class="font-semibold text-gray-800">{{ statusFinanceiro.vencidos }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="h-[160px] flex items-center justify-center text-sm text-gray-300">
+          Sem lançamentos
+        </div>
+      }
+    </div>
+
+    <!-- Top Clientes -->
+    <div class="bg-white border border-slate-100 rounded-xl p-4">
+      <p class="text-sm font-medium text-gray-900">Top clientes</p>
+      <p class="text-xs text-gray-400 mb-3">Por receita gerada</p>
+      @if (topClientes.length > 0) {
+        <div class="flex flex-col divide-y divide-slate-50">
+          @for (cliente of topClientes; track cliente.nome; let i = $index) {
+            <div class="flex items-center gap-2.5 py-2">
+              <span class="text-xs text-gray-300 w-3 text-center">{{ i + 1 }}</span>
+              <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-medium flex-shrink-0"
+                [ngClass]="avatarCores[i % avatarCores.length]">
+                {{ iniciais(cliente.nome) }}
+              </div>
+              <span class="text-xs text-gray-700 flex-1 truncate">{{ cliente.nome }}</span>
+              <span class="text-xs font-medium text-green-600">{{ formatCurrency(cliente.total) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="h-[160px] flex items-center justify-center text-sm text-gray-300">
+          Sem dados no período
+        </div>
+      }
+    </div>
+
+    <!-- Top Produtos -->
+    <div class="bg-white border border-slate-100 rounded-xl p-4">
+      <p class="text-sm font-medium text-gray-900">Top produtos</p>
+      <p class="text-xs text-gray-400 mb-3">Por quantidade vendida</p>
+      @if (topProdutos.length > 0) {
+        <div class="flex flex-col divide-y divide-slate-50">
+          @for (produto of topProdutos; track produto.nome; let i = $index) {
+            <div class="flex items-center gap-2.5 py-2">
+              <span class="text-xs text-gray-300 w-3 text-center">{{ i + 1 }}</span>
+              <span class="text-xs text-gray-700 flex-1 truncate">{{ produto.nome }}</span>
+              <div class="flex items-center gap-2">
+                <div class="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-400 rounded-full"
+                    [style.width.%]="(produto.quantidade / maxTopProduto) * 100">
+                  </div>
+                </div>
+                <span class="text-xs font-medium text-gray-500 w-5 text-right">{{ produto.quantidade }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="h-[160px] flex items-center justify-center text-sm text-gray-300">
+          Sem dados no período
+        </div>
+      }
+    </div>
+  </div>
+
+}

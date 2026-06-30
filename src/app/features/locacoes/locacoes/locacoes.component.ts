@@ -29,13 +29,14 @@ import { LocacaoDetalheModalComponent } from "../locacao-datalhe-modal/locacao-d
 import { LocacaoEdicaoModalComponent } from "../locacao-edicao-modal/locacao-edicao-modal.component";
 import { LocacaoFiltrosModalComponent } from "../locacao-filtros-modal/locacao-filtros-modal.component";
 import { LocacaoEdicaoPayload } from "./locacoes.service";
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 
 @Component({
   selector: 'app-locacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent],
+  imports: [CommonModule, FormsModule, ToastModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent, DatePickerComponent],
   templateUrl: './locacoes.component.html',
   styleUrl: './locacoes.component.scss',
   providers: [MessageService],
