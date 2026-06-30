@@ -7,7 +7,7 @@ import {
   PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido
 } from '../../models/vendas.models';
 import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
-
+import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
 
 interface ItemForm {
   produtoId: string;
@@ -19,7 +19,7 @@ interface ItemForm {
 @Component({
   selector: 'app-novo-pedido-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, SelectComponent],
+  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, SelectSearchComponent],
   templateUrl: './novo-pedido-modal.component.html',
 })
 export class NovoPedidoModalComponent {

@@ -8,15 +8,16 @@
   </div>
 
   <div class="flex items-center gap-2">
-    @if (temFiltroAtivo) {
-    <button
-      type="button"
-      (click)="onLimparFiltros()"
-      class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
-      <i class="pi pi-times text-[10px]"></i>
-      Limpar filtros
-    </button>
-  }
+       @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltros()"
+        class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+
     <button
       (click)="abrirModalFiltros()"
       class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
@@ -181,38 +182,30 @@
   <!-- Barra de filtros -->
   <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
 
-    <!-- Busca -->
-    <div class="flex-1 min-w-[220px] relative">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
-        search
-      </span>
-      <input
-        type="text"
-        [(ngModel)]="busca"
-        placeholder="Buscar por cliente, n° ou produto..."
-        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-      />
+    <!-- Tabs status -->
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+      @for (s of [
+        { label: 'Todos',      value: 'TODOS'      },
+        { label: 'Orçamento',  value: 'ORCAMENTO'  },
+        { label: 'Pendente',   value: 'PENDENTE'   },
+        { label: 'Confirmado', value: 'CONFIRMADO' },
+        { label: 'Pago',       value: 'PAGO'       },
+        { label: 'Cancelado',  value: 'CANCELADO'  }
+      ]; track s.value) {
+        <button
+          type="button"
+          (click)="filtro.status = $any(s.value)"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+          [ngClass]="filtro.status === s.value
+            ? 'bg-white text-gray-800 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'">
+          {{ s.label }}
+        </button>
+      }
     </div>
 
-    <!-- Dropdown status -->
-    <select
-      [(ngModel)]="filtro.status"
-      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-      <option value="TODOS">Todos os status</option>
-      <option value="ORCAMENTO">Orçamento</option>
-      <option value="PENDENTE">Pendente</option>
-      <option value="CONFIRMADO">Confirmado</option>
-      <option value="PAGO">Pago</option>
-      <option value="CANCELADO">Cancelado</option>
-    </select>
-
     <!-- Ordenação -->
-    <select
-      [(ngModel)]="ordenacao"
-      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-      <option value="recente">Mais recentes</option>
-      <option value="antigo">Mais antigos</option>
-    </select>
+    <app-select [(ngModel)]="ordenacao" [options]="opcoesOrdenacao" placeholder="Ordenação" size="small" />
 
     <!-- Contador -->
     <span class="ml-auto text-xs text-gray-400">
@@ -229,6 +222,9 @@
       [loading]="loading"
       [actions]="acoesPedidos"
       emptyMessage="Nenhuma venda encontrada"
+      [showFiltrar]="true"
+      [filtroAtivo]="temFiltroAtivo"
+      (filtrar)="abrirModalFiltros()"
       (verDetalhe)="abrirDetalhe($any($event))"
       (editar)="abrirEdicao($any($event))"
       (excluir)="onExcluirPedido($any($event))"

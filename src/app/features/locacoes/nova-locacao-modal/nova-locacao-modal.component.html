@@ -80,7 +80,7 @@
         <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">
           Cliente
         </label>
-        <app-select
+        <app-select-search
           [(ngModel)]="clienteId"
           [options]="clienteOptions"
           placeholder="Selecionar cliente…" />
@@ -110,7 +110,7 @@
           @for (item of itens; track trackByIndex($index); let i = $index) {
             <div class="grid grid-cols-[1fr_68px_110px_110px_56px] gap-2 px-3 py-2 border-b border-slate-100 last:border-0 items-center">
 
-              <app-select
+              <app-select-search
                 [(ngModel)]="item.produtoId"
                 (ngModelChange)="onProdutoChange(item)"
                 [options]="produtoOptions"

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
 import {
   LancamentoFinanceiroResponse,
   LancamentoAtualizarRequest,
@@ -12,10 +13,16 @@ import {
 @Component({
   selector: 'app-lancamento-edicao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, SelectComponent],
   templateUrl: './lancamento-edicao-modal.component.html',
 })
 export class LancamentoEdicaoModalComponent implements OnChanges {
+
+  readonly opcoesStatus = [
+    { value: 'PENDENTE',  label: 'Pendente'  },
+    { value: 'PAGO',      label: 'Pago'      },
+    { value: 'CANCELADO', label: 'Cancelado' },
+  ];
 
   @Input() visible    = false;
   @Input() salvando   = false;

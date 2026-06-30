@@ -86,79 +86,7 @@
 
 </div>
 
-<!-- ── GRÁFICOS + BUSCA ────────────────────────────────────────────── -->
-
-<!-- Linha de busca + tabs (sempre visível) -->
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 mb-4">
-  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-
-    <!-- Busca + botão filtros -->
-    <div class="flex gap-2 flex-1">
-      <div class="relative flex-1">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none pb-2"></i>
-        <input
-          pInputText
-          [(ngModel)]="busca"
-          placeholder="Buscar produto..."
-          class="w-full text-sm" style="padding-left: 2.25rem"
-        />
-      </div>
-      <p-button
-        icon="pi pi-sliders-h"
-        [severity]="temFiltroAtivo ? 'info' : 'secondary'"
-        [outlined]="!temFiltroAtivo"
-        [pTooltip]="temFiltroAtivo ? 'Filtros (' + contadorFiltros + ')' : 'Filtros'"
-        tooltipPosition="top"
-        [badge]="temFiltroAtivo ? contadorFiltros.toString() : ''"
-        badgeSeverity="danger"
-        (onClick)="showModalFiltros = true"
-      />
-    </div>
-
-    <!-- Tabs de status -->
-    <div class="flex gap-1 flex-wrap">
-      @for (tab of tabs; track tab.value) {
-        <button
-          type="button"
-          (click)="tabAtiva = tab.value"
-          class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-          [class.bg-gray-900]="tabAtiva === tab.value"
-          [class.text-white]="tabAtiva === tab.value"
-          [class.bg-gray-100]="tabAtiva !== tab.value"
-          [class.text-gray-600]="tabAtiva !== tab.value"
-        >
-          {{ tab.label }}
-          <span
-            class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full"
-            [class.bg-white]="tabAtiva === tab.value"
-            [class.text-gray-900]="tabAtiva === tab.value"
-            [class.bg-gray-200]="tabAtiva !== tab.value"
-            [class.text-gray-600]="tabAtiva !== tab.value"
-          >
-            {{ countPorTab[tab.value] }}
-          </span>
-        </button>
-      }
-    </div>
-
-  </div>
-
-  <div class="flex items-center gap-3">
-    @if (temFiltroAtivo) {
-      <button
-        type="button"
-        (click)="onLimparFiltro()"
-        class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
-        <i class="pi pi-times text-[10px]"></i>
-        Limpar filtros
-      </button>
-    }
-    <p class="text-xs text-gray-400">
-      Exibindo {{ produtosFiltrados.length }} de {{ produtos.length }} produto(s)
-    </p>
-  </div>
-
-</div>
+<!-- ── GRÁFICOS ───────────────────────────────────────────────────────── -->
 
 <!-- Gráficos (donut sempre, bar a partir de 5 produtos) -->
 <div class="mb-6" [class.grid]="mostrarBarChart" [class.grid-cols-1]="mostrarBarChart" [class.lg:grid-cols-[1fr_260px]]="mostrarBarChart" [class.gap-4]="mostrarBarChart">
@@ -209,16 +137,57 @@
 </div>
 
 <!-- ── TABELA ───────────────────────────────────────────────────────── -->
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-  <app-data-table
-    [columns]="colunasProdutos"
-    [rows]="produtosFiltrados"
-    [loading]="loading"
-    [actions]="acoesProdutos"
-    emptyMessage="Nenhum produto encontrado"
-    (editar)="abrirModalEditar($any($event))"
-    (excluir)="onInativar($any($event))"
-  />
+<div class="bg-white rounded-xl border border-slate-200">
+
+  <!-- Toolbar -->
+  <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
+
+    <!-- Tabs de status -->
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          (click)="tabAtiva = tab.value"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+          [ngClass]="tabAtiva === tab.value
+            ? 'bg-white text-gray-800 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltro()"
+        class="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+
+    <span class="ml-auto text-xs text-gray-400">
+      {{ produtosFiltrados.length }} registro(s)
+    </span>
+  </div>
+
+  <!-- DataTable -->
+  <div class="p-1">
+    <app-data-table
+      [columns]="colunasProdutos"
+      [rows]="produtosFiltrados"
+      [loading]="loading"
+      [actions]="acoesProdutos"
+      emptyMessage="Nenhum produto encontrado"
+      [showFiltrar]="true"
+      [filtroAtivo]="temFiltroAtivo"
+      (filtrar)="showModalFiltros = true"
+      (editar)="abrirModalEditar($any($event))"
+      (excluir)="onInativar($any($event))"
+    />
+  </div>
+
 </div>
 
 <!-- ── MODAL FILTROS ────────────────────────────────────────────────── -->

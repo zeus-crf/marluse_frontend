@@ -68,7 +68,6 @@ export class ClientesComponent implements OnInit {
   loading  = false;
   salvando = false;
 
-  busca    = '';
   tabAtiva: TabFiltroCliente = 'TODOS';
 
   filtro: ClienteFiltroCompleto = { ...FILTRO_CLIENTE_PADRAO };
@@ -187,14 +186,10 @@ export class ClientesComponent implements OnInit {
 
   // ── Filtros ───────────────────────────────────────────────
   get clientesFiltrados(): ClienteResponse[] {
-    const termo = this.busca.toLowerCase();
     return this.clientes.filter(c => {
-      const matchBusca = !this.busca ||
-        c.nome.toLowerCase().includes(termo) ||
-        (c.cpfCnpj ?? '').includes(termo);
       const matchTab  = this.tabAtiva === 'TODOS' || this.tipoDe(c) === this.tabAtiva;
       const matchTipo = this.filtro.tipoCliente === 'TODOS' || this.tipoDe(c) === this.filtro.tipoCliente;
-      return matchBusca && matchTab && matchTipo;
+      return matchTab && matchTipo;
     });
   }
 

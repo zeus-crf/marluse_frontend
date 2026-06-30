@@ -147,29 +147,11 @@
       }
     </div>
 
-    <!-- Busca -->
-    <div class="flex-1 min-w-[220px] relative">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
-        search
-      </span>
-      <input
-        type="text"
-        [(ngModel)]="filtro.busca"
-        placeholder="Buscar por descrição, categoria ou cliente..."
-        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-      />
-    </div>
-
     <!-- Status -->
-    <select
-      [(ngModel)]="filtro.status"
-      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-      <option value="TODOS">Todos os status</option>
-      <option value="PENDENTE">Pendente</option>
-      <option value="PAGO">Pago</option>
-      <option value="VENCIDO">Vencido</option>
-      <option value="CANCELADO">Cancelado</option>
-    </select>
+    <app-select [(ngModel)]="filtro.status" [options]="opcoesStatus" placeholder="Status" size="small" />
+
+    <!-- Ordenação -->
+    <app-select [(ngModel)]="ordenacao" [options]="opcoesOrdenacao" placeholder="Ordenação" size="small" />
 
     <!-- Contador -->
     <span class="ml-auto text-xs text-gray-400">
@@ -185,6 +167,9 @@
       [loading]="loading"
       [actions]="acoes"
       emptyMessage="Nenhum lançamento encontrado"
+      [showFiltrar]="true"
+      [filtroAtivo]="temFiltroAtivo"
+      (filtrar)="abrirModalFiltros()"
       (verDetalhe)="abrirDetalhe($any($event))"
       (editar)="abrirEdicao($any($event))"
       (excluir)="onExcluir($any($event))"

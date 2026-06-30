@@ -1,7 +1,38 @@
 <p-confirmDialog />
 
+@if (searchable) {
+  <div class="px-4 pt-4 pb-2 flex items-center gap-2">
+    <div class="relative flex-1">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
+        search
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="busca"
+        [placeholder]="searchPlaceholder"
+        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400 bg-white"
+      />
+    </div>
+    @if (showFiltrar) {
+      <button
+        type="button"
+        (click)="filtrar.emit()"
+        class="relative flex items-center justify-center w-9 h-9 rounded-lg border transition-colors flex-shrink-0"
+        [ngClass]="filtroAtivo
+          ? 'border-blue-400 bg-blue-50 text-blue-600'
+          : 'border-slate-200 text-gray-500 hover:bg-slate-50'"
+        title="Filtros">
+        <span class="material-symbols-outlined text-[18px]">tune</span>
+        @if (filtroAtivo) {
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-500"></span>
+        }
+      </button>
+    }
+  </div>
+}
+
 <p-table
-  [value]="rows"
+  [value]="rowsFiltrados"
   [loading]="loading"
   dataKey="id"
   [tableStyle]="{ 'min-width': '60rem' }"

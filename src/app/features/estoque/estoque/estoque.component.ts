@@ -68,7 +68,6 @@ export class EstoqueComponent implements OnInit {
   loading  = false;
   salvando = false;
 
-  busca    = '';
   tabAtiva: TabFiltroEstoque = 'TODOS';
 
   filtro: EstoqueFiltroCompleto = { ...FILTRO_ESTOQUE_PADRAO };
@@ -212,9 +211,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Filtro ────────────────────────────────────────────────
   get produtosFiltrados(): ProdutoResponse[] {
-    const termo = this.busca.toLowerCase();
     return this.produtos.filter(p => {
-      const matchBusca  = !this.busca || p.nome.toLowerCase().includes(termo);
       const matchTab    = this.tabAtiva === 'TODOS' || this.statusDe(p) === this.tabAtiva;
       const matchMedida = this.filtro.medida === 'TODOS' || p.medida === this.filtro.medida;
       const preco       = Number(p.preco);
@@ -222,7 +219,7 @@ export class EstoqueComponent implements OnInit {
       const matchMaxP   = this.filtro.maxPreco === null || preco <= this.filtro.maxPreco;
       const matchMinQ   = this.filtro.minQtd   === null || p.quantidadeEstoque >= this.filtro.minQtd;
       const matchMaxQ   = this.filtro.maxQtd   === null || p.quantidadeEstoque <= this.filtro.maxQtd;
-      return matchBusca && matchTab && matchMedida && matchMinP && matchMaxP && matchMinQ && matchMaxQ;
+      return matchTab && matchMedida && matchMinP && matchMaxP && matchMinQ && matchMaxQ;
     });
   }
 

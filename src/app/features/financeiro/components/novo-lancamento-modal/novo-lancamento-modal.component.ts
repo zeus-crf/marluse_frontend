@@ -10,11 +10,13 @@ import {
   Recorrencia,
 } from '../../models/financeiro.models';
 import { ClienteSimples } from '../../../vendas/models/vendas.models';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
+import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
 
 @Component({
   selector: 'app-novo-lancamento-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, SelectSearchComponent],
   templateUrl: './novo-lancamento-modal.component.html',
 })
 export class NovoLancamentoModalComponent implements OnChanges {
@@ -48,6 +50,18 @@ export class NovoLancamentoModalComponent implements OnChanges {
     { label: 'Mensal',   value: 'MENSAL'  },
     { label: 'Anual',    value: 'ANUAL'   },
   ];
+
+  readonly opcoesStatus = [
+    { value: 'PENDENTE', label: 'Pendente' },
+    { value: 'PAGO',     label: 'Pago'     },
+  ];
+
+  get clienteOptions() {
+    return [
+      { value: '', label: '— Nenhum —' },
+      ...this.clientes.map(c => ({ value: c.id, label: c.nome })),
+    ];
+  }
 
   get formValido(): boolean {
     return !!this.descricao.trim()

@@ -5,9 +5,11 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '520px' }"
+  [contentStyle]="{ padding: '0' }"
   (onHide)="onFechar()">
 
-  <div class="flex flex-col gap-4 py-2">
+<hr>
+  <div class="flex flex-col gap-4 px-6 py-5">
 
     <!-- Tipo -->
     <div class="flex flex-col gap-1.5">
@@ -85,13 +87,7 @@
 
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Status</label>
-        <select
-          [(ngModel)]="status"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white text-gray-700 cursor-pointer">
-          <option value="PENDENTE">Pendente</option>
-          <option value="PAGO">Pago</option>
-          <option value="CANCELADO">Cancelado</option>
-        </select>
+        <app-select [(ngModel)]="status" [options]="opcoesStatus" placeholder="Status" />
       </div>
     </div>
 

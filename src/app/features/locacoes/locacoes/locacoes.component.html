@@ -265,22 +265,8 @@
   <!-- Toolbar -->
   <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-100 flex-wrap">
 
-    <!-- Busca -->
-    <div class="relative flex-1 min-w-[200px]">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
-        search
-      </span>
-      <input
-        type="text"
-        [(ngModel)]="busca"
-        (ngModelChange)="recalcularGraficos()"
-        placeholder="Buscar por cliente ou equipamento…"
-        class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-slate-50 text-gray-700 placeholder-gray-400"
-      />
-    </div>
-
     <!-- Pills de status rápido -->
-    <div class="flex gap-1.5 flex-wrap">
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
       @for (s of [
         { label: 'Todas',      value: 'TODOS'     },
         { label: 'Ativas',     value: 'ATIVA'     },
@@ -290,31 +276,14 @@
       ]; track s.value) {
         <button
           (click)="filtro.status = $any(s.value)"
-          class="text-[11px] px-2.5 py-1 rounded-lg border transition-colors font-medium"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
           [ngClass]="filtro.status === s.value
-            ? 'bg-blue-600 text-white border-blue-600'
-            : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
+            ? 'bg-white text-gray-800 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'">
           {{ s.label }}
         </button>
       }
     </div>
-
-    <!-- Botão filtros -->
-    <button
-      type="button"
-      (click)="abrirModalFiltros()"
-      class="flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium rounded-lg border transition-colors cursor-pointer"
-      [ngClass]="temFiltroAtivo
-        ? 'border-blue-500 text-blue-600 bg-blue-50 hover:bg-blue-100'
-        : 'border-slate-200 text-gray-500 hover:bg-slate-50'">
-      <i class="pi pi-filter text-[11px]"></i>
-      Filtros
-      @if (temFiltroAtivo) {
-        <span class="bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
-          <!-- {{ [filtro.status !== 'TODOS', filtro.formaPagamento !== 'TODOS', filtro.minValor !== null, filtro.maxValor !== null].filter(Boolean).length }} -->
-        </span>
-      }
-    </button>
 
     <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">
       {{ locacoesFiltradas.length }} registro(s)
@@ -329,6 +298,9 @@
       [loading]="loading"
       [actions]="acoesLocacoes"
       emptyMessage="Nenhuma locação encontrada"
+      [showFiltrar]="true"
+      [filtroAtivo]="temFiltroAtivo"
+      (filtrar)="abrirModalFiltros()"
       (extra)="abrirModalEdicao($any($event))"
       (verDetalhe)="abrirDetalhe($any($event))"
       (apagar)="onApagar($any($event))"

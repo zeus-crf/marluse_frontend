@@ -70,7 +70,6 @@ export class LocacoesComponent implements OnInit {
   ];
 
   // ── Filtros ────────────────────────────────────────────────
-  busca = '';
   filtro: LocacoesFiltroCompleto = {
     status: 'TODOS', formaPagamento: 'TODOS',
     inicio: '', fim: '', minValor: null, maxValor: null,
@@ -393,12 +392,6 @@ export class LocacoesComponent implements OnInit {
   // Locações atrasadas de meses anteriores já aparecem nos alertas de urgência no topo.
   get locacoesFiltradas(): LocacaoResponse[] {
     return this.locacoes.filter(l => {
-      const termo      = this.busca.toLowerCase();
-      const numeroStr = String(l.numero ?? 0).padStart(3, '0');
-      const matchBusca = !this.busca ||
-        l.clienteNome.toLowerCase().includes(termo) ||
-        l.itens.some(i => i.produtoNome.toLowerCase().includes(termo)) ||
-        numeroStr.includes(this.busca.replace('#', '').trim());
 
       const matchStatus = this.filtro.status === 'TODOS' || l.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
@@ -413,7 +406,7 @@ export class LocacoesComponent implements OnInit {
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
     });
   }
 
@@ -442,11 +435,7 @@ export class LocacoesComponent implements OnInit {
   // (cada KPI já filtra pelo seu próprio status; assim totalAtrasadas não zera
   //  quando o usuário filtra por status=ATIVA na tabela)
   private get locacoesParaKPIs(): LocacaoResponse[] {
-    const termo = this.busca.toLowerCase();
     return this.locacoes.filter(l => {
-      const matchBusca  = !this.busca ||
-        l.clienteNome.toLowerCase().includes(termo) ||
-        l.itens.some(i => i.produtoNome.toLowerCase().includes(termo));
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
 
       const dataRef = l.status === 'ORCAMENTO'
@@ -459,7 +448,7 @@ export class LocacoesComponent implements OnInit {
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchBusca && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchPgto && matchInicio && matchFim && matchMin && matchMax;
     });
   }
 

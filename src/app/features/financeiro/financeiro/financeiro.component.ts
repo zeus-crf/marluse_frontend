@@ -25,6 +25,7 @@ import {
 } from '../models/financeiro.models';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { TableColumn, TableActionConfig } from '../../../shared/components/data-table/data-table.models';
+import { SelectComponent } from '../../../shared/components/select/select.component';
 
 @Component({
   selector: 'app-financeiro',
@@ -39,6 +40,7 @@ import { TableColumn, TableActionConfig } from '../../../shared/components/data-
     LancamentoDetalheModalComponent,
     LancamentoEdicaoModalComponent,
     FinanceiroFiltrosModalComponent,
+    SelectComponent,
   ],
   templateUrl: './financeiro.component.html',
   styleUrl: './financeiro.component.scss',
@@ -47,6 +49,19 @@ import { TableColumn, TableActionConfig } from '../../../shared/components/data-
 export class FinanceiroComponent implements OnInit {
   private service        = inject(FinanceiroService);
   private clientesService = inject(ClientesService);
+
+  readonly opcoesStatus = [
+    { value: 'TODOS',     label: 'Todos os status' },
+    { value: 'PENDENTE',  label: 'Pendente'  },
+    { value: 'PAGO',      label: 'Pago'      },
+    { value: 'VENCIDO',   label: 'Vencido'   },
+    { value: 'CANCELADO', label: 'Cancelado' },
+  ];
+
+  readonly opcoesOrdenacao = [
+    { value: 'recente', label: 'Mais recentes' },
+    { value: 'antigo',  label: 'Mais antigos'  },
+  ];
   private cdr             = inject(ChangeDetectorRef);
   private messageService  = inject(MessageService);
 
@@ -67,6 +82,7 @@ export class FinanceiroComponent implements OnInit {
   showModalEdicao   = false;
   showModalFiltros  = false;
   lancamentoSelecionado: LancamentoFinanceiroResponse | null = null;
+  ordenacao: 'recente' | 'antigo' = 'recente';
 
   // ── Gráfico Fluxo de Caixa ────────────────────────────────
   periodoGrafico: PeriodoGrafico = '6M';
@@ -256,31 +272,28 @@ export class FinanceiroComponent implements OnInit {
 
   // ── Filtro client-side ─────────────────────────────────────
   get lancamentosFiltrados(): LancamentoFinanceiroResponse[] {
-    const termo = this.normalizar(this.filtro.busca);
-
     return this.lancamentos
       .filter(l => {
         const matchTab    = this.filtro.tab === 'TODOS' || l.tipo === this.filtro.tab;
         const matchStatus = this.filtro.status === 'TODOS' || this.statusEfetivo(l) === this.filtro.status;
-        const matchBusca  = !termo ||
-          this.normalizar(l.descricao  ?? '').includes(termo) ||
-          this.normalizar(l.categoria  ?? '').includes(termo) ||
-          this.normalizar(l.clienteNome ?? '').includes(termo);
 
-        const data       = l.dataVencimento ?? '';
+        const data        = l.dataVencimento ?? '';
         const matchInicio = !this.filtro.dataInicial || data >= this.filtro.dataInicial;
         const matchFim    = !this.filtro.dataFinal   || data <= this.filtro.dataFinal;
 
-        return matchTab && matchStatus && matchBusca && matchInicio && matchFim;
+        return matchTab && matchStatus && matchInicio && matchFim;
       })
-      .sort((a, b) => (b.dataVencimento ?? '').localeCompare(a.dataVencimento ?? ''));
+      .sort((a, b) => {
+        const da = new Date(a.createdAt).getTime();
+        const db = new Date(b.createdAt).getTime();
+        return this.ordenacao === 'recente' ? db - da : da - db;
+      });
   }
 
   get temFiltroAtivo(): boolean {
     const f = this.filtro;
     return f.tab !== 'TODOS'
       || f.status !== 'TODOS'
-      || !!f.busca
       || !!f.dataInicial
       || !!f.dataFinal;
   }
@@ -431,10 +444,6 @@ export class FinanceiroComponent implements OnInit {
     this.lancamentos = this.lancamentos.map(l =>
       l.id === atualizado.id ? atualizado : l
     );
-  }
-
-  private normalizar(s: string): string {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
   private toast(severity: string, summary: string, detail: string): void {

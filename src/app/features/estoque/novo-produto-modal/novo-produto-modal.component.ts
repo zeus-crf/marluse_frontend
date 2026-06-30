@@ -5,13 +5,13 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { SelectModule } from 'primeng/select';
 import {
   ProdutoRequest,
   ProdutoAtualizarRequest,
   ProdutoResponse,
   UnidadeMedida,
 } from '../models/estoque.models';
+import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 
 interface ProdutoForm {
   nome: string;
@@ -25,7 +25,7 @@ interface ProdutoForm {
 @Component({
   selector: 'app-novo-produto-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule, InputNumberModule, SelectSearchComponent],
   templateUrl: './novo-produto-modal.component.html',
 })
 export class NovoProdutoModalComponent implements OnChanges {

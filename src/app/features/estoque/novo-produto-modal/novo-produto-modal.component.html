@@ -57,13 +57,10 @@
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1.5">
           Unidade <span class="text-red-500">*</span>
         </div>
-        <p-select
+        <app-select-search
           [(ngModel)]="form.medida"
           [options]="unidades"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-        />
+          placeholder="Selecionar unidade…" />
       </div>
     </div>
 
