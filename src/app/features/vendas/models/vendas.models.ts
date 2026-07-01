@@ -15,6 +15,7 @@ export interface ItemPedidoResponse {
  
 export interface PedidoResponse {
   id: string;
+  numero: number;
   clienteId: string | null;
   clienteNome: string;
   status: StatusPedido;

@@ -70,4 +70,8 @@ export class PedidoDetalheModalComponent {
   formatData(iso: string): string {
     return new Date(iso).toLocaleDateString('pt-BR');
   }
+
+  formatNumero(n: number): string {
+    return String(n ?? 0).padStart(3, '0');
+  }
 }

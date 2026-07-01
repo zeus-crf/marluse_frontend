@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, inject, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
@@ -12,7 +13,7 @@ import { TableColumn, TableActionConfig } from './data-table.models';
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, TableModule, TagModule, ButtonModule, RippleModule, TooltipModule, ConfirmDialogModule],
+  imports: [CommonModule, FormsModule, TableModule, TagModule, ButtonModule, RippleModule, TooltipModule, ConfirmDialogModule],
   templateUrl: './data-table.component.html',
   providers: [ConfirmationService],
 })
@@ -30,6 +31,42 @@ export class DataTableComponent {
 
   /** Mensagem exibida quando não há dados */
   @Input() emptyMessage = 'Nenhum registro encontrado';
+
+  /** Número de linhas por página */
+  @Input() pageSize = 10;
+
+  /** Exibe o input de busca acima da tabela */
+  @Input() searchable = true;
+
+  /** Placeholder do input de busca */
+  @Input() searchPlaceholder = 'Buscar...';
+
+  /** Exibe o botão de filtro ao lado da busca */
+  @Input() showFiltrar = false;
+
+  /** Indica se há filtro ativo (mostra ponto azul no botão) */
+  @Input() filtroAtivo = false;
+
+  /** Emitido ao clicar no botão de filtro */
+  @Output() filtrar = new EventEmitter<void>();
+
+  /** Termo de busca interno */
+  busca = '';
+
+  get rowsFiltrados(): any[] {
+    if (!this.busca.trim()) return this.rows;
+    const termo = this.normalizar(this.busca.trim());
+    return this.rows.filter((row, i) =>
+      this.columns.some(col => {
+        const val = this.getCellValue(col, row, i);
+        return val != null && this.normalizar(String(val)).includes(termo);
+      })
+    );
+  }
+
+  private normalizar(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
 
   /** Configuração dos botões de ação */
   @Input() actions: TableActionConfig = {

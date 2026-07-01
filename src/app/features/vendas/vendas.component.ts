@@ -19,17 +19,19 @@ import {
 } from './models/vendas.models';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { TableColumn, TableActionConfig } from '../../shared/components/data-table/data-table.models';
+import { SelectComponent } from '../../shared/components/select/select.component';
 import { NovoPedidoModalComponent } from './components/novo-pedido-modal/novo-pedido-modal.component';
 import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/pedido-detalhe-modal.component';
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
 import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/vendas-filtros-modal.component';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 
 
 
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent, SelectComponent, DatePickerComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
   providers: [MessageService],
@@ -38,6 +40,11 @@ export class VendasComponent implements OnInit {
   private service = inject(VendasService);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
+
+  readonly opcoesOrdenacao = [
+    { value: 'recente', label: 'Mais recentes' },
+    { value: 'antigo',  label: 'Mais antigos'  },
+  ];
 
   // ── Dados ──────────────────────────────────────────────────
   pedidos: PedidoResponse[] = [];
@@ -63,7 +70,6 @@ export class VendasComponent implements OnInit {
   ];
 
   // ── Filtros ────────────────────────────────────────────────
-  busca = '';
   ordenacao: 'recente' | 'antigo' = 'recente';
   filtro: VendasFiltroCompleto = {
     status: 'TODOS', formaPagamento: 'TODOS',
@@ -116,11 +122,11 @@ export class VendasComponent implements OnInit {
   // ── Configuração DataTable ─────────────────────────────────
   readonly colunasPedidos: TableColumn[] = [
     {
-      field: '__numero',
+      field: 'numero',
       header: 'N°',
       width: '8%',
       type: 'mono',
-      valueFn: (_, i) => 'V' + String((i ?? 0) + 1).padStart(3, '0'),
+      valueFn: (p: PedidoResponse) => '#' + String(p.numero ?? 0).padStart(3, '0'),
     },
     { field: 'createdAt',   header: 'Data',     width: '12%', type: 'date' },
     { field: 'clienteNome', header: 'Cliente',   width: '20%', type: 'text' },
@@ -247,17 +253,8 @@ export class VendasComponent implements OnInit {
   }
 
   // ── Filtro client-side ─────────────────────────────────────
-  private normalizar(s: string): string {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  }
-
   get pedidosFiltrados(): PedidoResponse[] {
     return this.pedidos.filter((p) => {
-      const termo = this.normalizar(this.busca);
-      const matchBusca =
-        !this.busca ||
-        this.normalizar(p.clienteNome).includes(termo) ||
-        p.itens.some((i) => this.normalizar(i.produtoNome).includes(termo));
 
       const matchStatus = this.filtro.status === 'TODOS' || p.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || p.formaPagamento === this.filtro.formaPagamento;
@@ -270,7 +267,7 @@ export class VendasComponent implements OnInit {
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchBusca && matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
     }).sort((a, b) => {
       const da = new Date(a.createdAt ?? 0).getTime();
       const db = new Date(b.createdAt ?? 0).getTime();

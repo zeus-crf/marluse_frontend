@@ -17,6 +17,7 @@ export interface ItemLocacaoRequest {
 
 export interface LocacaoResponse {
   id: string;
+  numero: number;
   clienteId: string | null;
   clienteNome: string;
   status: StatusLocacao;

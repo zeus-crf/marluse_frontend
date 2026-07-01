@@ -3,19 +3,19 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
 import { CommonModule } from '@angular/common';
 import { SelectModule } from 'primeng/select';
 
-export interface SelectOption {
+export interface SelectSearchOption {
   value: string;
   label: string;
 }
 
 @Component({
-  selector: 'app-select',
+  selector: 'app-select-search',
   standalone: true,
   imports: [CommonModule, FormsModule, SelectModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SelectComponent),
+      useExisting: forwardRef(() => SelectSearchComponent),
       multi: true,
     },
   ],
@@ -27,15 +27,19 @@ export interface SelectOption {
       [options]="options"
       optionLabel="label"
       optionValue="value"
+      [filter]="true"
+      filterBy="label"
+      [checkmark]="true"
       [placeholder]="placeholder"
       [disabled]="disabled"
       [size]="size"
+      emptyFilterMessage="Nenhum resultado"
       appendTo="body"
       styleClass="w-full" />
   `,
 })
-export class SelectComponent implements ControlValueAccessor {
-  @Input() options: SelectOption[] = [];
+export class SelectSearchComponent implements ControlValueAccessor {
+  @Input() options: SelectSearchOption[] = [];
   @Input() placeholder = 'Selecionar…';
   @Input() size: 'small' | 'large' | undefined = undefined;
 

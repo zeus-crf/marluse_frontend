@@ -8,15 +8,16 @@
   </div>
 
   <div class="flex items-center gap-2">
-    @if (temFiltroAtivo) {
-    <button
-      type="button"
-      (click)="onLimparFiltros()"
-      class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
-      <i class="pi pi-times text-[10px]"></i>
-      Limpar filtros
-    </button>
-  }
+       @if (temFiltroAtivo) {
+      <button
+        type="button"
+        (click)="onLimparFiltros()"
+        class="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+        <i class="pi pi-times text-[10px]"></i>
+        Limpar filtros
+      </button>
+    }
+
     <button
       (click)="abrirModalFiltros()"
       class="flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-colors"
@@ -53,11 +54,9 @@
    @if (periodoAtivo === 'custom') {
     <div class="flex items-center gap-2 ml-1">
       <span class="text-xs text-gray-400">De</span>
-      <input type="date" [(ngModel)]="customInicio"
-        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <div class="w-32"><app-date-picker [(ngModel)]="customInicio" [compact]="true" /></div>
       <span class="text-xs text-gray-400">até</span>
-      <input type="date" [(ngModel)]="customFim"
-        class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-gray-700 outline-none focus:border-blue-400" />
+      <div class="w-32"><app-date-picker [(ngModel)]="customFim" [compact]="true" /></div>
       <button (click)="aplicarPeriodoCustom()"
         class="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
         Aplicar
@@ -79,19 +78,46 @@
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Vendas no período</p>
-    <p class="text-3xl font-bold text-blue-600">{{ formatCurrency(vendasMes) }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Vendas no período</span>
+      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-blue-600">point_of_sale</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ formatCurrency(vendasMes) }}</p>
+    <div class="flex items-center gap-1 text-xs text-blue-600 font-medium">
+      <span class="material-symbols-outlined text-[13px]">payments</span>
+      valor total confirmado
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Total de registros</p>
-    <p class="text-3xl font-bold text-gray-900">{{ totalRegistros }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Total de registros</span>
+      <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-purple-600">receipt_long</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ totalRegistros }}</p>
+    <div class="flex items-center gap-1 text-xs text-purple-600 font-medium">
+      <span class="material-symbols-outlined text-[13px]">list_alt</span>
+      pedidos e orçamentos
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 p-5">
-    <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase mb-3">Pendentes</p>
-    <p class="text-3xl font-bold text-orange-500">{{ totalPendentes }}</p>
+  <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Pendentes</span>
+      <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-orange-500">schedule</span>
+      </div>
+    </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-1">{{ totalPendentes }}</p>
+    <div class="flex items-center gap-1 text-xs text-orange-500 font-medium">
+      <span class="material-symbols-outlined text-[13px]">hourglass_empty</span>
+      aguardando confirmação
+    </div>
   </div>
 
 </div>
@@ -181,38 +207,30 @@
   <!-- Barra de filtros -->
   <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
 
-    <!-- Busca -->
-    <div class="flex-1 min-w-[220px] relative">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400 pointer-events-none">
-        search
-      </span>
-      <input
-        type="text"
-        [(ngModel)]="busca"
-        placeholder="Buscar por cliente, n° ou produto..."
-        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-      />
+    <!-- Tabs status -->
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+      @for (s of [
+        { label: 'Todos',      value: 'TODOS'      },
+        { label: 'Orçamento',  value: 'ORCAMENTO'  },
+        { label: 'Pendente',   value: 'PENDENTE'   },
+        { label: 'Confirmado', value: 'CONFIRMADO' },
+        { label: 'Pago',       value: 'PAGO'       },
+        { label: 'Cancelado',  value: 'CANCELADO'  }
+      ]; track s.value) {
+        <button
+          type="button"
+          (click)="filtro.status = $any(s.value)"
+          class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+          [ngClass]="filtro.status === s.value
+            ? 'bg-white text-gray-800 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'">
+          {{ s.label }}
+        </button>
+      }
     </div>
 
-    <!-- Dropdown status -->
-    <select
-      [(ngModel)]="filtro.status"
-      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-      <option value="TODOS">Todos os status</option>
-      <option value="ORCAMENTO">Orçamento</option>
-      <option value="PENDENTE">Pendente</option>
-      <option value="CONFIRMADO">Confirmado</option>
-      <option value="PAGO">Pago</option>
-      <option value="CANCELADO">Cancelado</option>
-    </select>
-
     <!-- Ordenação -->
-    <select
-      [(ngModel)]="ordenacao"
-      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-400 bg-white cursor-pointer">
-      <option value="recente">Mais recentes</option>
-      <option value="antigo">Mais antigos</option>
-    </select>
+    <app-select [(ngModel)]="ordenacao" [options]="opcoesOrdenacao" placeholder="Ordenação" size="small" />
 
     <!-- Contador -->
     <span class="ml-auto text-xs text-gray-400">
@@ -229,6 +247,9 @@
       [loading]="loading"
       [actions]="acoesPedidos"
       emptyMessage="Nenhuma venda encontrada"
+      [showFiltrar]="true"
+      [filtroAtivo]="temFiltroAtivo"
+      (filtrar)="abrirModalFiltros()"
       (verDetalhe)="abrirDetalhe($any($event))"
       (editar)="abrirEdicao($any($event))"
       (excluir)="onExcluirPedido($any($event))"
