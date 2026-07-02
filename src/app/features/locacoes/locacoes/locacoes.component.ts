@@ -195,6 +195,7 @@ export class LocacoesComponent implements OnInit {
       fim:    fim.toISOString().split('T')[0],
     };
     this.recalcularGraficos();
+    this.carregarKpis();
     this.cdr.detectChanges();
   }
 
@@ -202,6 +203,7 @@ export class LocacoesComponent implements OnInit {
     if (this.customInicio && this.customFim) {
       this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
       this.recalcularGraficos();
+      this.carregarKpis();
       this.cdr.detectChanges();
     }
   }
@@ -238,10 +240,16 @@ export class LocacoesComponent implements OnInit {
     return this.locacoesParaKPIs.filter(l => l.status === 'DEVOLVIDA').length;
   }
 
-  get faturamentoMes(): number {
-    return this.locacoesParaKPIs
-      .filter(l => l.status !== 'CANCELADA' && l.status !== 'ORCAMENTO')
-      .reduce((acc, l) => acc + Number(l.valorTotal), 0);
+  faturamentoMes = 0;
+
+  private carregarKpis(): void {
+    if (!this.filtro.inicio || !this.filtro.fim) return;
+    this.service.getKpis({ inicio: this.filtro.inicio, fim: this.filtro.fim }).subscribe({
+      next: valor => {
+        this.faturamentoMes = Number(valor);
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // ── Gráficos (ApexCharts — cacheados) ─────────────────────
@@ -402,12 +410,14 @@ export class LocacoesComponent implements OnInit {
         : (l.dataRetirada ?? '');
       const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
       const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+      // Locações ATIVA sempre visíveis (pode ter parcelas pendentes em qualquer período)
+      const matchPeriodo = l.status === 'ATIVA' || (matchInicio && matchFim);
 
       const valor    = Number(l.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchPeriodo && matchMin && matchMax;
     });
   }
 
@@ -507,6 +517,10 @@ export class LocacoesComponent implements OnInit {
   fecharDetalhe(): void {
     this.showModalDetalhe    = false;
     this.locacaoSelecionada  = null;
+  }
+
+  onParcelaPaga(): void {
+    this.carregarKpis();
   }
 
   // ── Modal Edição ───────────────────────────────────────────

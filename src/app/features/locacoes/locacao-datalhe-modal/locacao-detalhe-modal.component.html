@@ -93,6 +93,87 @@
           </div>
         </div>
 
+        <!-- ── Parcelas ───────────────────────────────────────── -->
+        @if (loadingParcelas) {
+          <div class="flex justify-center py-4">
+            <i class="pi pi-spin pi-spinner text-blue-400 text-lg"></i>
+          </div>
+        } @else if (parcelas.length > 1) {
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Parcelas</p>
+              <span class="text-[10.5px] text-gray-400">{{ parcelasPagasCount }}/{{ parcelas.length }} pagas</span>
+            </div>
+
+            <div class="border border-slate-200 rounded-lg overflow-hidden">
+              <!-- Cabeçalho -->
+              <div class="grid grid-cols-[44px_1fr_110px_90px_52px] gap-2 bg-slate-50 border-b border-slate-100 px-3 py-[7px]">
+                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">#</div>
+                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Vencimento</div>
+                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Valor</div>
+                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-center">Status</div>
+                <div></div>
+              </div>
+
+              <!-- Linhas -->
+              @for (parcela of parcelas; track parcela.id) {
+                <div class="grid grid-cols-[44px_1fr_110px_90px_52px] gap-2 px-3 py-2.5 border-b border-slate-100 last:border-0 items-center">
+
+                  <!-- Número -->
+                  <div class="text-[12px] text-gray-400 font-mono">
+                    {{ parcela.numeroParcela }}<span class="text-gray-300">/{{ parcela.totalParcelas }}</span>
+                  </div>
+
+                  <!-- Vencimento -->
+                  <div>
+                    <div class="text-[12px] text-gray-700">{{ formatData(parcela.dataVencimento ?? '') }}</div>
+                    @if (parcela.status === 'PAGO' && parcela.dataPagamento) {
+                      <div class="text-[10px] text-gray-400">pago em {{ formatData(parcela.dataPagamento) }}</div>
+                    }
+                  </div>
+
+                  <!-- Valor -->
+                  <div class="text-[12px] font-semibold text-gray-800 text-right font-mono">
+                    {{ formatCurrency(parcela.valor) }}
+                  </div>
+
+                  <!-- Badge status -->
+                  <div class="flex justify-center">
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                      [class.bg-green-100]="parcela.status === 'PAGO'"
+                      [class.text-green-700]="parcela.status === 'PAGO'"
+                      [class.bg-amber-100]="parcela.status === 'PENDENTE' && !isVencida(parcela)"
+                      [class.text-amber-600]="parcela.status === 'PENDENTE' && !isVencida(parcela)"
+                      [class.bg-red-100]="isVencida(parcela)"
+                      [class.text-red-600]="isVencida(parcela)"
+                      [class.bg-gray-100]="parcela.status === 'CANCELADO'"
+                      [class.text-gray-500]="parcela.status === 'CANCELADO'">
+                      {{ getStatusParcelaLabel(parcela) }}
+                    </span>
+                  </div>
+
+                  <!-- Ação -->
+                  <div class="flex justify-end">
+                    @if (parcela.status === 'PENDENTE') {
+                      <button type="button"
+                        (click)="pagarParcela(parcela.id)"
+                        [disabled]="pagandoParcela !== null"
+                        class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-40 transition-colors">
+                        @if (pagandoParcela === parcela.id) {
+                          <i class="pi pi-spin pi-spinner text-[10px]"></i>
+                        } @else {
+                          Pagar
+                        }
+                      </button>
+                    }
+                  </div>
+
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- ── Observação ─────────────────────────────────────── -->
         @if (locacao.observacao) {
           <div>
@@ -104,9 +185,28 @@
         }
 
         <!-- ── Total ──────────────────────────────────────────── -->
-        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-          <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Total da locação</span>
-          <span class="text-[22px] font-bold text-gray-900 font-mono">{{ formatCurrency(locacao.valorTotal) }}</span>
+        <div class="pt-3 border-t border-slate-100">
+          @if (locacao.desconto && locacao.valorBruto && locacao.valorBruto !== locacao.valorTotal) {
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] text-gray-400 uppercase tracking-[0.06em]">Subtotal</span>
+              <span class="text-[13px] text-gray-400 font-mono line-through">{{ formatCurrency(locacao.valorBruto) }}</span>
+            </div>
+            <div class="flex items-center justify-between mb-2.5">
+              <div>
+                <span class="text-[11px] text-red-400 uppercase tracking-[0.06em]">
+                  Desconto{{ locacao.tipoDesconto === 'PERCENTUAL' ? ' (' + locacao.desconto + '%)' : '' }}
+                </span>
+                @if (locacao.descontoAplicadoEm) {
+                  <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(locacao.descontoAplicadoEm) }}</div>
+                }
+              </div>
+              <span class="text-[13px] text-red-500 font-mono">-{{ formatCurrency(locacao.valorBruto - locacao.valorTotal) }}</span>
+            </div>
+          }
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Total da locação</span>
+            <span class="text-[22px] font-bold text-gray-900 font-mono">{{ formatCurrency(locacao.valorTotal) }}</span>
+          </div>
         </div>
 
         <!-- ── Ações ──────────────────────────────────────────── -->

@@ -6,7 +6,7 @@ import { LocacaoService } from '../locacoes/locacoes.service';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
-import { ClienteSimples, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao } from '../models/locacoes.models';
+import { ClienteSimples, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from '../models/locacoes.models';
 
 interface ItemForm {
   produtoId: string;
@@ -35,11 +35,15 @@ export class NovaLocacaoModalComponent {
 
     // ✅ tipo tipado — 'LOCACAO' vs 'ORCAMENTO' (não mais string vazia)
     tipo: 'LOCACAO' | 'ORCAMENTO' = 'LOCACAO';
-    clienteId        = '';
-    observacao       = '';
-    dataRetirada     = '';
+    clienteId             = '';
+    observacao            = '';
+    dataRetirada          = '';
     dataDevolucaoPrevista = '';
     formaPagamento: FormaPagamento | '' = '';
+    desconto: number | null = null;
+    tipoDesconto: TipoDesconto = 'PERCENTUAL';
+    numeroParcelas = 1;
+    primeiroVencimento = '';
 
     itens: ItemForm[] = [this.novoItem()];
     salvando = false;
@@ -47,6 +51,11 @@ export class NovaLocacaoModalComponent {
     readonly tipoOpcoes: { val: 'LOCACAO' | 'ORCAMENTO'; label: string }[] = [
         { val: 'LOCACAO',    label: 'Locação'   },
         { val: 'ORCAMENTO',  label: 'Orçamento' },
+    ];
+
+    readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+        { val: 'PERCENTUAL', label: '%'  },
+        { val: 'VALOR',      label: 'R$' },
     ];
 
     readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
@@ -60,6 +69,18 @@ export class NovaLocacaoModalComponent {
 
     get isFiado(): boolean { return this.formaPagamento === 'FIADO'; }
     get isOrcamento(): boolean { return this.tipo === 'ORCAMENTO'; }
+    get usaParcelas(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+
+    get valorBruto(): number {
+        return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade * this.dias, 0);
+    }
+
+    get valorDesconto(): number {
+        if (!this.desconto || this.desconto <= 0) return 0;
+        return this.tipoDesconto === 'PERCENTUAL'
+            ? this.valorBruto * this.desconto / 100
+            : this.desconto;
+    }
 
     get clienteOptions(): SelectOption[] {
         return this.clientes.map(c => ({ value: c.id, label: c.nome }));
@@ -77,9 +98,9 @@ export class NovaLocacaoModalComponent {
         return Math.max(0, (fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    /** ✅ Total considera precoDiaria × quantidade × dias */
+    /** Total considera precoDiaria × quantidade × dias menos desconto */
     get total(): number {
-        return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade * this.dias, 0);
+        return Math.max(0, this.valorBruto - this.valorDesconto);
     }
 
     /** ✅ Inclui validação de datas obrigatórias */
@@ -142,6 +163,10 @@ export class NovaLocacaoModalComponent {
             itens:                 this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
             observacao:            this.observacao || null,
             status,
+            desconto:              this.desconto || null,
+            tipoDesconto:          this.desconto ? this.tipoDesconto : null,
+            numeroParcelas:        this.numeroParcelas > 1 ? this.numeroParcelas : undefined,
+            primeiroVencimento:    this.usaParcelas && this.primeiroVencimento ? this.primeiroVencimento : undefined,
         }, this.tipo === 'ORCAMENTO').subscribe({
             next: (locacao) => {
                 this.locacaoCriada.emit(locacao);             // ✅ evento com nome correto
@@ -160,16 +185,19 @@ export class NovaLocacaoModalComponent {
     }
 
     private resetForm(): void {
-        this.tipo                  = 'LOCACAO';               // ✅ valor inicial coerente com o tipo
+        this.tipo                  = 'LOCACAO';
         this.dataRetirada          = '';
         this.dataDevolucaoPrevista = '';
         this.clienteId             = '';
         this.formaPagamento        = '';
         this.itens                 = [this.novoItem()];
         this.observacao            = '';
+        this.desconto              = null;
+        this.tipoDesconto          = 'PERCENTUAL';
+        this.numeroParcelas        = 1;
+        this.primeiroVencimento    = '';
     }
 
-    /** ✅ rowTotal também considera os dias */
     rowTotal(item: ItemForm): number {
         return item.precoUnitario * item.quantidade * this.dias;
     }

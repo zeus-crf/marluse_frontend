@@ -149,6 +149,56 @@
         </div>
       </div>
 
+      <!-- DESCONTO -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Desconto <span class="text-[10px] font-normal normal-case">(opcional)</span></div>
+        <div class="flex gap-2">
+          <div class="flex flex-shrink-0">
+            @for (opt of tipoDescontoOpcoes; track opt.val; let i = $index) {
+              <button type="button"
+                (click)="tipoDesconto = opt.val"
+                class="px-3 py-[6px] text-[12px] font-semibold border transition-all cursor-pointer font-[inherit]"
+                [style.border-radius]="i === 0 ? '6px 0 0 6px' : '0 6px 6px 0'"
+                [style.margin-left]="i === 1 ? '-1px' : '0'"
+                [class.bg-blue-600]="tipoDesconto === opt.val"
+                [class.text-white]="tipoDesconto === opt.val"
+                [class.border-blue-600]="tipoDesconto === opt.val"
+                [class.bg-white]="tipoDesconto !== opt.val"
+                [class.text-gray-500]="tipoDesconto !== opt.val"
+                [class.border-slate-200]="tipoDesconto !== opt.val">
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+          <input type="number" [(ngModel)]="desconto" min="0" [max]="tipoDesconto === 'PERCENTUAL' ? 100 : null" step="0.01"
+            placeholder="{{ tipoDesconto === 'PERCENTUAL' ? 'Ex: 10' : 'Ex: 50,00' }}"
+            class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-[6px] text-[13px] text-gray-800 outline-none focus:border-blue-400 font-[inherit] transition-colors" />
+        </div>
+      </div>
+
+      <!-- PARCELAS -->
+      <div class="flex flex-col gap-2">
+        <div class="grid gap-3" [class.grid-cols-2]="usaParcelas" [class.grid-cols-1]="!usaParcelas">
+          <div>
+            <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Parcelas</label>
+            <input type="number" [(ngModel)]="numeroParcelas" min="1" max="36"
+              class="w-full bg-white border border-slate-200 rounded-lg px-3 py-[6px] text-[13px] text-gray-800 outline-none focus:border-blue-400 font-[inherit] transition-colors" />
+          </div>
+          @if (usaParcelas) {
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">1° vencimento</label>
+              <app-date-picker [(ngModel)]="primeiroVencimento" />
+            </div>
+          }
+        </div>
+        @if (numeroParcelas > 1 && total > 0) {
+          <div class="flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+            <span class="text-[12px] text-blue-600 font-medium">{{ numeroParcelas }}× de</span>
+            <span class="text-[14px] font-bold text-blue-700 font-mono">{{ formatCurrency(total / numeroParcelas) }}</span>
+          </div>
+        }
+      </div>
+
       <!-- OBSERVAÇÃO -->
       <div>
         <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>
@@ -184,6 +234,10 @@
 
         <div class="text-right">
           <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1">Total estimado</div>
+          @if (valorDesconto > 0) {
+            <div class="text-[11px] text-gray-400 line-through font-mono mb-0.5">{{ formatCurrency(valorBruto) }}</div>
+            <div class="text-[11px] text-red-400 font-mono mb-0.5">-{{ formatCurrency(valorDesconto) }}</div>
+          }
           <div class="text-[24px] font-bold font-mono leading-none transition-colors"
             [class.text-blue-600]="total > 0"
             [class.text-gray-300]="total === 0">

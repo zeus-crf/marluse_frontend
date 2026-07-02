@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { LocacaoResponse, FormaPagamento } from '../models/locacoes.models';
+import { LocacaoResponse, FormaPagamento, TipoDesconto } from '../models/locacoes.models';
 
 @Component({
   selector: 'app-locacao-edicao-modal',
@@ -17,26 +17,44 @@ export class LocacaoEdicaoModalComponent {
   @Input() salvando = false;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto }>();
 
-
-  @Input() set locacao(l: LocacaoResponse | null) { 
-    this._locacao = l;
+  @Input() set locacao(l: LocacaoResponse | null) {
+    this._locacao    = l;
     this.formaPagamento = l?.formaPagamento ?? '';
     this.observacao     = l?.observacao    ?? '';
+    this.desconto       = l?.desconto      ?? null;
+    this.tipoDesconto   = l?.tipoDesconto  ?? 'PERCENTUAL';
   }
 
   get locacao(): LocacaoResponse | null { return this._locacao; }
   private _locacao: LocacaoResponse | null = null;
 
-  get formValida(): boolean {
-    return !!this.formaPagamento;
+  get formValida(): boolean { return !!this.formaPagamento; }
+
+  formaPagamento: FormaPagamento | '' = '';
+  observacao  = '';
+  desconto: number | null = null;
+  tipoDesconto: TipoDesconto = 'PERCENTUAL';
+
+  // Base do desconto = valorTotal atual (desconto é cumulativo)
+  get valorBruto(): number { return this._locacao?.valorTotal ?? 0; }
+
+  get valorDesconto(): number {
+    if (!this.desconto || this.desconto <= 0) return 0;
+    return this.tipoDesconto === 'PERCENTUAL'
+      ? this.valorBruto * this.desconto / 100
+      : this.desconto;
   }
 
-    formaPagamento: FormaPagamento | '' = '';
-    observacao = '';
+  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto); }
     
-readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
+readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
+  ];
+
+  readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
     { valor: 'PIX',            label: 'PIX'      },
     { valor: 'DINHEIRO',       label: 'Dinheiro' },
     { valor: 'CARTAO_CREDITO', label: 'Crédito'  },
@@ -50,7 +68,9 @@ readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
   }
 
   formatData(iso: string): string {
-    return new Date(iso).toLocaleDateString('pt-BR');
+    if (!iso) return '';
+    const [year, month, day] = iso.split('T')[0].split('-');
+    return `${day}/${month}/${year}`;
   }
 
   onSalvar(): void {
@@ -58,6 +78,8 @@ readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
     this.salvar.emit({
       observacao:     this.observacao,
       formaPagamento: this.formaPagamento,
+      desconto:       this.desconto,
+      tipoDesconto:   this.tipoDesconto,
     });
   }
 
