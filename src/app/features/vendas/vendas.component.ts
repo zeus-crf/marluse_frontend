@@ -422,6 +422,30 @@ export class VendasComponent implements OnInit {
     this.carregarKpis();
   }
 
+  onConfirmarPedido(id: string): void {
+    this.salvando = true;
+    this.service.patchConfirmarPedido(id).subscribe({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharDetalhe();
+        this.carregarKpis();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Confirmado',
+          detail: 'Orçamento convertido em venda com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível confirmar o orçamento', life: 3000 });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   onCancelar(id: string): void {
     this.salvando = true;
     this.service.patchCancelarPedido(id).subscribe({
@@ -495,6 +519,7 @@ export class VendasComponent implements OnInit {
     this.service.deletePedido(pedido.id).subscribe({
       next: () => {
         this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
+        this.carregarKpis();
         this.messageService.add({
           severity: 'success',
           summary: 'Excluído',

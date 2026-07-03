@@ -23,6 +23,7 @@ export class PedidoDetalheModalComponent implements OnChanges {
     @Output() fechar        = new EventEmitter<void>();
     @Output() pagar         = new EventEmitter<string>();
     @Output() cancelar      = new EventEmitter<string>();
+    @Output() confirmar     = new EventEmitter<string>();
     @Output() parcelaPaga   = new EventEmitter<ParcelaResponse | null>();
 
     parcelas: ParcelaResponse[] = [];
@@ -87,8 +88,15 @@ export class PedidoDetalheModalComponent implements OnChanges {
         });
     }
 
+    get podeConfirmar(): boolean {
+        return !!this.pedido && this.pedido.status === 'ORCAMENTO';
+    }
+
     get podePagar(): boolean {
-        return !!this.pedido && this.pedido.status !== 'PAGO' && this.pedido.status !== 'CANCELADO';
+        return !!this.pedido &&
+               this.pedido.status !== 'PAGO' &&
+               this.pedido.status !== 'CANCELADO' &&
+               this.pedido.status !== 'ORCAMENTO';
     }
 
     get podeCancelar(): boolean {

@@ -20,9 +20,10 @@ export class LocacaoDetalheModalComponent implements OnChanges {
     @Input() locacao: LocacaoResponse | null = null;
     @Input() salvando = false;
 
-    @Output() fechar    = new EventEmitter<void>();
-    @Output() devolver  = new EventEmitter<LocacaoResponse>();
-    @Output() cancelar  = new EventEmitter<LocacaoResponse>();
+    @Output() fechar      = new EventEmitter<void>();
+    @Output() devolver    = new EventEmitter<LocacaoResponse>();
+    @Output() cancelar    = new EventEmitter<LocacaoResponse>();
+    @Output() confirmar   = new EventEmitter<LocacaoResponse>();
     @Output() parcelaPaga = new EventEmitter<void>();
 
     parcelas: ParcelaResponse[] = [];
@@ -75,6 +76,10 @@ export class LocacaoDetalheModalComponent implements OnChanges {
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    get podeConfirmar(): boolean {
+        return !!this.locacao && this.locacao.status === 'ORCAMENTO';
     }
 
     get podeDevolver(): boolean {

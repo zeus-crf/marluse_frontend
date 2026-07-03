@@ -59,6 +59,11 @@ export class LocacaoService {
       .pipe(map(r => r.data));
   }
 
+  patchConfirmar(id: string): Observable<LocacaoResponse> {
+    return this.http.patch<{ data: LocacaoResponse }>(`${this.baseUrl}/${id}/confirmar`, {})
+      .pipe(map(r => r.data));
+  }
+
   getParcelas(locacaoId: string): Observable<ParcelaResponse[]> {
     return this.http.get<{ data: ParcelaResponse[] }>(`${this.baseUrl}/${locacaoId}/parcelas`)
       .pipe(map(r => r.data));

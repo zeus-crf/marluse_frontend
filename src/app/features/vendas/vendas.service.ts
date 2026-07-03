@@ -70,6 +70,11 @@ export class VendasService {
             .pipe(map(r => r.data))
     }
 
+    patchConfirmarPedido(id: string): Observable<PedidoResponse> {
+        return this.http.patch<{data: PedidoResponse}>(`${this.baseUrl}/${id}/confirmar`, {})
+            .pipe(map(r => r.data))
+    }
+
     getParcelas(pedidoId: string): Observable<ParcelaResponse[]> {
         return this.http.get<{ data: ParcelaResponse[] }>(`${this.baseUrl}/${pedidoId}/parcelas`)
             .pipe(map(r => r.data));

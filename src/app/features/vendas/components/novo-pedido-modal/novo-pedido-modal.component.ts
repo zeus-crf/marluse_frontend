@@ -68,6 +68,7 @@ export class NovoPedidoModalComponent {
   ];
 
   get isFiado(): boolean { return this.formaPagamento === 'FIADO'; }
+  get isOrcamento(): boolean { return this.tipo === 'ORCAMENTO'; }
   get usaParcelas(): boolean { return this.isFiado || this.numeroParcelas > 1; }
 
   get valorBruto(): number {

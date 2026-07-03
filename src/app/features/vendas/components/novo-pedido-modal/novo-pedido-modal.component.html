@@ -6,7 +6,7 @@
   [resizable]="false"
   [style]="{ width: '660px' }"
   [contentStyle]="{ padding: '0' }"
-  header="Nova Venda">
+  [header]="isOrcamento ? 'Novo Orçamento' : 'Nova Venda'">
 
 <hr>
 
@@ -230,6 +230,17 @@
 
       
 
+      <!-- AVISO ORÇAMENTO -->
+      @if (isOrcamento) {
+        <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200">
+          <i class="pi pi-info-circle text-amber-500 text-[14px] flex-shrink-0"></i>
+          <p class="text-[12px] text-amber-700 leading-snug">
+            Orçamentos <strong>não</strong> baixam estoque nem geram lançamento financeiro.
+            Converta para venda quando confirmado pelo cliente.
+          </p>
+        </div>
+      }
+
       <!-- AÇÕES -->
       <div class="flex justify-end gap-2 pt-[4px] border-t border-slate-100">
         <button type="button" (click)="fecharModal()"
@@ -238,10 +249,17 @@
         </button>
         <button type="button" (click)="salvar()"
           [disabled]="!formValida || salvando"
-          class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-[inherit]">
+          class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-[inherit]"
+          [class.bg-amber-500]="isOrcamento"
+          [class.hover:bg-amber-600]="isOrcamento"
+          [class.bg-blue-600]="!isOrcamento"
+          [class.hover:bg-blue-700]="!isOrcamento">
           @if (salvando) {
             <i class="pi pi-spin pi-spinner text-xs"></i>
             Salvando...
+          } @else if (isOrcamento) {
+            <i class="pi pi-file text-xs"></i>
+            Salvar Orçamento
           } @else {
             <i class="pi pi-check text-xs"></i>
             Salvar Venda
