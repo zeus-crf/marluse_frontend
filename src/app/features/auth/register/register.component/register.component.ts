@@ -59,7 +59,8 @@ export class RegisterComponent {
 
     this.authService.register(nome, email, password).subscribe({
       next: (res) => {
-        this.router.navigate(['/auth/login'], {
+        this.loading = false;
+        this.router.navigate(['/dashboard'], {
           state: { toast: { severity: 'success', summary: 'Conta criada!', detail: res.message } }
         });
       },

@@ -39,6 +39,7 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe({
       next: (res) => {
+        this.loading = false;
         this.router.navigate(['/dashboard'], {
           state: { toast: { severity: 'success', summary: 'Sucesso', detail: res.message } }
         });

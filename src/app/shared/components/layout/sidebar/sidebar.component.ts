@@ -1,7 +1,8 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 interface MenuItem {
   label: string;
@@ -22,6 +23,7 @@ interface MenuGroup {
 })
 export class SidebarComponent {
   private authService = inject(AuthService);
+  private router = inject(Router)
 
   currentUser = this.authService.currentUser;
   initials    = this.authService.initials;
@@ -61,6 +63,9 @@ export class SidebarComponent {
   }
 
   logout(): void {
-    this.authService.logout();
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['auth/login']),
+      error: () => this.router.navigate(['/auth/login'])
+    });
   }
 }
