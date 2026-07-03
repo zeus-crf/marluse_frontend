@@ -2,7 +2,6 @@ import { Component, signal, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
-import { HttpClient } from '@angular/common/http';
 
 interface MenuItem {
   label: string;
@@ -64,7 +63,7 @@ export class SidebarComponent {
 
   logout(): void {
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['auth/login']),
+      next: () => this.router.navigate(['/auth/login']),
       error: () => this.router.navigate(['/auth/login'])
     });
   }
