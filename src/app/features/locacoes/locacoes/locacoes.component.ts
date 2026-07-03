@@ -195,6 +195,7 @@ export class LocacoesComponent implements OnInit {
       fim:    fim.toISOString().split('T')[0],
     };
     this.recalcularGraficos();
+    this.carregarKpis();
     this.cdr.detectChanges();
   }
 
@@ -202,6 +203,7 @@ export class LocacoesComponent implements OnInit {
     if (this.customInicio && this.customFim) {
       this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
       this.recalcularGraficos();
+      this.carregarKpis();
       this.cdr.detectChanges();
     }
   }
@@ -227,21 +229,31 @@ export class LocacoesComponent implements OnInit {
   // Todos reagem ao período selecionado (e a pagamento/valor/busca).
   // A tabela mostra mais porque não tem filtro de período — intencional para urgência.
   get totalAtivas(): number {
-    return this.locacoesParaKPIs.filter(l => l.status === 'ATIVA').length;
+    // Conta todas as ATIVA — estado atual, independe do período selecionado
+    return this.locacoes.filter(l => l.status === 'ATIVA').length;
   }
 
   get totalAtrasadas(): number {
-    return this.locacoesParaKPIs.filter(l => this.isAtrasada(l)).length;
+    // Conta todas as ATRASADA — estado atual, independe do período selecionado
+    return this.locacoes.filter(l => this.isAtrasada(l)).length;
   }
 
   get totalDevolvidas(): number {
+    // Devolvidas sim respeitam o período — é dado histórico
     return this.locacoesParaKPIs.filter(l => l.status === 'DEVOLVIDA').length;
   }
 
-  get faturamentoMes(): number {
-    return this.locacoesParaKPIs
-      .filter(l => l.status !== 'CANCELADA' && l.status !== 'ORCAMENTO')
-      .reduce((acc, l) => acc + Number(l.valorTotal), 0);
+  faturamentoMes = 0;
+
+  private carregarKpis(): void {
+    if (!this.filtro.inicio || !this.filtro.fim) return;
+    this.service.getKpis({ inicio: this.filtro.inicio, fim: this.filtro.fim }).subscribe({
+      next: valor => {
+        this.faturamentoMes = Number(valor);
+        this.cdr.detectChanges();
+      },
+      error: err => console.error('[Locações KPI]', err),
+    });
   }
 
   // ── Gráficos (ApexCharts — cacheados) ─────────────────────
@@ -286,8 +298,14 @@ export class LocacoesComponent implements OnInit {
 
     const buckets = new Map<string, number>();
     for (const l of this.locacoesParaGraficos) {
+      // Bar chart mostra apenas locações efetivamente pagas (devolvidas)
       if (l.status !== 'DEVOLVIDA') continue;
-      const chave = this.bucketKey(l.dataRetirada, granularidade);
+      // Agrupa pela data real de devolução (= data em que o pagamento foi confirmado)
+      const dataRef = l.dataDevolucaoReal ?? '';
+      if (!dataRef) continue;
+      if (this.filtro.inicio && dataRef < this.filtro.inicio) continue;
+      if (this.filtro.fim    && dataRef > this.filtro.fim)    continue;
+      const chave = this.bucketKey(dataRef, granularidade);
       buckets.set(chave, (buckets.get(chave) ?? 0) + Number(l.valorTotal));
     }
 
@@ -399,15 +417,19 @@ export class LocacoesComponent implements OnInit {
 
       const dataRef = l.status === 'ORCAMENTO'
         ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : l.status === 'DEVOLVIDA'
+        ? (l.dataDevolucaoReal ?? l.dataRetirada ?? '')   // usa data real de devolução
         : (l.dataRetirada ?? '');
       const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
       const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+      // ATIVA e ATRASADA sempre visíveis — podem ter parcelas pendentes de qualquer período
+      const matchPeriodo = l.status === 'ATIVA' || l.status === 'ATRASADA' || (matchInicio && matchFim);
 
       const valor    = Number(l.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchPeriodo && matchMin && matchMax;
     });
   }
 
@@ -417,18 +439,22 @@ export class LocacoesComponent implements OnInit {
       const matchStatus = this.filtro.status === 'TODOS' || l.status === this.filtro.status;
       const matchPgto   = this.filtro.formaPagamento === 'TODOS' || l.formaPagamento === this.filtro.formaPagamento;
 
-      // ORCAMENTO: filtra por createdAt; ausente → exibe sempre
+      // ORCAMENTO usa createdAt; DEVOLVIDA usa dataDevolucaoReal; demais usam dataRetirada
       const dataRef = l.status === 'ORCAMENTO'
         ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : l.status === 'DEVOLVIDA'
+        ? (l.dataDevolucaoReal ?? l.dataRetirada ?? '')
         : (l.dataRetirada ?? '');
       const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
       const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+      // ATIVA e ATRASADA sempre presentes no donut — representam o estado atual
+      const matchPeriodo = l.status === 'ATIVA' || l.status === 'ATRASADA' || (matchInicio && matchFim);
 
       const valor    = Number(l.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchPeriodo && matchMin && matchMax;
     });
   }
 
@@ -441,15 +467,19 @@ export class LocacoesComponent implements OnInit {
 
       const dataRef = l.status === 'ORCAMENTO'
         ? (l.createdAt ? l.createdAt.split('T')[0] : null)
+        : l.status === 'DEVOLVIDA'
+        ? (l.dataDevolucaoReal ?? l.dataRetirada ?? '')
         : (l.dataRetirada ?? '');
       const matchInicio = dataRef === null || !this.filtro.inicio || dataRef >= this.filtro.inicio;
       const matchFim    = dataRef === null || !this.filtro.fim    || dataRef <= this.filtro.fim;
+      // ATIVA e ATRASADA sempre contam nos KPIs — representam o estado atual
+      const matchPeriodo = l.status === 'ATIVA' || l.status === 'ATRASADA' || (matchInicio && matchFim);
 
       const valor    = Number(l.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchPgto && matchPeriodo && matchMin && matchMax;
     });
   }
 
@@ -509,6 +539,10 @@ export class LocacoesComponent implements OnInit {
     this.locacaoSelecionada  = null;
   }
 
+  onParcelaPaga(): void {
+    this.carregarKpis();
+  }
+
   // ── Modal Edição ───────────────────────────────────────────
   abrirModalEdicao(locacao: LocacaoResponse): void {
     this.locacaoSelecionada = locacao;
@@ -562,6 +596,31 @@ export class LocacoesComponent implements OnInit {
     this.selectPeriodo('mes');
   }
 
+  onConfirmarLocacao(locacao: LocacaoResponse): void {
+    this.salvando = true;
+    this.service.patchConfirmar(locacao.id).subscribe({
+      next: (atualizada) => {
+        this.atualizarNaLista(atualizada);
+        this.salvando = false;
+        this.fecharDetalhe();
+        this.carregarKpis();
+        this.recalcularGraficos();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Confirmado',
+          detail: 'Orçamento convertido em locação com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível confirmar o orçamento', life: 3000 });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   // ── Ações da tabela ────────────────────────────────────────
   onDevolver(locacao: LocacaoResponse): void {
     if (locacao.status !== 'ATIVA' && locacao.status !== 'ATRASADA') {
@@ -579,6 +638,7 @@ export class LocacoesComponent implements OnInit {
         this.atualizarNaLista(atualizada);
         this.salvando = false;
         this.recalcularGraficos();
+        this.carregarKpis();
         this.messageService.add({
           severity: 'success',
           summary: 'Devolvido',
@@ -602,6 +662,7 @@ export class LocacoesComponent implements OnInit {
         this.locacoes = this.locacoes.filter(l => l.id !== locacao.id);
         this.salvando = false;
         this.recalcularGraficos();
+        this.carregarKpis();
         this.messageService.add({
           severity: 'info',
           summary: 'Apagado',

@@ -70,10 +70,12 @@
           @switch (col.type) {
 
             @case ('tag') {
-              <p-tag
-                [value]="col.tagLabelFn ? col.tagLabelFn(row[col.field], row) : row[col.field]"
-                [severity]="col.tagSeverityFn ? col.tagSeverityFn(row[col.field], row) : 'secondary'"
-              />
+              @if (col.tagLabelFn ? col.tagLabelFn(row[col.field], row) : row[col.field]) {
+                <p-tag
+                  [value]="col.tagLabelFn ? col.tagLabelFn(row[col.field], row) : row[col.field]"
+                  [severity]="col.tagSeverityFn ? col.tagSeverityFn(row[col.field], row) : 'secondary'"
+                />
+              }
             }
 
             @case ('currency') {

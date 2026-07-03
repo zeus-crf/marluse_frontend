@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { VendasService } from '../../vendas.service';
 import {
-  PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido
+  PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido, TipoDesconto
 } from '../../models/vendas.models';
 import { SelectOption } from '../../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
@@ -40,13 +40,22 @@ export class NovoPedidoModalComponent {
   clienteId = '';
   observacao = '';
   formaPagamento: FormaPagamento | '' = '';
-  
+  desconto: number | null = null;
+  tipoDesconto: TipoDesconto = 'PERCENTUAL';
+  numeroParcelas = 1;
+  primeiroVencimento = '';
+
   itens: ItemForm[] = [this.novoItem()];
   salvando = false;
 
   readonly tipoOpcoes: { val: 'PEDIDO' | 'ORCAMENTO'; label: string }[] = [
     { val: 'PEDIDO',    label: 'Venda'     },
     { val: 'ORCAMENTO', label: 'Orçamento' },
+  ];
+
+  readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
   ];
 
   readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
@@ -59,6 +68,19 @@ export class NovoPedidoModalComponent {
   ];
 
   get isFiado(): boolean { return this.formaPagamento === 'FIADO'; }
+  get isOrcamento(): boolean { return this.tipo === 'ORCAMENTO'; }
+  get usaParcelas(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+
+  get valorBruto(): number {
+    return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade, 0);
+  }
+
+  get valorDesconto(): number {
+    if (!this.desconto || this.desconto <= 0) return 0;
+    return this.tipoDesconto === 'PERCENTUAL'
+      ? this.valorBruto * this.desconto / 100
+      : this.desconto;
+  }
 
   get clienteOptions(): SelectOption[] {
     return this.clientes.map(c => ({ value: c.id, label: c.nome }));
@@ -69,7 +91,7 @@ export class NovoPedidoModalComponent {
   }
 
   get total(): number {
-    return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade, 0);
+    return Math.max(0, this.valorBruto - this.valorDesconto);
   }
 
   get formValida(): boolean {
@@ -118,12 +140,16 @@ export class NovoPedidoModalComponent {
     this.salvando = true;
     const status: StatusPedido = this.tipo === 'ORCAMENTO' ? 'ORCAMENTO' : 'CONFIRMADO';
     this.service.postPedidos({
-      clienteId:      this.clienteId || undefined,
-      formaPagamento: this.formaPagamento as FormaPagamento,
-      itens:          this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade })),
+      clienteId:         this.clienteId || undefined,
+      formaPagamento:    this.formaPagamento as FormaPagamento,
+      itens:             this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade })),
       status,
-      dataVencimento: this.isFiado && this.dataVencimento ? this.dataVencimento : undefined,
-      observacao: this.observacao,
+      dataVencimento:    this.isFiado && this.numeroParcelas === 1 && this.primeiroVencimento ? this.primeiroVencimento : undefined,
+      observacao:        this.observacao || undefined,
+      desconto:          this.desconto || null,
+      tipoDesconto:      this.desconto ? this.tipoDesconto : null,
+      numeroParcelas:    this.numeroParcelas > 1 ? this.numeroParcelas : undefined,
+      primeiroVencimento: this.usaParcelas && this.primeiroVencimento ? this.primeiroVencimento : undefined,
     }).subscribe({
       next: (pedido) => {
         this.pedidoCriado.emit(pedido);
@@ -140,12 +166,16 @@ export class NovoPedidoModalComponent {
   }
 
   private resetForm(): void {
-    this.tipo          = 'PEDIDO';
-    this.dataVencimento = '';
-    this.clienteId     = '';
-    this.formaPagamento = '';
-    this.itens         = [this.novoItem()];
-    this.observacao = '';
+    this.tipo               = 'PEDIDO';
+    this.dataVencimento     = '';
+    this.clienteId          = '';
+    this.formaPagamento     = '';
+    this.itens              = [this.novoItem()];
+    this.observacao         = '';
+    this.desconto           = null;
+    this.tipoDesconto       = 'PERCENTUAL';
+    this.numeroParcelas     = 1;
+    this.primeiroVencimento = '';
   }
 
   rowTotal(item: ItemForm): number { return item.precoUnitario * item.quantidade; }

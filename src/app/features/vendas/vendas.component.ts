@@ -16,6 +16,7 @@ import {
   FormaPagamento,
   PedidoAtualizarRequest,
   VendasFiltroCompleto,
+  ParcelaResponse
 } from './models/vendas.models';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { TableColumn, TableActionConfig } from '../../shared/components/data-table/data-table.models';
@@ -50,6 +51,7 @@ export class VendasComponent implements OnInit {
   pedidos: PedidoResponse[] = [];
   produtos: ProdutoSimples[] = [];
   clientes: ClienteSimples[] = [];
+  vendasMes = 0;
 
   // ── Loading ────────────────────────────────────────────────
   loading = true;
@@ -148,6 +150,27 @@ export class VendasComponent implements OnInit {
       tagSeverityFn: (val: StatusPedido) => this.getSeverity(val),
       tagLabelFn:    (val: StatusPedido) => this.getStatusLabel(val),
     },
+    {
+      field: 'parcelaMesAtual',
+      header: 'Parcelas',
+      width: '11%',
+      type: 'tag',
+      tagSeverityFn: (parcela: ParcelaResponse | null) => {
+        if (!parcela) return 'secondary';
+        if (parcela.status === 'PAGO') return 'success';   // todas pagas
+        if (parcela.dataVencimento) {
+          const venc = new Date(parcela.dataVencimento + 'T12:00:00');
+          if (venc < new Date()) return 'danger';           // próxima vencida
+        }
+        return 'warn';                                      // próxima pendente
+      },
+      tagLabelFn: (parcela: ParcelaResponse | null) => {
+        if (!parcela) return '';
+        if (parcela.status === 'PAGO') return `${parcela.totalParcelas}/${parcela.totalParcelas} pagas`;
+        const pagas = parcela.numeroParcela - 1;
+        return `${pagas}/${parcela.totalParcelas} pagas`;
+      },
+    },
   ];
 
   readonly acoesPedidos: TableActionConfig = {
@@ -204,12 +227,14 @@ export class VendasComponent implements OnInit {
     else if (p === 'ano')       start.setFullYear(hoje.getFullYear() - 1);
     this.filtro = { ...this.filtro, inicio: start.toISOString().split('T')[0], fim: hoje.toISOString().split('T')[0] };
     this.cdr.detectChanges();
+    this.carregarKpis();
   }
 
   aplicarPeriodoCustom(): void {
     if (this.customInicio && this.customFim) {
       this.filtro = { ...this.filtro, inicio: this.customInicio, fim: this.customFim };
       this.cdr.detectChanges();
+      this.carregarKpis();
     }
   }
 
@@ -237,11 +262,15 @@ export class VendasComponent implements OnInit {
     });
   }
 
-  // ── KPIs (calculados a partir da lista) ────────────────────
-  get vendasMes(): number {
-    return this.pedidosFiltrados
-      .filter(p => p.status === 'PAGO')
-      .reduce((acc, p) => acc + Number(p.valorTotal), 0);
+  // ── KPIs ──────────────────────────────────────────────────
+  private carregarKpis(): void {
+    if (!this.filtro.inicio || !this.filtro.fim) return;
+    this.service.getKpis({ inicio: this.filtro.inicio, fim: this.filtro.fim }).subscribe({
+      next: valor => {
+        this.vendasMes = Number(valor);
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   get totalRegistros(): number {
@@ -262,12 +291,14 @@ export class VendasComponent implements OnInit {
       const data        = p.createdAt ? p.createdAt.split('T')[0] : '';
       const matchInicio = !this.filtro.inicio || data >= this.filtro.inicio;
       const matchFim    = !this.filtro.fim    || data <= this.filtro.fim;
+      // Pedidos CONFIRMADO têm parcelas em aberto — sempre visíveis independente do período
+      const matchPeriodo = p.status === 'CONFIRMADO' || (matchInicio && matchFim);
 
       const valor    = Number(p.valorTotal);
       const matchMin = this.filtro.minValor === null || valor >= this.filtro.minValor;
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
-      return matchStatus && matchPgto && matchInicio && matchFim && matchMin && matchMax;
+      return matchStatus && matchPgto && matchPeriodo && matchMin && matchMax;
     }).sort((a, b) => {
       const da = new Date(a.createdAt ?? 0).getTime();
       const db = new Date(b.createdAt ?? 0).getTime();
@@ -372,9 +403,44 @@ export class VendasComponent implements OnInit {
           life: 3000,
         });
         this.cdr.detectChanges();
+        this.carregarKpis();
       },
       error: () => {
         this.salvando = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onParcelaPaga(proxima: ParcelaResponse | null): void {
+    if (!this.pedidoSelecionado) return;
+    const id = this.pedidoSelecionado.id;
+    this.pedidos = this.pedidos.map(p =>
+      p.id === id ? { ...p, parcelaMesAtual: proxima } : p
+    );
+    this.cdr.detectChanges();
+    this.carregarKpis();
+  }
+
+  onConfirmarPedido(id: string): void {
+    this.salvando = true;
+    this.service.patchConfirmarPedido(id).subscribe({
+      next: (pedidoAtualizado) => {
+        this.atualizarNaLista(pedidoAtualizado);
+        this.salvando = false;
+        this.fecharDetalhe();
+        this.carregarKpis();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Confirmado',
+          detail: 'Orçamento convertido em venda com sucesso',
+          life: 3000,
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.salvando = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível confirmar o orçamento', life: 3000 });
         this.cdr.detectChanges();
       },
     });
@@ -453,6 +519,7 @@ export class VendasComponent implements OnInit {
     this.service.deletePedido(pedido.id).subscribe({
       next: () => {
         this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
+        this.carregarKpis();
         this.messageService.add({
           severity: 'success',
           summary: 'Excluído',

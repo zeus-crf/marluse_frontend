@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { PedidoResponse, FormaPagamento } from '../../models/vendas.models';
+import { PedidoResponse, FormaPagamento, TipoDesconto } from '../../models/vendas.models';
 
 @Component({
   selector: 'app-pedido-edicao-modal',
@@ -19,15 +19,24 @@ export class PedidoEdicaoModalComponent {
     this._pedido = p;
     this.formaPagamento = p?.formaPagamento ?? '';
     this.observacao     = p?.observacao    ?? '';
+    this.desconto       = p?.desconto      ?? null;
+    this.tipoDesconto   = p?.tipoDesconto  ?? 'PERCENTUAL';
   }
   get pedido(): PedidoResponse | null { return this._pedido; }
   private _pedido: PedidoResponse | null = null;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto }>();
 
   formaPagamento: FormaPagamento | '' = '';
   observacao = '';
+  desconto: number | null = null;
+  tipoDesconto: TipoDesconto = 'PERCENTUAL';
+
+  readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
+  ];
 
   readonly formasPagamento: { valor: FormaPagamento; label: string }[] = [
     { valor: 'PIX',            label: 'PIX'      },
@@ -43,14 +52,30 @@ export class PedidoEdicaoModalComponent {
   }
 
   formatData(iso: string): string {
-    return new Date(iso).toLocaleDateString('pt-BR');
+    if (!iso) return '';
+    const [year, month, day] = iso.split('T')[0].split('-');
+    return `${day}/${month}/${year}`;
   }
+
+  // Base do desconto = valorTotal atual (desconto é cumulativo)
+  get valorBruto(): number { return this._pedido?.valorTotal ?? 0; }
+
+  get valorDesconto(): number {
+    if (!this.desconto || this.desconto <= 0) return 0;
+    return this.tipoDesconto === 'PERCENTUAL'
+      ? this.valorBruto * this.desconto / 100
+      : this.desconto;
+  }
+
+  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto); }
 
   onSalvar(): void {
     if (!this.formaPagamento) return;
     this.salvar.emit({
       observacao:     this.observacao,
       formaPagamento: this.formaPagamento,
+      desconto:       this.desconto,
+      tipoDesconto:   this.tipoDesconto,
     });
   }
 

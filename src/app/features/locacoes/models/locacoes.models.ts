@@ -1,5 +1,18 @@
 export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA' | 'ORCAMENTO';
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO' | 'FIADO';
+export type TipoDesconto = 'PERCENTUAL' | 'VALOR';
+
+export type StatusLancamento = 'PENDENTE' | 'PAGO' | 'CANCELADO';
+
+export interface ParcelaResponse {
+  id: string;
+  numeroParcela: number;
+  totalParcelas: number;
+  valor: number;
+  dataVencimento: string | null;
+  status: StatusLancamento;
+  dataPagamento: string | null;
+}
 
 export interface ItemLocacaoResponse {
   id: string;
@@ -26,19 +39,35 @@ export interface LocacaoResponse {
   dataDevolucaoPrevista: string;
   dataDevolucaoReal: string | null;
   valorTotal: number;
+  valorBruto: number;
+  desconto: number | null;
+  tipoDesconto: TipoDesconto | null;
+  descontoAplicadoEm: string | null;
   observacao: string | null;
   itens: ItemLocacaoResponse[];
   createdAt: string;
+  parcelas: ParcelaResponse[] | null;
 }
 
 export interface LocacaoRequest {
   clienteId?: string | null;
   formaPagamento: FormaPagamento;
-  dataRetirada: string;           // ISO date: "yyyy-MM-dd"
-  dataDevolucaoPrevista: string;  // ISO date: "yyyy-MM-dd"
+  dataRetirada: string;
+  dataDevolucaoPrevista: string;
   itens: ItemLocacaoRequest[];
   observacao?: string | null;
-  status?: StatusLocacao | null;  // opcional — backend padrão ATIVA; use ORCAMENTO para orçamento
+  status?: StatusLocacao | null;
+  desconto?: number | null;
+  tipoDesconto?: TipoDesconto | null;
+  numeroParcelas?: number;
+  primeiroVencimento?: string;
+}
+
+export interface LocacaoEdicaoRequest {
+  formaPagamento: FormaPagamento;
+  observacao?: string | null;
+  desconto?: number | null;
+  tipoDesconto?: TipoDesconto | null;
 }
 
 /** Dados do item no formulário de criação */

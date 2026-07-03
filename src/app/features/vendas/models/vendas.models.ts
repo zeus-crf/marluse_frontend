@@ -2,7 +2,21 @@ export type StatusPedido = 'ORCAMENTO' | 'PENDENTE' | 'CONFIRMADO' | 'PAGO' | 'C
 
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO' | 'FIADO';
 
+export type TipoDesconto = 'PERCENTUAL' | 'VALOR';
+
 export type UnidadeMedida = 'SACO' | 'METRO' | 'METRO_QUADRADO' | 'LITRO' | 'PECA' | 'KG'| 'ROLO' | 'BALDE';
+
+export type StatusLancamento = 'PENDENTE' | 'PAGO' | 'CANCELADO';
+
+export interface ParcelaResponse {
+  id: string;
+  numeroParcela: number;
+  totalParcelas: number;
+  valor: number;
+  dataVencimento: string | null;
+  status: StatusLancamento;
+  dataPagamento: string | null;
+}
 
 export interface ItemPedidoResponse {
   id: string;
@@ -21,10 +35,16 @@ export interface PedidoResponse {
   status: StatusPedido;
   formaPagamento: FormaPagamento;
   valorTotal: number;
+  valorBruto: number;
+  desconto: number | null;
+  tipoDesconto: TipoDesconto | null;
+  descontoAplicadoEm: string | null;
   observacao: string | null;
   itens: ItemPedidoResponse[];
   createdAt: string;
   dataVencimento: string | null; // 'YYYY-MM-DD', só para FIADO
+  parcelas: ParcelaResponse[];
+   parcelaMesAtual: ParcelaResponse | null; 
 }
 
 export interface ItemPedidoRequest {
@@ -37,13 +57,19 @@ export interface PedidoRequest {
   formaPagamento: FormaPagamento;
   itens: ItemPedidoRequest[];
   observacao?: string;
-  status?: StatusPedido;       // omitir = CONFIRMADO (Venda)
-  dataVencimento?: string;     // 'YYYY-MM-DD', só para FIADO
+  status?: StatusPedido;
+  dataVencimento?: string;        // 'YYYY-MM-DD', só para FIADO (1 parcela)
+  desconto?: number | null;
+  tipoDesconto?: TipoDesconto | null;
+  numeroParcelas?: number;
+  primeiroVencimento?: string;   // 'YYYY-MM-DD'
 }
 
 export interface PedidoAtualizarRequest {
   formaPagamento?: FormaPagamento;
   observacao?: string;
+  desconto?: number | null;
+  tipoDesconto?: TipoDesconto | null;
 }
 
 export interface ProdutoSimples {

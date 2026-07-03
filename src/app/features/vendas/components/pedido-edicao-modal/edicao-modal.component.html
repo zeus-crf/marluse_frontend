@@ -79,6 +79,40 @@
         </div>
       </div>
 
+      <!-- Editável: Desconto -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Desconto <span class="text-[10px] font-normal normal-case">(recalcula parcelas pendentes)</span></div>
+        <div class="flex gap-2">
+          <div class="flex flex-shrink-0">
+            @for (opt of tipoDescontoOpcoes; track opt.val; let i = $index) {
+              <button type="button"
+                (click)="tipoDesconto = opt.val"
+                class="px-3 py-[6px] text-[12px] font-semibold border transition-all cursor-pointer font-[inherit]"
+                [style.border-radius]="i === 0 ? '6px 0 0 6px' : '0 6px 6px 0'"
+                [style.margin-left]="i === 1 ? '-1px' : '0'"
+                [class.bg-blue-600]="tipoDesconto === opt.val"
+                [class.text-white]="tipoDesconto === opt.val"
+                [class.border-blue-600]="tipoDesconto === opt.val"
+                [class.bg-white]="tipoDesconto !== opt.val"
+                [class.text-gray-500]="tipoDesconto !== opt.val"
+                [class.border-slate-200]="tipoDesconto !== opt.val">
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+          <div class="flex-1 flex items-center gap-3">
+            <input type="number" [(ngModel)]="desconto" min="0" step="0.01"
+              class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-[6px] text-[13px] text-gray-800 outline-none focus:border-blue-400 font-[inherit] transition-colors" />
+            @if (valorDesconto > 0) {
+              <div class="text-right whitespace-nowrap">
+                <div class="text-[11px] text-gray-400 line-through font-mono">{{ formatCurrency(valorBruto) }}</div>
+                <div class="text-[14px] font-bold text-blue-600 font-mono">{{ formatCurrency(totalComDesconto) }}</div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
       <!-- Editável: Observação -->
       <div>
         <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>

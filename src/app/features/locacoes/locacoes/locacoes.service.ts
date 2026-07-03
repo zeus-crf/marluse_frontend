@@ -2,11 +2,13 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { map, Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
-import { ClienteSimples, FormaPagamento, LocacaoRequest, LocacaoResponse, ProdutoSimples, StatusLocacao } from "../models/locacoes.models";
+import { ClienteSimples, FormaPagamento, LocacaoRequest, LocacaoResponse, ParcelaResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from "../models/locacoes.models";
 
 export interface LocacaoEdicaoPayload {
   formaPagamento: FormaPagamento;
   observacao: string | null;
+  desconto: number | null;
+  tipoDesconto: TipoDesconto;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -54,6 +56,26 @@ export class LocacaoService {
 
   patchCancelar(id: string): Observable<LocacaoResponse> {
     return this.http.patch<{ data: LocacaoResponse }>(`${this.baseUrl}/${id}/cancelar`, {})
+      .pipe(map(r => r.data));
+  }
+
+  patchConfirmar(id: string): Observable<LocacaoResponse> {
+    return this.http.patch<{ data: LocacaoResponse }>(`${this.baseUrl}/${id}/confirmar`, {})
+      .pipe(map(r => r.data));
+  }
+
+  getParcelas(locacaoId: string): Observable<ParcelaResponse[]> {
+    return this.http.get<{ data: ParcelaResponse[] }>(`${this.baseUrl}/${locacaoId}/parcelas`)
+      .pipe(map(r => r.data));
+  }
+
+  patchPagarParcela(lancamentoId: string): Observable<void> {
+    return this.http.patch<unknown>(`${environment.apiUrl}/financeiro/${lancamentoId}/pagar`, {})
+      .pipe(map(() => void 0));
+  }
+
+  getKpis(params: { inicio: string; fim: string }): Observable<number> {
+    return this.http.get<{ data: number }>(`${this.baseUrl}/somar-receita`, { params })
       .pipe(map(r => r.data));
   }
 
