@@ -1,7 +1,6 @@
 import { Injectable, signal, computed } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Router } from "@angular/router";
-import { map, tap } from "rxjs";
+import { tap } from "rxjs";
 import { environment } from "../../../environments/environment";
 
 interface AuthData {
@@ -17,7 +16,7 @@ export class AuthService {
   currentUser = signal<AuthData | null>(null);
 
 
-  isAutheticated = computed(() => this.currentUser() != null )
+  isAuthenticated = computed(() => this.currentUser() !== null);
 
 
   // Iniciais do nome para o avatar
@@ -26,7 +25,7 @@ export class AuthService {
     return nome.split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('');
   });
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient) {}
 
   login(email: string, password: string) {
     return this.http.post<{ message: string; data: AuthData }>(
@@ -50,6 +49,11 @@ export class AuthService {
   logout(){
     return this.http.post<void>(`${environment.apiUrl}/auth/logout`, 
       {},).pipe(tap( r => this.currentUser.set(null)))
+  }
+
+  refresh() {
+    return this.http.post<{ data: AuthData }>(`${environment.apiUrl}/auth/refresh`, {})
+      .pipe(tap(r => this.currentUser.set(r.data)))
   }
 
 }
