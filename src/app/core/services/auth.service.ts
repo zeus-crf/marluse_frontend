@@ -1,24 +1,24 @@
 import { Injectable, signal, computed } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { tap } from "rxjs";
+import { map, tap } from "rxjs";
 import { environment } from "../../../environments/environment";
 
 interface AuthData {
-  token: string;
   nome: string;
   email: string;
 }
 
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private readonly TOKEN_KEY = 'token';
-  private readonly USER_KEY  = 'user';
 
-  isAutheticated = signal<boolean>(this.hasToken());
+  currentUser = signal<AuthData | null>(null);
 
-  currentUser = signal<{ nome: string; email: string } | null>(this.loadUser());
+
+  isAutheticated = computed(() => this.currentUser() != null )
+
 
   // Iniciais do nome para o avatar
   initials = computed(() => {
@@ -32,49 +32,24 @@ export class AuthService {
     return this.http.post<{ message: string; data: AuthData }>(
       `${environment.apiUrl}/auth/login`,
       { email, password }
-    ).pipe(
-      tap(response => {
-        this.saveSession(response.data);
-      })
-    );
+    ).pipe(tap(r => this.currentUser.set(r.data)));
   }
 
   register(nome: string, email: string, password: string) {
     return this.http.post<{ message: string; data: AuthData }>(
       `${environment.apiUrl}/auth/register`,
       { email, nome, password }
-    ).pipe(
-      tap(response => {
-        this.saveSession(response.data);
-      })
-    );
+    ).pipe(tap(r => this.currentUser.set(r.data)));
   }
 
-  logout() {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.isAutheticated.set(false);
-    this.currentUser.set(null);
-    this.router.navigate(['auth/login']);
+  me(){
+    return this.http.get<{ data: AuthData }>(`${environment.apiUrl}/auth/me`)
+      .pipe(tap(r => this.currentUser.set(r.data)));
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+  logout(){
+    return this.http.post<void>(`${environment.apiUrl}/auth/logout`, 
+      {},).pipe(tap( r => this.currentUser.set(null)))
   }
 
-  private saveSession(data: AuthData): void {
-    localStorage.setItem(this.TOKEN_KEY, data.token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify({ nome: data.nome, email: data.email }));
-    this.isAutheticated.set(true);
-    this.currentUser.set({ nome: data.nome, email: data.email });
-  }
-
-  private hasToken(): boolean {
-    return !!localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  private loadUser(): { nome: string; email: string } | null {
-    const raw = localStorage.getItem(this.USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  }
 }
