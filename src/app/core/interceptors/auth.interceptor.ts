@@ -1,29 +1,31 @@
 import { HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
-import { catchError, throwError } from "rxjs";
-
-const PUBLIC_URLS = ['/api/auth/'];
+import { catchError, switchMap, throwError } from "rxjs";
+import { AuthService } from "../services/auth.service";
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
-  const token = localStorage.getItem('token');
+  const auth = inject(AuthService);
 
-  const isPublic = PUBLIC_URLS.some(url => req.url.includes(url));
+  const authReq = req.clone({ withCredentials: true });
 
-  const authReq = token && !isPublic
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  return next(authReq).pipe(
+    catchError(error => {
+      const isRefreshUrl = req.url.includes('/auth/refresh');
 
-    return next(authReq).pipe(
-        catchError(error =>{
-            if(error.status == 401){
-                localStorage.removeItem('token');
-                router.navigate(['/login'])
-            }
-            return throwError(() => error)
-        }));
-    
-    
+      if (error.status === 401 && !isRefreshUrl) {
+        return auth.refresh().pipe(
+          switchMap(() => next(authReq)),
+          catchError(refreshError => {
+            auth.logout().subscribe();
+            router.navigate(['/auth/login']);
+            return throwError(() => refreshError);
+          })
+        );
+      }
 
-}
+      return throwError(() => error);
+    })
+  );
+};
