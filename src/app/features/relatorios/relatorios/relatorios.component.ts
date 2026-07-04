@@ -24,6 +24,8 @@ export class RelatoriosComponent implements OnInit {
 
   periodo: '3m' | '6m' | '12m' = '6m';
   carregando = false;
+  paginaTopProdutos = 0;
+  readonly itensPorPagina = 6;
 
   kpis: KpisResponse | null = null;
   receitaMensal: ReceitaMensalItemResponse[] = [];
@@ -58,6 +60,7 @@ export class RelatoriosComponent implements OnInit {
   }
 
   carregar(): void {
+    this.paginaTopProdutos = 0;
     this.carregando = true;
     this.cdr.detectChanges();
 
@@ -93,7 +96,7 @@ export class RelatoriosComponent implements OnInit {
       error: (e) => { console.error('topClientes error', e); onComplete(); },
     });
 
-    this.service.topProdutos(5, this.periodo).subscribe({
+    this.service.topProdutos(100, this.periodo).subscribe({
       next: (d) => { this.topProdutos = d; onComplete(); },
       error: (e) => { console.error('topProdutos error', e); onComplete(); },
     });
@@ -199,8 +202,18 @@ export class RelatoriosComponent implements OnInit {
     return nome.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
   }
 
+  get topProdutosPaginados(): TopProdutoResponse[] {
+    const inicio = this.paginaTopProdutos * this.itensPorPagina;
+    return this.topProdutos.slice(inicio, inicio + this.itensPorPagina);
+  }
+
+  get totalPaginasTopProdutos(): number {
+    return Math.ceil(this.topProdutos.length / this.itensPorPagina);
+  }
+
   get maxTopProduto(): number {
-    return this.topProdutos.length > 0 ? this.topProdutos[0].quantidade : 1;
+    const paginados = this.topProdutosPaginados;
+    return paginados.length > 0 ? paginados[0].lucro : 1;
   }
 
   get totalStatusFinanceiro(): number {

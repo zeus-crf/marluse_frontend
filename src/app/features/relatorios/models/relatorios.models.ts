@@ -31,5 +31,7 @@ export interface TopClienteResponse {
 export interface TopProdutoResponse {
     nome: string;
     quantidade: number;
+    lucro: number;
+    custo: number;
     total: number;
 }
