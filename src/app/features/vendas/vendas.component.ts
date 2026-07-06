@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { forkJoin } from 'rxjs';
 import { VendasService } from './vendas.service';
 import {
@@ -32,10 +31,9 @@ import { DatePickerComponent } from '../../shared/components/date-picker/date-pi
 @Component({
   selector: 'app-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent, SelectComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DataTableComponent, NovoPedidoModalComponent, PedidoDetalheModalComponent, PedidoEdicaoModalComponent, VendasFiltrosModalComponent, SelectComponent, DatePickerComponent],
   templateUrl: './vendas.component.html',
   styleUrl: './vendas.component.scss',
-  providers: [MessageService],
 })
 export class VendasComponent implements OnInit {
   private service = inject(VendasService);
@@ -141,7 +139,17 @@ export class VendasComponent implements OnInit {
       valueFn: (p: PedidoResponse) =>
         p.itens.map((i: any) => `${i.produtoNome} × ${i.quantidade}`).join(', '),
     },
-    { field: 'valorTotal', header: 'Total', width: '14%', type: 'currency' },
+    {
+      field: 'valorBruto',
+      header: 'Total',
+      width: '14%',
+      type: 'currency-with-badge',
+      badgeFn: (p: PedidoResponse) => {
+        const diff = Number(p.valorBruto) - Number(p.valorTotal);
+        if (diff <= 0) return null;
+        return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      },
+    },
     {
       field: 'status',
       header: 'Status',
@@ -177,7 +185,7 @@ export class VendasComponent implements OnInit {
     showView: true, showEdit: true, showDelete: true,
     deleteHeader: 'Confirmar exclusão',
     deleteMessageFn: (p: PedidoResponse) =>
-      `Deseja excluir a venda de ${p.clienteNome} no valor de ${Number(p.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
+      `Deseja excluir a venda de ${p.clienteNome} no valor de ${Number(p.valorBruto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
   };
 
   getSeverity(status: StatusPedido): 'success' | 'warn' | 'danger' | 'secondary' {
@@ -255,8 +263,10 @@ export class VendasComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
+        const detail = err?.error?.message ?? 'Não foi possível carregar as vendas.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -355,8 +365,10 @@ export class VendasComponent implements OnInit {
         this.loadingModal = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loadingModal = false;
+        const detail = err?.error?.message ?? 'Não foi possível carregar os dados.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -405,8 +417,10 @@ export class VendasComponent implements OnInit {
         this.cdr.detectChanges();
         this.carregarKpis();
       },
-      error: () => {
+      error: (err) => {
         this.salvando = false;
+        const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -438,9 +452,10 @@ export class VendasComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.salvando = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível confirmar o orçamento', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível confirmar o orçamento';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -461,8 +476,10 @@ export class VendasComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.salvando = false;
+        const detail = err?.error?.message ?? 'Não foi possível cancelar o pedido';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -501,15 +518,11 @@ export class VendasComponent implements OnInit {
         });
         this.cdr.detectChanges();
       }, 
-        error: () => {
+        error: (err: any) => {
           this.salvando = false;
+          const detail = err?.error?.message ?? 'Erro ao editar venda';
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
           this.cdr.detectChanges();
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Erro ao editar venda',
-            life: 3000
-          });
         },
     });
   }
@@ -528,13 +541,9 @@ export class VendasComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Não foi possível excluir a venda',
-          life: 3000,
-        });
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível excluir a venda';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });

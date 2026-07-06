@@ -1,5 +1,3 @@
-<p-toast position="top-right" />
-
 <!-- Header -->
 <div class="flex items-start justify-between mb-6">
   <div>
@@ -55,9 +53,16 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Receita do Período</p>
-        <button class="p-1 text-gray-300 hover:text-blue-500 transition-colors">
-          <span class="material-symbols-outlined text-[16px]">show_chart</span>
-        </button>
+        <div class="relative group">
+          <button class="p-1 text-gray-300 hover:text-blue-500 transition-colors cursor-help">
+            <span class="material-symbols-outlined text-[16px]">show_chart</span>
+          </button>
+          <div class="absolute right-0 top-8 z-20 w-56 bg-gray-800 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-xl
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+            Total de receitas registradas no período selecionado, incluindo vendas e locações.
+            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-gray-800 rotate-45 rounded-sm"></div>
+          </div>
+        </div>
       </div>
       <p class="text-2xl font-bold text-gray-900 mb-1">{{ formatCurrency(kpis.receitaPeriodo) }}</p>
       <p class="text-xs text-gray-400 font-medium mb-3">Total de receitas no período</p>
@@ -71,9 +76,16 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Vendas no Período</p>
-        <button class="p-1 text-gray-300 hover:text-green-500 transition-colors">
-          <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
-        </button>
+        <div class="relative group">
+          <button class="p-1 text-gray-300 hover:text-green-500 transition-colors cursor-help">
+            <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+          </button>
+          <div class="absolute right-0 top-8 z-20 w-56 bg-gray-800 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-xl
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+            Valor total dos pedidos de venda confirmados (status PAGO) no período selecionado.
+            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-gray-800 rotate-45 rounded-sm"></div>
+          </div>
+        </div>
       </div>
       <p class="text-2xl font-bold text-gray-900 mb-1">{{ formatCurrency(kpis.vendasValor) }}</p>
       <p class="text-xs text-gray-400 font-medium mb-3">{{ kpis.vendasQuantidade }} pedido(s) confirmado(s)</p>
@@ -87,9 +99,16 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Locações Ativas</p>
-        <button class="p-1 text-gray-300 hover:text-orange-500 transition-colors">
-          <span class="material-symbols-outlined text-[16px]">calendar_month</span>
-        </button>
+        <div class="relative group">
+          <button class="p-1 text-gray-300 hover:text-orange-500 transition-colors cursor-help">
+            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+          </button>
+          <div class="absolute right-0 top-8 z-20 w-56 bg-gray-800 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-xl
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+            Contratos de locação em aberto no momento. O valor exibido é o total ainda a receber dessas locações.
+            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-gray-800 rotate-45 rounded-sm"></div>
+          </div>
+        </div>
       </div>
       <p class="text-2xl font-bold text-gray-900 mb-1">{{ kpis.locacoesAtivas }}</p>
       <p class="text-xs text-gray-400 font-medium mb-3">{{ formatCurrency(kpis.locacoesAtivasValor) }} em aberto</p>
@@ -103,9 +122,16 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Clientes Ativos</p>
-        <button class="p-1 text-gray-300 hover:text-purple-500 transition-colors">
-          <span class="material-symbols-outlined text-[16px]">group</span>
-        </button>
+        <div class="relative group">
+          <button class="p-1 text-gray-300 hover:text-purple-500 transition-colors cursor-help">
+            <span class="material-symbols-outlined text-[16px]">group</span>
+          </button>
+          <div class="absolute right-0 top-8 z-20 w-56 bg-gray-800 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-xl
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+            Total de clientes cadastrados com status ativo no sistema.
+            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-gray-800 rotate-45 rounded-sm"></div>
+          </div>
+        </div>
       </div>
       <p class="text-2xl font-bold text-gray-900 mb-1">{{ kpis.clientesAtivos }}</p>
       <p class="text-xs text-gray-400 font-medium mb-3">Clientes cadastrados e ativos</p>

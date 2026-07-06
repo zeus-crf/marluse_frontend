@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ToastModule } from 'primeng/toast';
 import {
   NgApexchartsModule,
   ApexAxisChartSeries,
@@ -36,10 +35,9 @@ type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 @Component({
   selector: 'app-locacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent, DatePickerComponent],
   templateUrl: './locacoes.component.html',
   styleUrl: './locacoes.component.scss',
-  providers: [MessageService],
 })
 export class LocacoesComponent implements OnInit {
 
@@ -112,7 +110,17 @@ export class LocacoesComponent implements OnInit {
       type: 'computed',
       valueFn: (l: LocacaoResponse) => this.prazoLabel(l),
     },
-    { field: 'valorTotal', header: 'Total', width: '12%', type: 'currency' },
+    {
+      field: 'valorBruto',
+      header: 'Total',
+      width: '12%',
+      type: 'currency-with-badge',
+      badgeFn: (l: LocacaoResponse) => {
+        const diff = Number(l.valorBruto) - Number(l.valorTotal);
+        if (diff <= 0) return null;
+        return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      },
+    },
     {
       field: 'status',
       header: 'Status',
@@ -155,8 +163,10 @@ export class LocacoesComponent implements OnInit {
         this.recalcularGraficos();
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
+        const detail = err?.error?.message ?? 'Não foi possível carregar as locações.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -504,8 +514,10 @@ export class LocacoesComponent implements OnInit {
         this.loadingModal = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loadingModal = false;
+        const detail = err?.error?.message ?? 'Não foi possível carregar os dados.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -572,9 +584,10 @@ export class LocacoesComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvandoEdicao = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível atualizar a locação', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível atualizar a locação';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -613,9 +626,10 @@ export class LocacoesComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível confirmar o orçamento', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível confirmar o orçamento';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -647,9 +661,10 @@ export class LocacoesComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível registrar a devolução', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível registrar a devolução';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -671,9 +686,10 @@ export class LocacoesComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível apagar a locação', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível apagar a locação';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });
@@ -694,9 +710,10 @@ export class LocacoesComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível cancelar a locação', life: 3000 });
+        const detail = err?.error?.message ?? 'Não foi possível cancelar a locação';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         this.cdr.detectChanges();
       },
     });

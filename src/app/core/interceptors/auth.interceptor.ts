@@ -1,8 +1,11 @@
 import { HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
-import { catchError, switchMap, throwError } from "rxjs";
+import { catchError, Subject, switchMap, throwError } from "rxjs";
 import { AuthService } from "../services/auth.service";
+
+let isRefreshing = false;
+let refreshSubject = new Subject<void>();
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -14,15 +17,32 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => {
       const isRefreshUrl = req.url.includes('/auth/refresh');
 
-      if (error.status === 401 && !isRefreshUrl) {
-        return auth.refresh().pipe(
-          switchMap(() => next(authReq)),
-          catchError(refreshError => {
-            auth.logout().subscribe();
-            router.navigate(['/auth/login']);
-            return throwError(() => refreshError);
-          })
-        );
+      if ((error.status === 401 || error.status === 403) && !isRefreshUrl) {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          refreshSubject = new Subject<void>();
+
+          return auth.refresh().pipe(
+            switchMap(() => {
+              isRefreshing = false;
+              refreshSubject.next();
+              refreshSubject.complete();
+              return next(authReq);
+            }),
+            catchError(refreshError => {
+              isRefreshing = false;
+              refreshSubject.error(refreshError);
+              auth.logout().subscribe();
+              router.navigate(['/auth/login']);
+              return throwError(() => refreshError);
+            })
+          );
+        } else {
+          // Outra requisição já está fazendo o refresh — aguarda e repete
+          return refreshSubject.pipe(
+            switchMap(() => next(authReq))
+          );
+        }
       }
 
       return throwError(() => error);

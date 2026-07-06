@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
@@ -44,7 +43,6 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    ToastModule,
     ButtonModule,
     TooltipModule,
     InputTextModule,
@@ -55,7 +53,6 @@ import {
   ],
   templateUrl: './estoque.component.html',
   styleUrl: './estoque.component.scss',
-  providers: [MessageService],
 })
 export class EstoqueComponent implements OnInit {
 
@@ -274,9 +271,10 @@ export class EstoqueComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os produtos.' });
+        const detail = err?.error?.message ?? 'Não foi possível carregar os produtos.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
     });
   }
@@ -325,9 +323,10 @@ export class EstoqueComponent implements OnInit {
           this.salvando = false;
           this.messageService.add({ severity: 'success', summary: 'Salvo', detail: 'Produto atualizado.' });
         },
-        error: () => {
+        error: (err: any) => {
           this.salvando = false;
-          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar.' });
+          const detail = err?.error?.message ?? 'Não foi possível salvar.';
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         },
       });
     } else {
@@ -339,9 +338,10 @@ export class EstoqueComponent implements OnInit {
           this.salvando = false;
           this.messageService.add({ severity: 'success', summary: 'Criado', detail: 'Produto adicionado ao estoque.' });
         },
-        error: () => {
+        error: (err: any) => {
           this.salvando = false;
-          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar o produto.' });
+          const detail = err?.error?.message ?? 'Não foi possível criar o produto.';
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         },
       });
     }
@@ -354,8 +354,9 @@ export class EstoqueComponent implements OnInit {
         this.recalcularGrafico();
         this.messageService.add({ severity: 'info', summary: 'Inativado', detail: `"${produto.nome}" foi inativado.` });
       },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível inativar.' });
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível inativar.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
     });
   }
