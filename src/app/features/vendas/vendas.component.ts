@@ -15,7 +15,8 @@ import {
   FormaPagamento,
   PedidoAtualizarRequest,
   VendasFiltroCompleto,
-  ParcelaResponse
+  ParcelaResponse,
+  EntregaResponse
 } from './models/vendas.models';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { TableColumn, TableActionConfig } from '../../shared/components/data-table/data-table.models';
@@ -86,7 +87,7 @@ export class VendasComponent implements OnInit {
   // ── Donut "Por Status" ─────────────────────────────────────
   donutChart: any = { type: 'donut', height: 200, fontFamily: 'inherit' };
   donutColors = ['#22c55e', '#f59e0b', '#ef4444', '#94a3b8'];
-  donutLabels = ['Pago', 'Aguardando', 'Vencido', 'Cancelado'];
+  donutLabels = ['Pago', 'Confirmado', 'Cancelado', 'Cancelado'];
   donutLegend: any = { show: false };
   donutDataLabels: any = { enabled: false };
   donutPlotOptions: any = { pie: { donut: { size: '72%' } } };
@@ -177,6 +178,21 @@ export class VendasComponent implements OnInit {
         if (parcela.status === 'PAGO') return `${parcela.totalParcelas}/${parcela.totalParcelas} pagas`;
         const pagas = parcela.numeroParcela - 1;
         return `${pagas}/${parcela.totalParcelas} pagas`;
+      },
+    },
+    {
+      field: 'entrega',
+      header: 'Entrega',
+      width: '10%',
+      type: 'tag',
+      cellClass: 'pl-6',
+      tagSeverityFn: (entrega: EntregaResponse | null) => {
+        if (!entrega) return 'secondary';
+        return entrega.status === 'FEITA' ? 'success' : 'warn';
+      },
+      tagLabelFn: (entrega: EntregaResponse | null) => {
+        if (!entrega) return '';
+        return entrega.status === 'FEITA' ? 'Entregue' : 'Pendente';
       },
     },
   ];
@@ -424,6 +440,15 @@ export class VendasComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  onEntregaMarcada(entrega: EntregaResponse): void {
+    if (!this.pedidoSelecionado) return;
+    const id = this.pedidoSelecionado.id;
+    this.pedidos = this.pedidos.map(p =>
+      p.id === id ? { ...p, entrega } : p
+    );
+    this.cdr.detectChanges();
   }
 
   onParcelaPaga(proxima: ParcelaResponse | null): void {

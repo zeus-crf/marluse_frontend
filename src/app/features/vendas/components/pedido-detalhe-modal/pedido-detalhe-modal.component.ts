@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
-import { PedidoResponse, StatusPedido, ParcelaResponse } from '../../models/vendas.models';
+import { PedidoResponse, StatusPedido, ParcelaResponse, EntregaResponse } from '../../models/vendas.models';
 import { VendasService } from '../../vendas.service';
+import { EntregaService } from '../../entrega.service';
 
 @Component({
     selector: 'app-pedido-detalhe-modal',
@@ -15,6 +16,7 @@ import { VendasService } from '../../vendas.service';
 export class PedidoDetalheModalComponent implements OnChanges {
 
     private vendasService  = inject(VendasService);
+    private entregaService = inject(EntregaService);
     private cdr            = inject(ChangeDetectorRef);
     private messageService = inject(MessageService);
 
@@ -22,15 +24,17 @@ export class PedidoDetalheModalComponent implements OnChanges {
     @Input() pedido: PedidoResponse | null = null;
     @Input() salvando = false;
 
-    @Output() fechar        = new EventEmitter<void>();
-    @Output() pagar         = new EventEmitter<string>();
-    @Output() cancelar      = new EventEmitter<string>();
-    @Output() confirmar     = new EventEmitter<string>();
-    @Output() parcelaPaga   = new EventEmitter<ParcelaResponse | null>();
+    @Output() fechar          = new EventEmitter<void>();
+    @Output() pagar           = new EventEmitter<string>();
+    @Output() cancelar        = new EventEmitter<string>();
+    @Output() confirmar       = new EventEmitter<string>();
+    @Output() parcelaPaga     = new EventEmitter<ParcelaResponse | null>();
+    @Output() entregaMarcada  = new EventEmitter<EntregaResponse>();
 
     parcelas: ParcelaResponse[] = [];
     loadingParcelas = false;
     pagandoParcela: string | null = null;
+    marcandoEntrega = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         const visibleOn  = changes['visible']?.currentValue === true;
@@ -41,6 +45,7 @@ export class PedidoDetalheModalComponent implements OnChanges {
         if (changes['visible']?.currentValue === false) {
             this.parcelas        = [];
             this.pagandoParcela  = null;
+            this.marcandoEntrega = false;
         }
     }
 
@@ -90,6 +95,28 @@ export class PedidoDetalheModalComponent implements OnChanges {
             error: (err: any) => {
                 this.pagandoParcela = null;
                 const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    marcarEntregue(): void {
+        if (!this.pedido?.entrega) return;
+        this.marcandoEntrega = true;
+        this.entregaService.patchEntregar(this.pedido.entrega.id).subscribe({
+            next: (entrega) => {
+                if (this.pedido) {
+                    this.pedido = { ...this.pedido, entrega };
+                }
+                this.marcandoEntrega = false;
+                this.entregaMarcada.emit(entrega);
+                this.cdr.detectChanges();
+                this.messageService.add({ severity: 'success', summary: 'Entregue', detail: 'Entrega registrada com sucesso!', life: 3000 });
+            },
+            error: (err: any) => {
+                this.marcandoEntrega = false;
+                const detail = err?.error?.message ?? 'Não foi possível registrar a entrega';
                 this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
                 this.cdr.detectChanges();
             }

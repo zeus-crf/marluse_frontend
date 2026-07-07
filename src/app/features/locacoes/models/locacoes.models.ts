@@ -1,4 +1,24 @@
 export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA' | 'ORCAMENTO';
+
+export type StatusEntrega = 'PENDENTE' | 'FEITA';
+
+export interface EntregaResponse {
+  id: string;
+  endereco: string;
+  dataPrevista: string | null;
+  dataEntrega: string | null;
+  status: StatusEntrega;
+}
+
+export interface EntregaRequest {
+  endereco: string;
+  dataPrevista?: string | null;
+}
+
+export interface EntregaAtualizarRequest {
+  endereco?: string;
+  dataPrevista?: string | null;
+}
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO' | 'FIADO';
 export type TipoDesconto = 'PERCENTUAL' | 'VALOR';
 
@@ -47,6 +67,7 @@ export interface LocacaoResponse {
   itens: ItemLocacaoResponse[];
   createdAt: string;
   parcelas: ParcelaResponse[] | null;
+  entrega: EntregaResponse | null;
 }
 
 export interface LocacaoRequest {
@@ -61,6 +82,7 @@ export interface LocacaoRequest {
   tipoDesconto?: TipoDesconto | null;
   numeroParcelas?: number;
   primeiroVencimento?: string;
+  entrega?: EntregaRequest | null;
 }
 
 export interface LocacaoEdicaoRequest {

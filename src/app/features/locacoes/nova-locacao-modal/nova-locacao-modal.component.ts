@@ -7,7 +7,7 @@ import { LocacaoService } from '../locacoes/locacoes.service';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
-import { ClienteSimples, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from '../models/locacoes.models';
+import { ClienteSimples, EntregaRequest, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from '../models/locacoes.models';
 
 interface ItemForm {
   produtoId: string;
@@ -50,6 +50,11 @@ export class NovaLocacaoModalComponent {
 
     itens: ItemForm[] = [this.novoItem()];
     salvando = false;
+
+    // Entrega
+    temEntrega = false;
+    enderecoEntrega = '';
+    dataPrevistaEntrega = '';
 
     readonly tipoOpcoes: { val: 'LOCACAO' | 'ORCAMENTO'; label: string }[] = [
         { val: 'LOCACAO',    label: 'Locação'   },
@@ -190,6 +195,9 @@ export class NovaLocacaoModalComponent {
             tipoDesconto:          this.desconto ? this.tipoDesconto : null,
             numeroParcelas:        this.numeroParcelas > 1 ? this.numeroParcelas : undefined,
             primeiroVencimento:    this.usaParcelas && this.primeiroVencimento ? this.primeiroVencimento : undefined,
+            entrega:               this.temEntrega && this.enderecoEntrega
+                                     ? { endereco: this.enderecoEntrega, dataPrevista: this.dataPrevistaEntrega || null }
+                                     : null,
         }, this.tipo === 'ORCAMENTO').subscribe({
             next: (locacao) => {
                 this.locacaoCriada.emit(locacao);             // ✅ evento com nome correto
@@ -222,6 +230,9 @@ export class NovaLocacaoModalComponent {
         this.tipoDesconto          = 'PERCENTUAL';
         this.numeroParcelas        = 1;
         this.primeiroVencimento    = '';
+        this.temEntrega            = false;
+        this.enderecoEntrega       = '';
+        this.dataPrevistaEntrega   = '';
     }
 
     rowTotal(item: ItemForm): number {

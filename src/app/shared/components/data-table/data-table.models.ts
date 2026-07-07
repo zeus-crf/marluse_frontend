@@ -21,6 +21,9 @@ export interface TableColumn {
 
   /** Aplica truncate ao conteúdo da célula */
   truncate?: boolean;
+
+  /** Classe CSS extra aplicada ao <th> e <td> da coluna */
+  cellClass?: string;
 }
 
 export interface TableActionConfig {

@@ -1,5 +1,25 @@
 export type StatusPedido = 'ORCAMENTO' | 'PENDENTE' | 'CONFIRMADO' | 'PAGO' | 'CANCELADO';
 
+export type StatusEntrega = 'PENDENTE' | 'FEITA';
+
+export interface EntregaResponse {
+  id: string;
+  endereco: string;
+  dataPrevista: string | null;
+  dataEntrega: string | null;
+  status: StatusEntrega;
+}
+
+export interface EntregaRequest {
+  endereco: string;
+  dataPrevista?: string | null;
+}
+
+export interface EntregaAtualizarRequest {
+  endereco?: string;
+  dataPrevista?: string | null;
+}
+
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO' | 'FIADO';
 
 export type TipoDesconto = 'PERCENTUAL' | 'VALOR';
@@ -44,7 +64,8 @@ export interface PedidoResponse {
   createdAt: string;
   dataVencimento: string | null; // 'YYYY-MM-DD', só para FIADO
   parcelas: ParcelaResponse[];
-   parcelaMesAtual: ParcelaResponse | null; 
+  parcelaMesAtual: ParcelaResponse | null;
+  entrega: EntregaResponse | null;
 }
 
 export interface ItemPedidoRequest {
@@ -63,6 +84,7 @@ export interface PedidoRequest {
   tipoDesconto?: TipoDesconto | null;
   numeroParcelas?: number;
   primeiroVencimento?: string;   // 'YYYY-MM-DD'
+  entrega?: EntregaRequest | null;
 }
 
 export interface PedidoAtualizarRequest {

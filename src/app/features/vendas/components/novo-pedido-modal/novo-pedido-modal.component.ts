@@ -5,7 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { VendasService } from '../../vendas.service';
 import {
-  PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido, TipoDesconto
+  PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido, TipoDesconto, EntregaRequest
 } from '../../models/vendas.models';
 import { SelectOption } from '../../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
@@ -50,6 +50,11 @@ export class NovoPedidoModalComponent {
 
   itens: ItemForm[] = [this.novoItem()];
   salvando = false;
+
+  // Entrega
+  temEntrega = false;
+  enderecoEntrega = '';
+  dataPrevistaEntrega = '';
 
   readonly tipoOpcoes: { val: 'PEDIDO' | 'ORCAMENTO'; label: string }[] = [
     { val: 'PEDIDO',    label: 'Venda'     },
@@ -173,6 +178,9 @@ export class NovoPedidoModalComponent {
       tipoDesconto:      this.desconto ? this.tipoDesconto : null,
       numeroParcelas:    this.numeroParcelas > 1 ? this.numeroParcelas : undefined,
       primeiroVencimento: this.usaParcelas && this.primeiroVencimento ? this.primeiroVencimento : undefined,
+      entrega:           this.temEntrega && this.enderecoEntrega
+                           ? { endereco: this.enderecoEntrega, dataPrevista: this.dataPrevistaEntrega || null }
+                           : null,
     }).subscribe({
       next: (pedido) => {
         this.pedidoCriado.emit(pedido);
@@ -204,6 +212,9 @@ export class NovoPedidoModalComponent {
     this.tipoDesconto       = 'PERCENTUAL';
     this.numeroParcelas     = 1;
     this.primeiroVencimento = '';
+    this.temEntrega         = false;
+    this.enderecoEntrega    = '';
+    this.dataPrevistaEntrega = '';
   }
 
   rowTotal(item: ItemForm): number { return item.precoUnitario * item.quantidade; }
