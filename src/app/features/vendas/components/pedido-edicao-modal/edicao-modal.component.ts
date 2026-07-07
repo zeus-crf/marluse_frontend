@@ -21,19 +21,28 @@ export class PedidoEdicaoModalComponent {
     this.observacao     = p?.observacao    ?? '';
     this.desconto       = p?.desconto      ?? null;
     this.tipoDesconto   = p?.tipoDesconto  ?? 'PERCENTUAL';
+    this.juros          = p?.juros         ?? null;
+    this.tipoJuros      = p?.tipoJuros     ?? 'PERCENTUAL';
   }
   get pedido(): PedidoResponse | null { return this._pedido; }
   private _pedido: PedidoResponse | null = null;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
 
   formaPagamento: FormaPagamento | '' = '';
   observacao = '';
   desconto: number | null = null;
   tipoDesconto: TipoDesconto = 'PERCENTUAL';
+  juros: number | null = null;
+  tipoJuros: TipoDesconto = 'PERCENTUAL';
 
   readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
+  ];
+
+  readonly tipoJurosOpcoes: { val: TipoDesconto; label: string }[] = [
     { val: 'PERCENTUAL', label: '%'  },
     { val: 'VALOR',      label: 'R$' },
   ];
@@ -67,7 +76,15 @@ export class PedidoEdicaoModalComponent {
       : this.desconto;
   }
 
-  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto); }
+  get valorJuros(): number {
+    if (!this.juros || this.juros <= 0) return 0;
+    const base = this.valorBruto - this.valorDesconto;
+    return this.tipoJuros === 'PERCENTUAL'
+      ? base * this.juros / 100
+      : this.juros;
+  }
+
+  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto + this.valorJuros); }
 
   onSalvar(): void {
     if (!this.formaPagamento) return;
@@ -76,6 +93,8 @@ export class PedidoEdicaoModalComponent {
       formaPagamento: this.formaPagamento,
       desconto:       this.desconto,
       tipoDesconto:   this.tipoDesconto,
+      juros:          this.juros,
+      tipoJuros:      this.tipoJuros,
     });
   }
 

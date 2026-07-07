@@ -68,6 +68,9 @@ export interface LocacaoResponse {
   createdAt: string;
   parcelas: ParcelaResponse[] | null;
   entrega: EntregaResponse | null;
+  juros: number | null;
+  tipoJuros: TipoDesconto | null;
+  jurosAplicadoEm: string | null;
 }
 
 export interface LocacaoRequest {
@@ -83,6 +86,8 @@ export interface LocacaoRequest {
   numeroParcelas?: number;
   primeiroVencimento?: string;
   entrega?: EntregaRequest | null;
+  juros?: number | null;
+  tipoJuros?: TipoDesconto | null;
 }
 
 export interface LocacaoEdicaoRequest {
@@ -90,6 +95,8 @@ export interface LocacaoEdicaoRequest {
   observacao?: string | null;
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
+  juros?: number | null;
+  tipoJuros?: TipoDesconto | null;
 }
 
 /** Dados do item no formulário de criação */

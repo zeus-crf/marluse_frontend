@@ -9,6 +9,8 @@ export interface LocacaoEdicaoPayload {
   observacao: string | null;
   desconto: number | null;
   tipoDesconto: TipoDesconto;
+  juros: number | null;
+  tipoJuros: TipoDesconto;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -56,12 +56,21 @@ export class NovoPedidoModalComponent {
   enderecoEntrega = '';
   dataPrevistaEntrega = '';
 
+  // Juros
+  juros: number | null = null;
+  tipoJuros: TipoDesconto = 'PERCENTUAL';
+
   readonly tipoOpcoes: { val: 'PEDIDO' | 'ORCAMENTO'; label: string }[] = [
     { val: 'PEDIDO',    label: 'Venda'     },
     { val: 'ORCAMENTO', label: 'Orçamento' },
   ];
 
   readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
+  ];
+
+  readonly tipoJurosOpcoes: { val: TipoDesconto; label: string }[] = [
     { val: 'PERCENTUAL', label: '%'  },
     { val: 'VALOR',      label: 'R$' },
   ];
@@ -108,6 +117,14 @@ export class NovoPedidoModalComponent {
       : this.desconto;
   }
 
+  get valorJuros(): number {
+    if (!this.juros || this.juros <= 0) return 0;
+    const base = this.valorBruto - this.valorDesconto;
+    return this.tipoJuros === 'PERCENTUAL'
+      ? base * this.juros / 100
+      : this.juros;
+  }
+
   get clienteOptions(): SelectOption[] {
     return this.clientes.map(c => ({ value: c.id, label: c.nome }));
   }
@@ -117,7 +134,7 @@ export class NovoPedidoModalComponent {
   }
 
   get total(): number {
-    return Math.max(0, this.valorBruto - this.valorDesconto);
+    return Math.max(0, this.valorBruto - this.valorDesconto + this.valorJuros);
   }
 
   get formValida(): boolean {
@@ -181,6 +198,8 @@ export class NovoPedidoModalComponent {
       entrega:           this.temEntrega && this.enderecoEntrega
                            ? { endereco: this.enderecoEntrega, dataPrevista: this.dataPrevistaEntrega || null }
                            : null,
+      juros:             this.juros || null,
+      tipoJuros:         this.juros ? this.tipoJuros : null,
     }).subscribe({
       next: (pedido) => {
         this.pedidoCriado.emit(pedido);
@@ -215,6 +234,8 @@ export class NovoPedidoModalComponent {
     this.temEntrega         = false;
     this.enderecoEntrega    = '';
     this.dataPrevistaEntrega = '';
+    this.juros              = null;
+    this.tipoJuros          = 'PERCENTUAL';
   }
 
   rowTotal(item: ItemForm): number { return item.precoUnitario * item.quantidade; }

@@ -235,22 +235,43 @@
 
         <!-- ── Total ──────────────────────────────────────────── -->
         <div class="pt-3 border-t border-slate-100">
-          @if (locacao.desconto && locacao.valorBruto && locacao.valorBruto !== locacao.valorTotal) {
+          @if ((locacao.desconto && locacao.valorBruto !== locacao.valorTotal) || locacao.juros) {
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-[11px] text-gray-400 uppercase tracking-[0.06em]">Subtotal</span>
               <span class="text-[13px] text-gray-400 font-mono line-through">{{ formatCurrency(locacao.valorBruto) }}</span>
             </div>
-            <div class="flex items-center justify-between mb-2.5">
-              <div>
-                <span class="text-[11px] text-red-400 uppercase tracking-[0.06em]">
-                  Desconto{{ locacao.tipoDesconto === 'PERCENTUAL' ? ' (' + locacao.desconto + '%)' : '' }}
+            @if (locacao.desconto) {
+              <div class="flex items-center justify-between mb-1.5">
+                <div>
+                  <span class="text-[11px] text-red-400 uppercase tracking-[0.06em]">
+                    Desconto{{ locacao.tipoDesconto === 'PERCENTUAL' ? ' (' + locacao.desconto + '%)' : '' }}
+                  </span>
+                  @if (locacao.descontoAplicadoEm) {
+                    <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(locacao.descontoAplicadoEm) }}</div>
+                  }
+                </div>
+                <span class="text-[13px] text-red-500 font-mono">
+                  -{{ formatCurrency(locacao.tipoDesconto === 'PERCENTUAL' ? locacao.valorBruto * locacao.desconto / 100 : locacao.desconto) }}
                 </span>
-                @if (locacao.descontoAplicadoEm) {
-                  <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(locacao.descontoAplicadoEm) }}</div>
-                }
               </div>
-              <span class="text-[13px] text-red-500 font-mono">-{{ formatCurrency(locacao.valorBruto - locacao.valorTotal) }}</span>
-            </div>
+            }
+            @if (locacao.juros) {
+              <div class="flex items-center justify-between mb-1.5">
+                <div>
+                  <span class="text-[11px] text-orange-500 uppercase tracking-[0.06em]">
+                    Juros{{ locacao.tipoJuros === 'PERCENTUAL' ? ' (' + locacao.juros + '%)' : '' }}
+                  </span>
+                  @if (locacao.jurosAplicadoEm) {
+                    <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(locacao.jurosAplicadoEm) }}</div>
+                  }
+                </div>
+                <span class="text-[13px] text-orange-500 font-mono">
+                  +{{ formatCurrency(locacao.tipoJuros === 'PERCENTUAL'
+                      ? (locacao.valorBruto - (locacao.tipoDesconto === 'PERCENTUAL' ? locacao.valorBruto * (locacao.desconto ?? 0) / 100 : (locacao.desconto ?? 0))) * locacao.juros / 100
+                      : locacao.juros) }}
+                </span>
+              </div>
+            }
           }
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Total da locação</span>

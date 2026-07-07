@@ -119,8 +119,9 @@ export class LocacoesComponent implements OnInit {
       type: 'currency-with-badge',
       badgeFn: (l: LocacaoResponse) => {
         const diff = Number(l.valorBruto) - Number(l.valorTotal);
-        if (diff <= 0) return null;
-        return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        if (diff === 0) return null;
+        if (diff > 0) return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        return `+${Math.abs(diff).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
       },
     },
     {

@@ -73,24 +73,45 @@
             </div>
           }
 
-          <!-- Total / Desconto -->
+          <!-- Total / Desconto / Juros -->
           <div class="bg-slate-50 border-t border-slate-200">
-            @if (pedido.desconto && pedido.valorBruto && pedido.valorBruto !== pedido.valorTotal) {
+            @if ((pedido.desconto && pedido.valorBruto !== pedido.valorTotal) || pedido.juros) {
               <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[6px]">
                 <div class="col-span-3 text-[11px] text-gray-400 uppercase tracking-[0.06em] text-right self-center">Subtotal</div>
                 <div class="text-[13px] text-gray-400 text-right font-mono line-through">{{ formatCurrency(pedido.valorBruto) }}</div>
               </div>
-              <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[6px] border-t border-dashed border-slate-200">
-                <div class="col-span-3 text-right self-center">
-                  <div class="text-[11px] text-red-400 uppercase tracking-[0.06em]">
-                    Desconto{{ pedido.tipoDesconto === 'PERCENTUAL' ? ' (' + pedido.desconto + '%)' : '' }}
+              @if (pedido.desconto) {
+                <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[6px] border-t border-dashed border-slate-200">
+                  <div class="col-span-3 text-right self-center">
+                    <div class="text-[11px] text-red-400 uppercase tracking-[0.06em]">
+                      Desconto{{ pedido.tipoDesconto === 'PERCENTUAL' ? ' (' + pedido.desconto + '%)' : '' }}
+                    </div>
+                    @if (pedido.descontoAplicadoEm) {
+                      <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(pedido.descontoAplicadoEm) }}</div>
+                    }
                   </div>
-                  @if (pedido.descontoAplicadoEm) {
-                    <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(pedido.descontoAplicadoEm) }}</div>
-                  }
+                  <div class="text-[13px] text-red-500 text-right font-mono self-center">
+                    -{{ formatCurrency(pedido.tipoDesconto === 'PERCENTUAL' ? pedido.valorBruto * pedido.desconto / 100 : pedido.desconto) }}
+                  </div>
                 </div>
-                <div class="text-[13px] text-red-500 text-right font-mono self-center">-{{ formatCurrency(pedido.valorBruto - pedido.valorTotal) }}</div>
-              </div>
+              }
+              @if (pedido.juros) {
+                <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[6px] border-t border-dashed border-slate-200">
+                  <div class="col-span-3 text-right self-center">
+                    <div class="text-[11px] text-orange-500 uppercase tracking-[0.06em]">
+                      Juros{{ pedido.tipoJuros === 'PERCENTUAL' ? ' (' + pedido.juros + '%)' : '' }}
+                    </div>
+                    @if (pedido.jurosAplicadoEm) {
+                      <div class="text-[10px] text-gray-400 mt-0.5">em {{ formatData(pedido.jurosAplicadoEm) }}</div>
+                    }
+                  </div>
+                  <div class="text-[13px] text-orange-500 text-right font-mono self-center">
+                    +{{ formatCurrency(pedido.tipoJuros === 'PERCENTUAL'
+                        ? (pedido.valorBruto - (pedido.tipoDesconto === 'PERCENTUAL' ? pedido.valorBruto * (pedido.desconto ?? 0) / 100 : (pedido.desconto ?? 0))) * pedido.juros / 100
+                        : pedido.juros) }}
+                  </div>
+                </div>
+              }
               <div class="grid grid-cols-[1fr_60px_96px_96px] gap-2 px-[14px] py-[9px] border-t border-slate-200">
                 <div class="col-span-3 text-[12px] font-bold text-gray-400 uppercase tracking-[0.06em] text-right self-center">Total</div>
                 <div class="text-[15px] font-bold text-blue-600 text-right font-mono">{{ formatCurrency(pedido.valorTotal) }}</div>

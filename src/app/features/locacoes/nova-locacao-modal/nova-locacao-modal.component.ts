@@ -56,12 +56,21 @@ export class NovaLocacaoModalComponent {
     enderecoEntrega = '';
     dataPrevistaEntrega = '';
 
+    // Juros
+    juros: number | null = null;
+    tipoJuros: TipoDesconto = 'PERCENTUAL';
+
     readonly tipoOpcoes: { val: 'LOCACAO' | 'ORCAMENTO'; label: string }[] = [
         { val: 'LOCACAO',    label: 'Locação'   },
         { val: 'ORCAMENTO',  label: 'Orçamento' },
     ];
 
     readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+        { val: 'PERCENTUAL', label: '%'  },
+        { val: 'VALOR',      label: 'R$' },
+    ];
+
+    readonly tipoJurosOpcoes: { val: TipoDesconto; label: string }[] = [
         { val: 'PERCENTUAL', label: '%'  },
         { val: 'VALOR',      label: 'R$' },
     ];
@@ -108,6 +117,14 @@ export class NovaLocacaoModalComponent {
             : this.desconto;
     }
 
+    get valorJuros(): number {
+        if (!this.juros || this.juros <= 0) return 0;
+        const base = this.valorBruto - this.valorDesconto;
+        return this.tipoJuros === 'PERCENTUAL'
+            ? base * this.juros / 100
+            : this.juros;
+    }
+
     get clienteOptions(): SelectOption[] {
         return this.clientes.map(c => ({ value: c.id, label: c.nome }));
     }
@@ -124,9 +141,9 @@ export class NovaLocacaoModalComponent {
         return Math.max(0, (fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    /** Total considera precoDiaria × quantidade × dias menos desconto */
+    /** Total considera precoDiaria × quantidade × dias, menos desconto, mais juros */
     get total(): number {
-        return Math.max(0, this.valorBruto - this.valorDesconto);
+        return Math.max(0, this.valorBruto - this.valorDesconto + this.valorJuros);
     }
 
     /** ✅ Inclui validação de datas obrigatórias e cliente para fiado/parcelado */
@@ -198,6 +215,8 @@ export class NovaLocacaoModalComponent {
             entrega:               this.temEntrega && this.enderecoEntrega
                                      ? { endereco: this.enderecoEntrega, dataPrevista: this.dataPrevistaEntrega || null }
                                      : null,
+            juros:                 this.juros || null,
+            tipoJuros:             this.juros ? this.tipoJuros : null,
         }, this.tipo === 'ORCAMENTO').subscribe({
             next: (locacao) => {
                 this.locacaoCriada.emit(locacao);             // ✅ evento com nome correto
@@ -233,6 +252,8 @@ export class NovaLocacaoModalComponent {
         this.temEntrega            = false;
         this.enderecoEntrega       = '';
         this.dataPrevistaEntrega   = '';
+        this.juros                 = null;
+        this.tipoJuros             = 'PERCENTUAL';
     }
 
     rowTotal(item: ItemForm): number {

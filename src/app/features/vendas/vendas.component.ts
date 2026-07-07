@@ -147,8 +147,9 @@ export class VendasComponent implements OnInit {
       type: 'currency-with-badge',
       badgeFn: (p: PedidoResponse) => {
         const diff = Number(p.valorBruto) - Number(p.valorTotal);
-        if (diff <= 0) return null;
-        return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        if (diff === 0) return null;
+        if (diff > 0) return `-${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        return `+${Math.abs(diff).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
       },
     },
     {

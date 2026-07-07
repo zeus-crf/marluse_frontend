@@ -17,7 +17,7 @@ export class LocacaoEdicaoModalComponent {
   @Input() salvando = false;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
 
   @Input() set locacao(l: LocacaoResponse | null) {
     this._locacao    = l;
@@ -25,6 +25,8 @@ export class LocacaoEdicaoModalComponent {
     this.observacao     = l?.observacao    ?? '';
     this.desconto       = l?.desconto      ?? null;
     this.tipoDesconto   = l?.tipoDesconto  ?? 'PERCENTUAL';
+    this.juros          = l?.juros         ?? null;
+    this.tipoJuros      = l?.tipoJuros     ?? 'PERCENTUAL';
   }
 
   get locacao(): LocacaoResponse | null { return this._locacao; }
@@ -36,6 +38,8 @@ export class LocacaoEdicaoModalComponent {
   observacao  = '';
   desconto: number | null = null;
   tipoDesconto: TipoDesconto = 'PERCENTUAL';
+  juros: number | null = null;
+  tipoJuros: TipoDesconto = 'PERCENTUAL';
 
   // Base do desconto = valorTotal atual (desconto é cumulativo)
   get valorBruto(): number { return this._locacao?.valorTotal ?? 0; }
@@ -47,9 +51,22 @@ export class LocacaoEdicaoModalComponent {
       : this.desconto;
   }
 
-  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto); }
-    
-readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+  get valorJuros(): number {
+    if (!this.juros || this.juros <= 0) return 0;
+    const base = this.valorBruto - this.valorDesconto;
+    return this.tipoJuros === 'PERCENTUAL'
+      ? base * this.juros / 100
+      : this.juros;
+  }
+
+  get totalComDesconto(): number { return Math.max(0, this.valorBruto - this.valorDesconto + this.valorJuros); }
+
+    readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
+    { val: 'PERCENTUAL', label: '%'  },
+    { val: 'VALOR',      label: 'R$' },
+  ];
+
+  readonly tipoJurosOpcoes: { val: TipoDesconto; label: string }[] = [
     { val: 'PERCENTUAL', label: '%'  },
     { val: 'VALOR',      label: 'R$' },
   ];
@@ -80,6 +97,8 @@ readonly tipoDescontoOpcoes: { val: TipoDesconto; label: string }[] = [
       formaPagamento: this.formaPagamento,
       desconto:       this.desconto,
       tipoDesconto:   this.tipoDesconto,
+      juros:          this.juros,
+      tipoJuros:      this.tipoJuros,
     });
   }
 

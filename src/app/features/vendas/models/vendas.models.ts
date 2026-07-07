@@ -66,6 +66,9 @@ export interface PedidoResponse {
   parcelas: ParcelaResponse[];
   parcelaMesAtual: ParcelaResponse | null;
   entrega: EntregaResponse | null;
+  juros: number | null;
+  tipoJuros: TipoDesconto | null;
+  jurosAplicadoEm: string | null;
 }
 
 export interface ItemPedidoRequest {
@@ -85,6 +88,8 @@ export interface PedidoRequest {
   numeroParcelas?: number;
   primeiroVencimento?: string;   // 'YYYY-MM-DD'
   entrega?: EntregaRequest | null;
+  juros?: number | null;
+  tipoJuros?: TipoDesconto | null;
 }
 
 export interface PedidoAtualizarRequest {
@@ -92,6 +97,8 @@ export interface PedidoAtualizarRequest {
   observacao?: string;
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
+  juros?: number | null;
+  tipoJuros?: TipoDesconto | null;
 }
 
 export interface ProdutoSimples {

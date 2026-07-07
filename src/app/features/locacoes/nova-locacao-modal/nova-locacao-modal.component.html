@@ -204,6 +204,33 @@
         </div>
       </div>
 
+      <!-- JUROS -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Juros <span class="text-[10px] font-normal normal-case">(opcional)</span></div>
+        <div class="flex gap-2">
+          <div class="flex flex-shrink-0">
+            @for (opt of tipoJurosOpcoes; track opt.val; let i = $index) {
+              <button type="button"
+                (click)="tipoJuros = opt.val"
+                class="px-3 py-[6px] text-[12px] font-semibold border transition-all cursor-pointer font-[inherit]"
+                [style.border-radius]="i === 0 ? '6px 0 0 6px' : '0 6px 6px 0'"
+                [style.margin-left]="i === 1 ? '-1px' : '0'"
+                [class.bg-orange-500]="tipoJuros === opt.val"
+                [class.text-white]="tipoJuros === opt.val"
+                [class.border-orange-500]="tipoJuros === opt.val"
+                [class.bg-white]="tipoJuros !== opt.val"
+                [class.text-gray-500]="tipoJuros !== opt.val"
+                [class.border-slate-200]="tipoJuros !== opt.val">
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+          <input type="number" [(ngModel)]="juros" min="0" [max]="tipoJuros === 'PERCENTUAL' ? 100 : null" step="0.01"
+            placeholder="{{ tipoJuros === 'PERCENTUAL' ? 'Ex: 5' : 'Ex: 25,00' }}"
+            class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-[6px] text-[13px] text-gray-800 outline-none focus:border-orange-400 font-[inherit] transition-colors" />
+        </div>
+      </div>
+
       <!-- PARCELAS -->
       <div class="flex flex-col gap-2">
         <div class="grid gap-3" [class.grid-cols-2]="usaParcelas" [class.grid-cols-1]="!usaParcelas">
@@ -299,9 +326,14 @@
 
         <div class="text-right">
           <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1">Total estimado</div>
-          @if (valorDesconto > 0) {
+          @if (valorDesconto > 0 || valorJuros > 0) {
             <div class="text-[11px] text-gray-400 line-through font-mono mb-0.5">{{ formatCurrency(valorBruto) }}</div>
+          }
+          @if (valorDesconto > 0) {
             <div class="text-[11px] text-red-400 font-mono mb-0.5">-{{ formatCurrency(valorDesconto) }}</div>
+          }
+          @if (valorJuros > 0) {
+            <div class="text-[11px] text-orange-500 font-mono mb-0.5">+{{ formatCurrency(valorJuros) }}</div>
           }
           <div class="text-[24px] font-bold font-mono leading-none transition-colors"
             [class.text-blue-600]="total > 0"
