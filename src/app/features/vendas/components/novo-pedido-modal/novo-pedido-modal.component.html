@@ -209,6 +209,43 @@
         }
       </div>
 
+      <!-- ENTREGA -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Entrega</div>
+          <div class="flex items-center gap-2">
+            <span class="text-[12px]"
+              [class.text-gray-400]="!temEntrega"
+              [class.text-blue-600]="temEntrega"
+              [class.font-medium]="temEntrega">
+              Incluir entrega
+            </span>
+            <button type="button"
+              (click)="temEntrega = !temEntrega"
+              class="relative w-10 h-[22px] rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0"
+              [style.background-color]="temEntrega ? '#3b82f6' : '#e2e8f0'">
+              <span class="absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200"
+                [style.left]="temEntrega ? '22px' : '3px'">
+              </span>
+            </button>
+          </div>
+        </div>
+        @if (temEntrega) {
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Endereço de entrega</label>
+              <input type="text" [(ngModel)]="enderecoEntrega"
+                placeholder="Ex: Rua das Flores, 123, Centro"
+                class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-[13px] text-gray-800 outline-none focus:border-blue-400 transition-colors font-[inherit]" />
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Data prevista <span class="font-normal normal-case">(opcional)</span></label>
+              <app-date-picker [(ngModel)]="dataPrevistaEntrega" />
+            </div>
+          </div>
+        }
+      </div>
+
       <div>
         <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Observação</label>
         <textarea

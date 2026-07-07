@@ -18,11 +18,13 @@ import { TableColumn, TableActionConfig } from '../../../shared/components/data-
 import { LocacaoService } from './locacoes.service';
 import {
   ClienteSimples,
+  EntregaResponse,
   LocacaoResponse,
   LocacoesFiltroCompleto,
   ProdutoSimples,
   StatusLocacao,
 } from '../models/locacoes.models';
+
 import { NovaLocacaoModalComponent } from "../nova-locacao-modal/nova-locacao-modal.component";
 import { LocacaoDetalheModalComponent } from "../locacao-datalhe-modal/locacao-detalhe-modal.component";
 import { LocacaoEdicaoModalComponent } from "../locacao-edicao-modal/locacao-edicao-modal.component";
@@ -128,6 +130,21 @@ export class LocacoesComponent implements OnInit {
       type: 'tag',
       tagSeverityFn: (val: StatusLocacao) => this.getSeverity(val),
       tagLabelFn:    (val: StatusLocacao) => this.getStatusLabel(val),
+    },
+    {
+      field: 'entrega',
+      header: 'Entrega',
+      width: '10%',
+      type: 'tag',
+      cellClass: 'pl-6',
+      tagSeverityFn: (entrega: EntregaResponse | null) => {
+        if (!entrega) return 'secondary';
+        return entrega.status === 'FEITA' ? 'success' : 'warn';
+      },
+      tagLabelFn: (entrega: EntregaResponse | null) => {
+        if (!entrega) return '';
+        return entrega.status === 'FEITA' ? 'Entregue' : 'Pendente';
+      },
     },
   ];
 
@@ -549,6 +566,15 @@ export class LocacoesComponent implements OnInit {
   fecharDetalhe(): void {
     this.showModalDetalhe    = false;
     this.locacaoSelecionada  = null;
+  }
+
+  onEntregaMarcada(entrega: EntregaResponse): void {
+    if (!this.locacaoSelecionada) return;
+    const id = this.locacaoSelecionada.id;
+    this.locacoes = this.locacoes.map(l =>
+      l.id === id ? { ...l, entrega } : l
+    );
+    this.cdr.detectChanges();
   }
 
   onParcelaPaga(): void {

@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
-import { LocacaoResponse, StatusLocacao, ParcelaResponse } from '../models/locacoes.models';
+import { LocacaoResponse, StatusLocacao, ParcelaResponse, EntregaResponse } from '../models/locacoes.models';
 import { LocacaoService } from '../locacoes/locacoes.service';
+import { EntregaService } from '../../vendas/entrega.service';
 
 @Component({
     selector: 'app-locacao-detalhe-modal',
@@ -15,6 +16,7 @@ import { LocacaoService } from '../locacoes/locacoes.service';
 export class LocacaoDetalheModalComponent implements OnChanges {
 
     private locacaoService  = inject(LocacaoService);
+    private entregaService  = inject(EntregaService);
     private cdr             = inject(ChangeDetectorRef);
     private messageService  = inject(MessageService);
 
@@ -22,15 +24,17 @@ export class LocacaoDetalheModalComponent implements OnChanges {
     @Input() locacao: LocacaoResponse | null = null;
     @Input() salvando = false;
 
-    @Output() fechar      = new EventEmitter<void>();
-    @Output() devolver    = new EventEmitter<LocacaoResponse>();
-    @Output() cancelar    = new EventEmitter<LocacaoResponse>();
-    @Output() confirmar   = new EventEmitter<LocacaoResponse>();
-    @Output() parcelaPaga = new EventEmitter<void>();
+    @Output() fechar          = new EventEmitter<void>();
+    @Output() devolver        = new EventEmitter<LocacaoResponse>();
+    @Output() cancelar        = new EventEmitter<LocacaoResponse>();
+    @Output() confirmar       = new EventEmitter<LocacaoResponse>();
+    @Output() parcelaPaga     = new EventEmitter<void>();
+    @Output() entregaMarcada  = new EventEmitter<EntregaResponse>();
 
     parcelas: ParcelaResponse[] = [];
     loadingParcelas = false;
     pagandoParcela: string | null = null;
+    marcandoEntrega = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         const visibleOn   = changes['visible']?.currentValue === true;
@@ -41,6 +45,7 @@ export class LocacaoDetalheModalComponent implements OnChanges {
         if (changes['visible']?.currentValue === false) {
             this.parcelas       = [];
             this.pagandoParcela = null;
+            this.marcandoEntrega = false;
         }
     }
 
@@ -80,6 +85,28 @@ export class LocacaoDetalheModalComponent implements OnChanges {
             error: (err: any) => {
                 this.pagandoParcela = null;
                 const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    marcarEntregue(): void {
+        if (!this.locacao?.entrega) return;
+        this.marcandoEntrega = true;
+        this.entregaService.patchEntregar(this.locacao.entrega.id).subscribe({
+            next: (entrega) => {
+                if (this.locacao) {
+                    this.locacao = { ...this.locacao, entrega };
+                }
+                this.marcandoEntrega = false;
+                this.entregaMarcada.emit(entrega);
+                this.cdr.detectChanges();
+                this.messageService.add({ severity: 'success', summary: 'Entregue', detail: 'Entrega registrada com sucesso!', life: 3000 });
+            },
+            error: (err: any) => {
+                this.marcandoEntrega = false;
+                const detail = err?.error?.message ?? 'Não foi possível registrar a entrega';
                 this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
                 this.cdr.detectChanges();
             }
