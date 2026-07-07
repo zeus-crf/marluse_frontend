@@ -5,6 +5,7 @@ export type TabFiltroEstoque = 'TODOS' | StatusEstoque;
 export interface ProdutoRequest {
   nome: string;
   descricao?: string;
+  valorCompra: number;
   preco: number;
   quantidadeEstoque: number;
   estoqueMinimo: number;
@@ -15,6 +16,7 @@ export interface ProdutoResponse {
   id: string;
   nome: string;
   descricao: string;
+  valorCompra: number;
   preco: number;
   quantidadeEstoque: number;
   estoqueMinimo: number;
@@ -26,6 +28,7 @@ export interface ProdutoResponse {
 export interface ProdutoAtualizarRequest {
   nome: string;
   descricao?: string;
+  valorCompra: number;
   preco: number;
   estoqueMinimo: number;
   quantidadeEstoque: number;

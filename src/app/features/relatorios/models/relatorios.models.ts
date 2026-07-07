@@ -8,6 +8,8 @@ export interface KpisResponse {
     variacaoDespesas: number | null;
     variacaoSaldo: number | null;
     variacaoTicketMedio: number | null;
+    cmv: number;
+    lucroLiquido: number;
 }
 
 export interface ReceitaMensalItemResponse {
@@ -15,6 +17,7 @@ export interface ReceitaMensalItemResponse {
     vendas: number;
     locacoes: number;
     despesas: number;
+    cmv: number;
 }
 
 export interface StatusFinanceiroResponse {
@@ -31,5 +34,7 @@ export interface TopClienteResponse {
 export interface TopProdutoResponse {
     nome: string;
     quantidade: number;
+    lucro: number;
+    custo: number;
     total: number;
 }

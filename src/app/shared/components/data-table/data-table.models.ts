@@ -1,4 +1,4 @@
-export type CellType = 'text' | 'currency' | 'date' | 'mono' | 'tag' | 'computed';
+export type CellType = 'text' | 'currency' | 'currency-with-badge' | 'date' | 'mono' | 'tag' | 'computed';
 
 export interface TableColumn {
   /** Campo do objeto (não usado em 'computed', mas útil como chave única) */
@@ -15,6 +15,9 @@ export interface TableColumn {
 
   /** Para type 'computed' ou 'mono': valor calculado a partir da linha */
   valueFn?: (row: any, index?: number) => string;
+
+  /** Para type 'currency-with-badge': retorna o label do badge (ex: '-10%'), ou null para não exibir */
+  badgeFn?: (row: any) => string | null;
 
   /** Aplica truncate ao conteúdo da célula */
   truncate?: boolean;

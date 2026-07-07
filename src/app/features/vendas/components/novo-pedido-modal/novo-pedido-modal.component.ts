@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { MessageService } from 'primeng/api';
 import { VendasService } from '../../vendas.service';
 import {
   PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido, TipoDesconto
@@ -24,7 +25,8 @@ interface ItemForm {
   templateUrl: './novo-pedido-modal.component.html',
 })
 export class NovoPedidoModalComponent {
-  private service = inject(VendasService);
+  private service        = inject(VendasService);
+  private messageService = inject(MessageService);
 
   @Input() visible = false;
   @Input() produtos: ProdutoSimples[] = [];
@@ -36,6 +38,7 @@ export class NovoPedidoModalComponent {
 
   // Form state
   tipo: 'PEDIDO' | 'ORCAMENTO' = 'PEDIDO';
+  consumidorFinal = false;
   dataVencimento = '';
   clienteId = '';
   observacao = '';
@@ -70,6 +73,24 @@ export class NovoPedidoModalComponent {
   get isFiado(): boolean { return this.formaPagamento === 'FIADO'; }
   get isOrcamento(): boolean { return this.tipo === 'ORCAMENTO'; }
   get usaParcelas(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+  /** Fiado e parcelado exigem cliente — sem devedor identificado não faz sentido */
+  get exigeCliente(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+
+  setConsumidorFinal(value: boolean): void {
+    if (value && this.exigeCliente) return; // bloqueado quando fiado/parcelado
+    this.consumidorFinal = value;
+    if (value) this.clienteId = '';
+  }
+
+  onSelectFormaPagamento(valor: FormaPagamento): void {
+    this.formaPagamento = valor;
+    if (this.exigeCliente) this.consumidorFinal = false;
+  }
+
+  onNumeroParcelas(value: number): void {
+    this.numeroParcelas = Number(value);
+    if (this.exigeCliente) this.consumidorFinal = false;
+  }
 
   get valorBruto(): number {
     return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade, 0);
@@ -95,10 +116,12 @@ export class NovoPedidoModalComponent {
   }
 
   get formValida(): boolean {
+    const clienteOk = this.consumidorFinal ? !this.exigeCliente : !!this.clienteId;
     return (
       !!this.formaPagamento &&
       this.itens.length > 0 &&
-      this.itens.every(i => i.produtoId && i.quantidade > 0)
+      this.itens.every(i => i.produtoId && i.quantidade > 0) &&
+      clienteOk
     );
   }
 
@@ -156,7 +179,11 @@ export class NovoPedidoModalComponent {
         this.resetForm();
         this.salvando = false;
       },
-      error: () => { this.salvando = false; },
+      error: (err) => {
+        this.salvando = false;
+        const detail = err?.error?.message ?? 'Não foi possível criar o pedido';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+      },
     });
   }
 
@@ -167,6 +194,7 @@ export class NovoPedidoModalComponent {
 
   private resetForm(): void {
     this.tipo               = 'PEDIDO';
+    this.consumidorFinal    = false;
     this.dataVencimento     = '';
     this.clienteId          = '';
     this.formaPagamento     = '';

@@ -24,6 +24,8 @@ export class RelatoriosComponent implements OnInit {
 
   periodo: '3m' | '6m' | '12m' = '6m';
   carregando = false;
+  paginaTopProdutos = 0;
+  readonly itensPorPagina = 6;
 
   kpis: KpisResponse | null = null;
   receitaMensal: ReceitaMensalItemResponse[] = [];
@@ -42,10 +44,12 @@ export class RelatoriosComponent implements OnInit {
   ];
 
   readonly kpiCards = [
-    { key: 'receita',    label: 'Receita total', icon: 'trending_up',    varKey: 'variacaoReceita',    cor: 'text-green-600',  bgIcon: 'bg-green-50'  },
-    { key: 'despesas',   label: 'Despesas',       icon: 'trending_down',  varKey: 'variacaoDespesas',   cor: 'text-red-500',    bgIcon: 'bg-red-50'    },
-    { key: 'saldo',      label: 'Saldo líquido',  icon: 'account_balance',varKey: 'variacaoSaldo',      cor: 'text-blue-600',   bgIcon: 'bg-blue-50'   },
-    { key: 'ticketMedio',label: 'Ticket médio',   icon: 'receipt_long',   varKey: 'variacaoTicketMedio',cor: 'text-purple-600', bgIcon: 'bg-purple-50' },
+    { key: 'receita',      label: 'Receita total',     icon: 'trending_up',     varKey: 'variacaoReceita',    cor: 'text-green-600',   bgIcon: 'bg-green-50',   tooltip: 'Total recebido por vendas e locações no período selecionado.'                                    },
+    { key: 'cmv',          label: 'Custo de Produtos', icon: 'inventory_2',     varKey: '',                   cor: 'text-orange-500',  bgIcon: 'bg-orange-50',  tooltip: 'CMV — custo de aquisição dos produtos vendidos. Calculado com base no valorCompra de cada item.' },
+    { key: 'despesas',     label: 'Despesas',          icon: 'trending_down',   varKey: 'variacaoDespesas',   cor: 'text-red-500',     bgIcon: 'bg-red-50',     tooltip: 'Despesas operacionais lançadas manualmente no módulo financeiro.'                               },
+    { key: 'lucroLiquido', label: 'Lucro líquido',     icon: 'show_chart',      varKey: '',                   cor: 'text-emerald-600', bgIcon: 'bg-emerald-50', tooltip: 'Receita − CMV − Despesas. O lucro real do período descontando todos os custos.'                  },
+    { key: 'saldo',        label: 'Saldo financeiro',  icon: 'account_balance', varKey: 'variacaoSaldo',      cor: 'text-blue-600',    bgIcon: 'bg-blue-50',    tooltip: 'Receita − Despesas. Representa o fluxo de caixa, sem considerar o custo dos produtos.'         },
+    { key: 'ticketMedio',  label: 'Ticket médio',      icon: 'receipt_long',    varKey: 'variacaoTicketMedio',cor: 'text-purple-600',  bgIcon: 'bg-purple-50',  tooltip: 'Valor médio por pedido confirmado no período.'                                                   },
   ];
 
   ngOnInit(): void {
@@ -58,6 +62,7 @@ export class RelatoriosComponent implements OnInit {
   }
 
   carregar(): void {
+    this.paginaTopProdutos = 0;
     this.carregando = true;
     this.cdr.detectChanges();
 
@@ -93,7 +98,7 @@ export class RelatoriosComponent implements OnInit {
       error: (e) => { console.error('topClientes error', e); onComplete(); },
     });
 
-    this.service.topProdutos(5, this.periodo).subscribe({
+    this.service.topProdutos(100, this.periodo).subscribe({
       next: (d) => { this.topProdutos = d; onComplete(); },
       error: (e) => { console.error('topProdutos error', e); onComplete(); },
     });
@@ -104,6 +109,7 @@ export class RelatoriosComponent implements OnInit {
     const vendas   = this.receitaMensal.map(r => r.vendas);
     const locacoes = this.receitaMensal.map(r => r.locacoes);
     const despesas = this.receitaMensal.map(r => r.despesas);
+    const cmv      = this.receitaMensal.map(r => r.cmv);
     const receitas = this.receitaMensal.map(r => r.vendas + r.locacoes);
 
     const baseChart = {
@@ -147,12 +153,13 @@ export class RelatoriosComponent implements OnInit {
 
     this.chartMargem = {
       series: [
-        { name: 'Receita',   data: receitas },
-        { name: 'Despesas',  data: despesas },
+        { name: 'Receita',  data: receitas },
+        { name: 'CMV',      data: cmv      },
+        { name: 'Despesas', data: despesas },
       ],
       chart: { ...baseChart, type: 'area', height: 220 },
-      colors: ['#3B82F6', '#EF4444'],
-      stroke: { curve: 'smooth', width: [2, 2], dashArray: [0, 5] },
+      colors: ['#3B82F6', '#F97316', '#EF4444'],
+      stroke: { curve: 'smooth', width: [2, 2, 2], dashArray: [0, 4, 5] },
       fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.1, opacityTo: 0, stops: [0, 100] } },
       xaxis: baseXAxis,
       yaxis: baseYAxis,
@@ -199,8 +206,18 @@ export class RelatoriosComponent implements OnInit {
     return nome.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
   }
 
+  get topProdutosPaginados(): TopProdutoResponse[] {
+    const inicio = this.paginaTopProdutos * this.itensPorPagina;
+    return this.topProdutos.slice(inicio, inicio + this.itensPorPagina);
+  }
+
+  get totalPaginasTopProdutos(): number {
+    return Math.ceil(this.topProdutos.length / this.itensPorPagina);
+  }
+
   get maxTopProduto(): number {
-    return this.topProdutos.length > 0 ? this.topProdutos[0].quantidade : 1;
+    const paginados = this.topProdutosPaginados;
+    return paginados.length > 0 ? paginados[0].lucro : 1;
   }
 
   get totalStatusFinanceiro(): number {

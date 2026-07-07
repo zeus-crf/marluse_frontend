@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { MessageService } from 'primeng/api';
 import { LocacaoService } from '../locacoes/locacoes.service';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
@@ -23,7 +24,8 @@ interface ItemForm {
 })
 export class NovaLocacaoModalComponent {
 
-    private service = inject(LocacaoService);
+    private service        = inject(LocacaoService);
+    private messageService = inject(MessageService);
 
     @Input() visible = false;
     @Input() produtos: ProdutoSimples[] = [];
@@ -35,6 +37,7 @@ export class NovaLocacaoModalComponent {
 
     // ✅ tipo tipado — 'LOCACAO' vs 'ORCAMENTO' (não mais string vazia)
     tipo: 'LOCACAO' | 'ORCAMENTO' = 'LOCACAO';
+    consumidorFinal       = false;
     clienteId             = '';
     observacao            = '';
     dataRetirada          = '';
@@ -70,6 +73,24 @@ export class NovaLocacaoModalComponent {
     get isFiado(): boolean { return this.formaPagamento === 'FIADO'; }
     get isOrcamento(): boolean { return this.tipo === 'ORCAMENTO'; }
     get usaParcelas(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+    /** Fiado e parcelado exigem cliente — sem devedor identificado não faz sentido */
+    get exigeCliente(): boolean { return this.isFiado || this.numeroParcelas > 1; }
+
+    setConsumidorFinal(value: boolean): void {
+        if (value && this.exigeCliente) return;
+        this.consumidorFinal = value;
+        if (value) this.clienteId = '';
+    }
+
+    onSelectFormaPagamento(valor: FormaPagamento): void {
+        this.formaPagamento = valor;
+        if (this.exigeCliente) this.consumidorFinal = false;
+    }
+
+    onNumeroParcelas(value: number): void {
+        this.numeroParcelas = Number(value);
+        if (this.exigeCliente) this.consumidorFinal = false;
+    }
 
     get valorBruto(): number {
         return this.itens.reduce((acc, i) => acc + i.precoUnitario * i.quantidade * this.dias, 0);
@@ -103,15 +124,17 @@ export class NovaLocacaoModalComponent {
         return Math.max(0, this.valorBruto - this.valorDesconto);
     }
 
-    /** ✅ Inclui validação de datas obrigatórias */
+    /** ✅ Inclui validação de datas obrigatórias e cliente para fiado/parcelado */
     get formValida(): boolean {
+        const clienteOk = this.consumidorFinal ? !this.exigeCliente : !!this.clienteId;
         return (
             !!this.formaPagamento &&
             !!this.dataRetirada &&
             !!this.dataDevolucaoPrevista &&
             this.dataDevolucaoPrevista > this.dataRetirada &&
             this.itens.length > 0 &&
-            this.itens.every(i => i.produtoId && i.quantidade > 0)
+            this.itens.every(i => i.produtoId && i.quantidade > 0) &&
+            clienteOk
         );
     }
 
@@ -173,8 +196,10 @@ export class NovaLocacaoModalComponent {
                 this.resetForm();
                 this.salvando = false;
             },
-            error: () => {
+            error: (err: any) => {
                 this.salvando = false;
+                const detail = err?.error?.message ?? 'Não foi possível criar a locação';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
             },
         });
     }
@@ -186,6 +211,7 @@ export class NovaLocacaoModalComponent {
 
     private resetForm(): void {
         this.tipo                  = 'LOCACAO';
+        this.consumidorFinal       = false;
         this.dataRetirada          = '';
         this.dataDevolucaoPrevista = '';
         this.clienteId             = '';

@@ -16,6 +16,7 @@ import { SelectSearchComponent } from '../../../shared/components/select-search/
 interface ProdutoForm {
   nome: string;
   descricao: string;
+  valorCompra: number | null;
   preco: number | null;
   quantidadeEstoque: number;
   estoqueMinimo: number;
@@ -58,6 +59,7 @@ export class NovoProdutoModalComponent implements OnChanges {
       this.form = {
         nome:               this.produto.nome,
         descricao:          this.produto.descricao ?? '',
+        valorCompra:        Number(this.produto.valorCompra),
         preco:              Number(this.produto.preco),
         quantidadeEstoque:  this.produto.quantidadeEstoque,
         estoqueMinimo:      this.produto.estoqueMinimo,
@@ -69,7 +71,11 @@ export class NovoProdutoModalComponent implements OnChanges {
   }
 
   get formValido(): boolean {
-    return !!this.form.nome?.trim() && this.form.preco !== null && this.form.preco > 0;
+    return (
+      !!this.form.nome?.trim() &&
+      this.form.valorCompra !== null && this.form.valorCompra > 0 &&
+      this.form.preco !== null && this.form.preco > 0
+    );
   }
 
   onSalvar(): void {
@@ -79,6 +85,7 @@ export class NovoProdutoModalComponent implements OnChanges {
       const payload: ProdutoAtualizarRequest = {
         nome:              this.form.nome.trim(),
         descricao:         this.form.descricao?.trim() || undefined,
+        valorCompra:       this.form.valorCompra!,
         preco:             this.form.preco!,
         quantidadeEstoque: this.form.quantidadeEstoque,
         estoqueMinimo:     this.form.estoqueMinimo,
@@ -89,6 +96,7 @@ export class NovoProdutoModalComponent implements OnChanges {
       const payload: ProdutoRequest = {
         nome:              this.form.nome.trim(),
         descricao:         this.form.descricao?.trim() || undefined,
+        valorCompra:       this.form.valorCompra!,
         preco:             this.form.preco!,
         quantidadeEstoque: this.form.quantidadeEstoque,
         estoqueMinimo:     this.form.estoqueMinimo,
@@ -99,6 +107,6 @@ export class NovoProdutoModalComponent implements OnChanges {
   }
 
   private formVazio(): ProdutoForm {
-    return { nome: '', descricao: '', preco: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: 'PECA' };
+    return { nome: '', descricao: '', valorCompra: null, preco: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: 'PECA' };
   }
 }

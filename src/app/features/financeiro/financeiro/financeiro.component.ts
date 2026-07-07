@@ -2,7 +2,6 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 import { FinanceiroService } from './financeiro.service';
@@ -33,7 +32,6 @@ import { SelectComponent } from '../../../shared/components/select/select.compon
   imports: [
     CommonModule,
     FormsModule,
-    ToastModule,
     NgApexchartsModule,
     DataTableComponent,
     NovoLancamentoModalComponent,
@@ -44,7 +42,6 @@ import { SelectComponent } from '../../../shared/components/select/select.compon
   ],
   templateUrl: './financeiro.component.html',
   styleUrl: './financeiro.component.scss',
-  providers: [MessageService],
 })
 export class FinanceiroComponent implements OnInit {
   private service        = inject(FinanceiroService);
@@ -226,8 +223,10 @@ export class FinanceiroComponent implements OnInit {
         this.atualizarGrafico();
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
+        const detail = err?.error?.message ?? 'Não foi possível carregar os lançamentos.';
+        this.toast('error', 'Erro', detail);
         this.cdr.detectChanges();
       },
     });
@@ -338,9 +337,10 @@ export class FinanceiroComponent implements OnInit {
         this.toast('success', 'Lançamento criado', criado.descricao);
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.toast('error', 'Erro', 'Não foi possível criar o lançamento');
+        const detail = err?.error?.message ?? 'Não foi possível criar o lançamento';
+        this.toast('error', 'Erro', detail);
         this.cdr.detectChanges();
       },
     });
@@ -373,8 +373,10 @@ export class FinanceiroComponent implements OnInit {
         this.toast('success', 'Pago', 'Pagamento registrado com sucesso');
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
+        const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+        this.toast('error', 'Erro', detail);
         this.cdr.detectChanges();
       },
     });
@@ -402,9 +404,10 @@ export class FinanceiroComponent implements OnInit {
         this.toast('success', 'Editado', 'Lançamento atualizado com sucesso');
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.salvando = false;
-        this.toast('error', 'Erro', 'Não foi possível editar o lançamento');
+        const detail = err?.error?.message ?? 'Não foi possível editar o lançamento';
+        this.toast('error', 'Erro', detail);
         this.cdr.detectChanges();
       },
     });
@@ -418,8 +421,9 @@ export class FinanceiroComponent implements OnInit {
         this.toast('success', 'Excluído', `"${lancamento.descricao}" removido`);
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.toast('error', 'Erro', 'Não foi possível excluir o lançamento');
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível excluir o lançamento';
+        this.toast('error', 'Erro', detail);
         this.cdr.detectChanges();
       },
     });

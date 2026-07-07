@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
@@ -43,7 +42,6 @@ import { ClientesFiltrosModalComponent } from '../components/clientes-filtros-mo
   imports: [
     CommonModule,
     FormsModule,
-    ToastModule,
     ButtonModule,
     TooltipModule,
     InputTextModule,
@@ -55,7 +53,6 @@ import { ClientesFiltrosModalComponent } from '../components/clientes-filtros-mo
   ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss',
-  providers: [MessageService],
 })
 export class ClientesComponent implements OnInit {
 
@@ -243,12 +240,10 @@ export class ClientesComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error', summary: 'Erro',
-          detail: 'Não foi possível carregar os clientes.',
-        });
+        const detail = err?.error?.message ?? 'Não foi possível carregar os clientes.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
     });
   }
@@ -292,9 +287,10 @@ export class ClientesComponent implements OnInit {
           this.salvando = false;
           this.messageService.add({ severity: 'success', summary: 'Salvo', detail: 'Cliente atualizado.' });
         },
-        error: () => {
+        error: (err: any) => {
           this.salvando = false;
-          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar.' });
+          const detail = err?.error?.message ?? 'Não foi possível salvar.';
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         },
       });
     } else {
@@ -306,9 +302,10 @@ export class ClientesComponent implements OnInit {
           this.salvando = false;
           this.messageService.add({ severity: 'success', summary: 'Criado', detail: 'Cliente cadastrado.' });
         },
-        error: () => {
+        error: (err: any) => {
           this.salvando = false;
-          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível cadastrar.' });
+          const detail = err?.error?.message ?? 'Não foi possível cadastrar.';
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
         },
       });
     }
@@ -324,8 +321,9 @@ export class ClientesComponent implements OnInit {
           detail: `"${cliente.nome}" foi inativado.`,
         });
       },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível inativar.' });
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível inativar.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
     });
   }

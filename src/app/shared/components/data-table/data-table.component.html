@@ -84,6 +84,19 @@
               </span>
             }
 
+            @case ('currency-with-badge') {
+              <div class="flex items-center gap-1.5">
+                <span class="font-semibold text-gray-800">
+                  {{ formatCurrency(getCellValue(col, row, ri)) }}
+                </span>
+                @if (col.badgeFn && col.badgeFn(row)) {
+                  <span class="text-[10px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                    {{ col.badgeFn(row) }}
+                  </span>
+                }
+              </div>
+            }
+
             @case ('date') {
               <span class="text-gray-600">
                 {{ formatDate(getCellValue(col, row, ri)) }}

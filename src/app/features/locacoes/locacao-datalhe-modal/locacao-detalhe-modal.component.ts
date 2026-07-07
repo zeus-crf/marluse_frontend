@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
+import { MessageService } from 'primeng/api';
 import { LocacaoResponse, StatusLocacao, ParcelaResponse } from '../models/locacoes.models';
 import { LocacaoService } from '../locacoes/locacoes.service';
 
@@ -13,8 +14,9 @@ import { LocacaoService } from '../locacoes/locacoes.service';
 })
 export class LocacaoDetalheModalComponent implements OnChanges {
 
-    private locacaoService = inject(LocacaoService);
-    private cdr            = inject(ChangeDetectorRef);
+    private locacaoService  = inject(LocacaoService);
+    private cdr             = inject(ChangeDetectorRef);
+    private messageService  = inject(MessageService);
 
     @Input() visible = false;
     @Input() locacao: LocacaoResponse | null = null;
@@ -51,7 +53,11 @@ export class LocacaoDetalheModalComponent implements OnChanges {
                 this.loadingParcelas = false;
                 this.cdr.detectChanges();
             },
-            error: () => { this.loadingParcelas = false; }
+            error: (err: any) => {
+                this.loadingParcelas = false;
+                const detail = err?.error?.message ?? 'Não foi possível carregar as parcelas';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+            }
         });
     }
 
@@ -71,8 +77,10 @@ export class LocacaoDetalheModalComponent implements OnChanges {
                 this.parcelaPaga.emit();
                 this.cdr.detectChanges();
             },
-            error: () => {
+            error: (err: any) => {
                 this.pagandoParcela = null;
+                const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
                 this.cdr.detectChanges();
             }
         });

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { forkJoin } from 'rxjs';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { DashboardService } from '../dashboard.service';
@@ -20,7 +19,7 @@ type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, ToastModule, DatePickerComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DatePickerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })

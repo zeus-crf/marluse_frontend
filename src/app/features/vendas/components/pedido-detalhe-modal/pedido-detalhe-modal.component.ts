@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
+import { MessageService } from 'primeng/api';
 import { PedidoResponse, StatusPedido, ParcelaResponse } from '../../models/vendas.models';
 import { VendasService } from '../../vendas.service';
 
@@ -13,8 +14,9 @@ import { VendasService } from '../../vendas.service';
 })
 export class PedidoDetalheModalComponent implements OnChanges {
 
-    private vendasService = inject(VendasService);
-    private cdr          = inject(ChangeDetectorRef);
+    private vendasService  = inject(VendasService);
+    private cdr            = inject(ChangeDetectorRef);
+    private messageService = inject(MessageService);
 
     @Input() visible = false;
     @Input() pedido: PedidoResponse | null = null;
@@ -51,7 +53,11 @@ export class PedidoDetalheModalComponent implements OnChanges {
             this.loadingParcelas = false;
             this.cdr.detectChanges();
         },
-        error: () => { this.loadingParcelas = false; }
+        error: (err: any) => {
+            this.loadingParcelas = false;
+            const detail = err?.error?.message ?? 'Não foi possível carregar as parcelas';
+            this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+        }
     });
 }
 
@@ -81,8 +87,10 @@ export class PedidoDetalheModalComponent implements OnChanges {
                     this.pagar.emit(this.pedido!.id);
                 }
             },
-            error: () => {
+            error: (err: any) => {
                 this.pagandoParcela = null;
+                const detail = err?.error?.message ?? 'Não foi possível registrar o pagamento';
+                this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
                 this.cdr.detectChanges();
             }
         });
