@@ -6,11 +6,12 @@ import { MessageService } from 'primeng/api';
 import { PedidoResponse, StatusPedido, ParcelaResponse, EntregaResponse } from '../../models/vendas.models';
 import { VendasService } from '../../vendas.service';
 import { EntregaService } from '../../entrega.service';
+import { WhatsaapCobrancaModalComponent } from "../../../../shared/components/whatsapp/whatsapp-cobranca-modal.component";
 
 @Component({
     selector: 'app-pedido-detalhe-modal',
     standalone: true,
-    imports: [CommonModule, DialogModule, TagModule],
+    imports: [CommonModule, DialogModule, TagModule, WhatsaapCobrancaModalComponent],
     templateUrl: './pedido-detalhe-modal.component.html',
 })
 export class PedidoDetalheModalComponent implements OnChanges {
@@ -23,6 +24,7 @@ export class PedidoDetalheModalComponent implements OnChanges {
     @Input() visible = false;
     @Input() pedido: PedidoResponse | null = null;
     @Input() salvando = false;
+    showWaModal = false;
 
     @Output() fechar          = new EventEmitter<void>();
     @Output() pagar           = new EventEmitter<string>();
@@ -121,6 +123,30 @@ export class PedidoDetalheModalComponent implements OnChanges {
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    get podeCobrarWhatsapp(): boolean {
+  return this.pedido?.status === 'CONFIRMADO' || this.pedido?.status === 'PENDENTE';
+    }
+
+    get mensagemWhatsapp(): string {
+    const p = this.pedido!;
+    const nome = p.clienteNome;
+    const total = this.formatCurrency(p.valorTotal);
+    const parcela = p.parcelaMesAtual;
+
+    if (p.status === 'CONFIRMADO') {
+        if (parcela && parcela.status === 'PENDENTE') {
+        return `Olá ${nome}! 😊 Passando para lembrar que a parcela ${parcela.numeroParcela}/${parcela.totalParcelas} no valor de ${this.formatCurrency(parcela.valor)} vence em ${this.formatData(parcela.dataVencimento!)}. Quando consegue resolver? Qualquer dúvida é só falar!`;
+        }
+        return `Olá ${nome}! 😊 Passando para lembrar que você tem uma compra confirmada no valor de ${total}. Quando consegue resolver o pagamento? Qualquer dúvida é só falar!`;
+    }
+
+    // PENDENTE (vencido)
+    if (parcela && parcela.status === 'PENDENTE') {
+        return `Olá ${nome}! A parcela ${parcela.numeroParcela}/${parcela.totalParcelas} no valor de ${this.formatCurrency(parcela.valor)} venceu em ${this.formatData(parcela.dataVencimento!)}. Podemos combinar o pagamento? Fico no aguardo!`;
+    }
+    return `Olá ${nome}! Temos uma pendência em aberto no valor de ${total} com vencimento em ${this.formatData(p.dataVencimento!)}. Podemos combinar o pagamento? Fico no aguardo!`;
     }
 
     get podeConfirmar(): boolean {

@@ -4,7 +4,7 @@
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
-  [style]="{ width: '620px' }"
+  [style]="{ width: '670px' }"
   [contentStyle]="{ padding: '0' }"
   header="Detalhes da Locação">
 
@@ -280,52 +280,74 @@
         </div>
 
         <!-- ── Ações ──────────────────────────────────────────── -->
-        <div class="flex justify-end gap-2 pt-1 border-t border-slate-100">
+        <div class="flex items-center justify-between pt-1 gap-4 border-t border-slate-100">
 
+          @if (podeCobrarWhatsapp) {
+            <button
+              type="button"
+              [disabled]="!locacao?.clienteTelefone || salvando"
+              [title]="!locacao?.clienteTelefone ? 'Cliente sem telefone cadastrado' : ''"
+              (click)="showWaModal = true"
+              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              style="background-color: #25D366;">
+              <i class="pi pi-whatsapp text-xs"></i>
+              Cobrar via WhatsApp
+            </button>
+          }
+          <app-whatsapp-modal
+            [visible]="showWaModal"
+            [clienteNome]="locacao?.clienteNome ?? ''"
+            [telefone]="locacao?.clienteTelefone ?? null"
+            [mensagem]="mensagemWhatsapp"
+            (fechar)="showWaModal = false"
+          />
+<!-- 
           <button type="button" (click)="fechar.emit()"
             class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
             Fechar
-          </button>
+          </button> -->
 
-          @if (podeCancelar) {
-            <button type="button"
-              (click)="cancelar.emit(locacao)"
-              [disabled]="salvando"
-              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              <i class="pi pi-times-circle text-xs"></i>
-              Cancelar locação
-            </button>
-          }
+          <div class="flex gap-2 ml-auto">
+            @if (podeCancelar) {
+              <button type="button"
+                (click)="cancelar.emit(locacao)"
+                [disabled]="salvando"
+                class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <i class="pi pi-times-circle text-xs"></i>
+                Cancelar locação
+              </button>
+            }
 
-          @if (podeConfirmar) {
-            <button type="button"
-              (click)="confirmar.emit(locacao)"
-              [disabled]="salvando"
-              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              @if (salvando) {
-                <i class="pi pi-spin pi-spinner text-xs"></i>
-                Processando...
-              } @else {
-                <i class="pi pi-check text-xs"></i>
-                Confirmar como Locação
-              }
-            </button>
-          }
+            @if (podeConfirmar) {
+              <button type="button"
+                (click)="confirmar.emit(locacao)"
+                [disabled]="salvando"
+                class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                @if (salvando) {
+                  <i class="pi pi-spin pi-spinner text-xs"></i>
+                  Processando...
+                } @else {
+                  <i class="pi pi-check text-xs"></i>
+                  Confirmar como Locação
+                }
+              </button>
+            }
 
-          @if (podeDevolver) {
-            <button type="button"
-              (click)="devolver.emit(locacao)"
-              [disabled]="salvando"
-              class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              @if (salvando) {
-                <i class="pi pi-spin pi-spinner text-xs"></i>
-                Processando...
-              } @else {
-                <i class="pi pi-check-circle text-xs"></i>
-                Confirmar devolução
-              }
-            </button>
-          }
+            @if (podeDevolver) {
+              <button type="button"
+                (click)="devolver.emit(locacao)"
+                [disabled]="salvando"
+                class="flex items-center gap-2 px-4 py-[7px] text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                @if (salvando) {
+                  <i class="pi pi-spin pi-spinner text-xs"></i>
+                  Processando...
+                } @else {
+                  <i class="pi pi-check-circle text-xs"></i>
+                  Confirmar devolução
+                }
+              </button>
+            }
+          </div>
 
         </div>
 

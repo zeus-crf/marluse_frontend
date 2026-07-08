@@ -86,9 +86,11 @@ export class NovoClienteModalComponent implements OnChanges {
       };
       this.salvar.emit(payload);
     }
+    this.onFechar();
   }
 
   onFechar(): void {
     this.fechar.emit();
+    this.visible = false;
   }
 }

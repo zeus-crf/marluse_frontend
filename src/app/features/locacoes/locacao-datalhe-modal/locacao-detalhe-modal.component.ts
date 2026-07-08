@@ -6,11 +6,12 @@ import { MessageService } from 'primeng/api';
 import { LocacaoResponse, StatusLocacao, ParcelaResponse, EntregaResponse } from '../models/locacoes.models';
 import { LocacaoService } from '../locacoes/locacoes.service';
 import { EntregaService } from '../../vendas/entrega.service';
+import { WhatsaapCobrancaModalComponent } from "../../../shared/components/whatsapp/whatsapp-cobranca-modal.component";
 
 @Component({
     selector: 'app-locacao-detalhe-modal',
     standalone: true,
-    imports: [CommonModule, DialogModule, TagModule],
+    imports: [CommonModule, DialogModule, TagModule, WhatsaapCobrancaModalComponent],
     templateUrl: './locacao-detalhe-modal.component.html',
 })
 export class LocacaoDetalheModalComponent implements OnChanges {
@@ -35,6 +36,7 @@ export class LocacaoDetalheModalComponent implements OnChanges {
     loadingParcelas = false;
     pagandoParcela: string | null = null;
     marcandoEntrega = false;
+    showWaModal = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         const visibleOn   = changes['visible']?.currentValue === true;
@@ -112,6 +114,28 @@ export class LocacaoDetalheModalComponent implements OnChanges {
             }
         });
     }
+
+    get podeCobrarWhatsapp(): boolean {
+  return this.locacao?.status === 'ATIVA' || this.locacao?.status === 'ATRASADA';
+}
+
+        get mensagemWhatsapp(): string {
+        const l = this.locacao!;
+        const nome = l.clienteNome;
+        const total = this.formatCurrency(l.valorTotal);
+        const parcelas = l.parcelas ?? [];
+        const parcelaAberta = parcelas.find(p => p.status === 'PENDENTE') ?? null;
+
+        if (l.status === 'ATRASADA') {
+            return `Olá ${nome}! Temos uma locação com devolução prevista para ${this.formatData(l.dataDevolucaoPrevista)} que ainda não foi devolvida, com pagamento pendente de ${total}. Podemos agendar a devolução?`;
+        }
+
+        // ATIVA
+        if (parcelaAberta) {
+            return `Olá ${nome}! 😊 Passando para lembrar que a parcela ${parcelaAberta.numeroParcela}/${parcelaAberta.totalParcelas} da locação no valor de ${this.formatCurrency(parcelaAberta.valor)} vence em ${this.formatData(parcelaAberta.dataVencimento!)}. Consegue nos dar um retorno?`;
+        }
+        return `Olá ${nome}! 😊 Passando para lembrar sobre a locação em aberto no valor de ${total}. Consegue nos dar um retorno sobre o pagamento?`;
+        }
 
     get podeConfirmar(): boolean {
         return !!this.locacao && this.locacao.status === 'ORCAMENTO';
