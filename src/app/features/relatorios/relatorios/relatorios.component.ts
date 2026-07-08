@@ -44,12 +44,12 @@ export class RelatoriosComponent implements OnInit {
   ];
 
   readonly kpiCards = [
-    { key: 'receita',      label: 'Receita total',     icon: 'trending_up',     varKey: 'variacaoReceita',    cor: 'text-green-600',   bgIcon: 'bg-green-50',   tooltip: 'Total recebido por vendas e locações no período selecionado.'                                    },
-    { key: 'cmv',          label: 'Custo de Produtos', icon: 'inventory_2',     varKey: '',                   cor: 'text-orange-500',  bgIcon: 'bg-orange-50',  tooltip: 'CMV — custo de aquisição dos produtos vendidos. Calculado com base no valorCompra de cada item.' },
-    { key: 'despesas',     label: 'Despesas',          icon: 'trending_down',   varKey: 'variacaoDespesas',   cor: 'text-red-500',     bgIcon: 'bg-red-50',     tooltip: 'Despesas operacionais lançadas manualmente no módulo financeiro.'                               },
-    { key: 'lucroLiquido', label: 'Lucro líquido',     icon: 'show_chart',      varKey: '',                   cor: 'text-emerald-600', bgIcon: 'bg-emerald-50', tooltip: 'Receita − CMV − Despesas. O lucro real do período descontando todos os custos.'                  },
-    { key: 'saldo',        label: 'Saldo financeiro',  icon: 'account_balance', varKey: 'variacaoSaldo',      cor: 'text-blue-600',    bgIcon: 'bg-blue-50',    tooltip: 'Receita − Despesas. Representa o fluxo de caixa, sem considerar o custo dos produtos.'         },
-    { key: 'ticketMedio',  label: 'Ticket médio',      icon: 'receipt_long',    varKey: 'variacaoTicketMedio',cor: 'text-purple-600',  bgIcon: 'bg-purple-50',  tooltip: 'Valor médio por pedido confirmado no período.'                                                   },
+    { key: 'receita',      label: 'Receita total',     icon: 'trending_up',     varKey: 'variacaoReceita',    cor: 'text-green-600',   bgIcon: 'bg-green-50',   tooltip: 'Tudo que entrou: soma de todas as vendas e locações confirmadas no período, incluindo pagamentos à vista e fiado.' },
+    { key: 'cmv',          label: 'Custo de Produtos', icon: 'inventory_2',     varKey: '',                   cor: 'text-orange-500',  bgIcon: 'bg-orange-50',  tooltip: 'Quanto custou o que você vendeu. Calculado pelo valor de compra × quantidade de cada produto. Quanto menor em relação à receita, maior sua margem.' },
+    { key: 'despesas',     label: 'Despesas',          icon: 'trending_down',   varKey: 'variacaoDespesas',   cor: 'text-red-500',     bgIcon: 'bg-red-50',     tooltip: 'Gastos do negócio registrados no financeiro: aluguel, energia, salários, etc. Não inclui custo de produtos — isso fica no CMV acima.' },
+    { key: 'lucroLiquido', label: 'Lucro líquido',     icon: 'show_chart',      varKey: '',                   cor: 'text-emerald-600', bgIcon: 'bg-emerald-50', tooltip: 'O que sobrou de verdade: Receita − CMV − Despesas. É o indicador mais completo da saúde do negócio no período.' },
+    { key: 'saldo',        label: 'Saldo financeiro',  icon: 'account_balance', varKey: 'variacaoSaldo',      cor: 'text-blue-600',    bgIcon: 'bg-blue-50',    tooltip: 'Fluxo de caixa do período: Receita − Despesas, sem descontar o custo dos produtos. Indica se o dinheiro em conta cobre os gastos operacionais.' },
+    { key: 'ticketMedio',  label: 'Ticket médio',      icon: 'receipt_long',    varKey: 'variacaoTicketMedio',cor: 'text-purple-600',  bgIcon: 'bg-purple-50',  tooltip: 'Valor médio por pedido (Receita ÷ pedidos confirmados). Aumentar o ticket é uma forma de crescer sem precisar de mais clientes.' },
   ];
 
   ngOnInit(): void {
