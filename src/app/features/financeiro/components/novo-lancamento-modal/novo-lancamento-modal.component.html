@@ -5,6 +5,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '540px' }"
+  [breakpoints]="{'768px': '95vw'}"
   [contentStyle]="{ padding: '0' }"
   (onHide)="onFechar()">
 
@@ -44,7 +45,7 @@
     </div>
 
     <!-- Categoria + Valor -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Categoria <span class="text-red-500">*</span></label>
         <input
@@ -75,7 +76,7 @@
     </div>
 
     <!-- Data Vencimento + Status -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Data de vencimento <span class="text-red-500">*</span></label>
         <app-date-picker [(ngModel)]="dataVencimento" />

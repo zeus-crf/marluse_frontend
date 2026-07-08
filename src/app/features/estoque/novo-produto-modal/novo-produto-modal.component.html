@@ -6,6 +6,7 @@
   [resizable]="false"
   [closable]="!salvando"
   [style]="{ width: '520px' }"
+  [breakpoints]="{'768px': '95vw'}"
   [contentStyle]="{ padding: '0' }"
   (onHide)="fechar.emit()"
 >
@@ -54,7 +55,7 @@
     </div>
 
     <!-- Preço e Unidade -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1.5">
           Preço unitário <span class="text-red-500">*</span>
@@ -80,7 +81,7 @@
     </div>
 
     <!-- Quantidade + Estoque mínimo -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-1.5">
           {{ isEdicao ? 'Quantidade em estoque' : 'Quantidade inicial' }}

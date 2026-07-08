@@ -1,5 +1,5 @@
 <!-- Header -->
-<div class="flex items-start justify-between mb-6">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
   <div>
     <h1 class="text-2xl font-bold text-gray-900">Relatórios</h1>
     <p class="text-sm text-gray-400 mt-0.5">Análises e indicadores do negócio</p>
@@ -33,7 +33,7 @@
 } @else {
 
   <!-- KPI Cards -->
-  <div class="grid grid-cols-3 gap-4 mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
     @for (card of kpiCards; track card.key) { 
       <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
         <div class="flex items-center justify-between mb-4">
@@ -74,7 +74,7 @@
   </div>
 
   <!-- Gráficos principais -->
-  <div class="grid grid-cols-2 gap-4 mb-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
     <div class="bg-white border border-slate-100 rounded-xl p-4">
       <p class="text-sm font-medium text-gray-900">Receita mensal</p>
       <p class="text-xs text-gray-400 mb-3">Vendas vs. locações</p>
@@ -125,7 +125,7 @@
   </div>
 
   <!-- Status row -->
-  <div class="grid grid-cols-3 gap-4 mb-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
 
     <!-- Status financeiro -->
     <div class="bg-white border border-slate-100 rounded-xl p-4">

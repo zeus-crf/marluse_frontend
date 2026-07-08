@@ -5,6 +5,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '480px' }"
+  [breakpoints]="{'768px': '95vw'}"
   (onHide)="onFechar()">
 
   @if (cliente) {
@@ -65,17 +66,17 @@
 
   <!-- Footer -->
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2 pt-2">
+    <div class="flex justify-end gap-1.5 sm:gap-2 pt-2">
       <button
         type="button"
         (click)="onFechar()"
-        class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+        class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
         Fechar
       </button>
       <button
         type="button"
         (click)="onEditar()"
-        class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+        class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5">
         <i class="pi pi-pencil text-xs"></i>
         Editar
       </button>

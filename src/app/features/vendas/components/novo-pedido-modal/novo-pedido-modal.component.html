@@ -5,6 +5,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '660px' }"
+  [breakpoints]="{'768px': '95vw'}"
   [contentStyle]="{ padding: '0' }"
   [header]="isOrcamento ? 'Novo Orçamento' : 'Nova Venda'">
 
@@ -259,7 +260,7 @@
           </div>
         </div>
         @if (temEntrega) {
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Endereço de entrega</label>
               <input type="text" [(ngModel)]="enderecoEntrega"

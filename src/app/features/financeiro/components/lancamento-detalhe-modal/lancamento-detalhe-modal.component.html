@@ -5,6 +5,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '480px' }"
+  [breakpoints]="{'768px': '95vw'}"
   [contentStyle]="{ padding: '0' }"
   (onHide)="onFechar()">
 
@@ -94,19 +95,12 @@
 
   <!-- Footer -->
   <ng-template pTemplate="footer">
-    <div class="flex justify-between pt-2">
-      <!-- <button
-        type="button"
-        (click)="onEditar()"
-        class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-        <i class="pi pi-pencil mr-1.5"></i>Editar
-      </button> -->
-
-      <div class="flex gap-2">
+    <div class="flex justify-end pt-2">
+      <div class="flex gap-1.5 sm:gap-2">
         <button
           type="button"
           (click)="onFechar()"
-          class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
           Fechar
         </button>
         @if (podePagar) {
@@ -114,9 +108,10 @@
             type="button"
             (click)="onPagar()"
             [disabled]="salvando"
-            class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
+            class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white rounded-lg transition-colors flex items-center gap-1.5"
             [ngClass]="salvando ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'">
-            <i class="pi pi-check mr-1.5"></i>{{ salvando ? 'Registrando...' : 'Registrar pagamento' }}
+            <i class="pi pi-check text-xs"></i>
+            {{ salvando ? 'Registrando...' : 'Registrar pag.' }}
           </button>
         }
       </div>
