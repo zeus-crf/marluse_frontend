@@ -53,6 +53,7 @@ export interface LocacaoResponse {
   numero: number;
   clienteId: string | null;
   clienteNome: string;
+  clienteTelefone: string | null;
   status: StatusLocacao;
   formaPagamento: FormaPagamento;
   dataRetirada: string;
