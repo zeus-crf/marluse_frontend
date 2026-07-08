@@ -52,6 +52,7 @@ export interface PedidoResponse {
   numero: number;
   clienteId: string | null;
   clienteNome: string;
+  clienteTelefone: string | null;
   status: StatusPedido;
   formaPagamento: FormaPagamento;
   valorTotal: number;
