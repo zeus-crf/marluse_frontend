@@ -67,6 +67,7 @@ export interface LocacaoResponse {
   observacao: string | null;
   itens: ItemLocacaoResponse[];
   createdAt: string;
+  dataMovimento: string;          // 'YYYY-MM-DD' — data real da transação
   parcelas: ParcelaResponse[] | null;
   entrega: EntregaResponse | null;
   juros: number | null;
@@ -82,6 +83,7 @@ export interface LocacaoRequest {
   itens: ItemLocacaoRequest[];
   observacao?: string | null;
   status?: StatusLocacao | null;
+  dataMovimento?: string;         // 'YYYY-MM-DD' — data real da transação
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
   numeroParcelas?: number;
@@ -94,6 +96,7 @@ export interface LocacaoRequest {
 export interface LocacaoEdicaoRequest {
   formaPagamento: FormaPagamento;
   observacao?: string | null;
+  dataMovimento?: string;         // 'YYYY-MM-DD'
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
   juros?: number | null;

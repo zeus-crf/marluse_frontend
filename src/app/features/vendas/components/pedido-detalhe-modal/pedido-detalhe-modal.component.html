@@ -33,9 +33,14 @@
           </div>
         </div>
 
-        <div class="col-span-2">
+        <div>
           <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Pagamento</div>
           <div class="text-[13.5px] font-medium text-gray-800 capitalize">{{ getPagamentoLabel(pedido.formaPagamento) }}</div>
+        </div>
+
+        <div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Data</div>
+          <div class="text-[13.5px] font-medium text-gray-800">{{ formatData(pedido.dataMovimento) }}</div>
         </div>
 
         @if (pedido.dataVencimento) {

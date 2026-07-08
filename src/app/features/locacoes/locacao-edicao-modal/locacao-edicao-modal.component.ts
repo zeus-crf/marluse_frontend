@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { LocacaoResponse, FormaPagamento, TipoDesconto } from '../models/locacoes.models';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-locacao-edicao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, DatePickerComponent],
   templateUrl: './locacao-edicao-modal.component.html',
 })
 
@@ -17,12 +18,13 @@ export class LocacaoEdicaoModalComponent {
   @Input() salvando = false;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; dataMovimento: string; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
 
   @Input() set locacao(l: LocacaoResponse | null) {
     this._locacao    = l;
     this.formaPagamento = l?.formaPagamento ?? '';
     this.observacao     = l?.observacao    ?? '';
+    this.dataMovimento  = l?.dataMovimento ?? new Date().toISOString().split('T')[0];
     this.desconto       = l?.desconto      ?? null;
     this.tipoDesconto   = l?.tipoDesconto  ?? 'PERCENTUAL';
     this.juros          = l?.juros         ?? null;
@@ -36,6 +38,7 @@ export class LocacaoEdicaoModalComponent {
 
   formaPagamento: FormaPagamento | '' = '';
   observacao  = '';
+  dataMovimento: string = new Date().toISOString().split('T')[0];
   desconto: number | null = null;
   tipoDesconto: TipoDesconto = 'PERCENTUAL';
   juros: number | null = null;
@@ -95,6 +98,7 @@ export class LocacaoEdicaoModalComponent {
     this.salvar.emit({
       observacao:     this.observacao,
       formaPagamento: this.formaPagamento,
+      dataMovimento:  this.dataMovimento,
       desconto:       this.desconto,
       tipoDesconto:   this.tipoDesconto,
       juros:          this.juros,

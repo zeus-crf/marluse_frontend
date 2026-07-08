@@ -63,6 +63,7 @@ export interface PedidoResponse {
   observacao: string | null;
   itens: ItemPedidoResponse[];
   createdAt: string;
+  dataMovimento: string;          // 'YYYY-MM-DD' — data real da transação
   dataVencimento: string | null; // 'YYYY-MM-DD', só para FIADO
   parcelas: ParcelaResponse[];
   parcelaMesAtual: ParcelaResponse | null;
@@ -83,6 +84,7 @@ export interface PedidoRequest {
   itens: ItemPedidoRequest[];
   observacao?: string;
   status?: StatusPedido;
+  dataMovimento?: string;         // 'YYYY-MM-DD' — data real da transação
   dataVencimento?: string;        // 'YYYY-MM-DD', só para FIADO (1 parcela)
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
@@ -96,6 +98,7 @@ export interface PedidoRequest {
 export interface PedidoAtualizarRequest {
   formaPagamento?: FormaPagamento;
   observacao?: string;
+  dataMovimento?: string;         // 'YYYY-MM-DD'
   desconto?: number | null;
   tipoDesconto?: TipoDesconto | null;
   juros?: number | null;

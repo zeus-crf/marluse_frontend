@@ -15,7 +15,7 @@
       <i class="pi pi-spin pi-spinner text-3xl text-blue-500"></i>
     </div>
   } @else {
-    <div class="flex flex-col gap-[18px] px-6 py-5">
+    <div class="flex flex-col gap-[18px] px-6 py-5 overflow-y">
 
       <!-- TIPO + DATA (só aparece se FIADO) -->
       <div class="grid gap-3" [class.grid-cols-2]="isFiado" [class.grid-cols-1]="!isFiado">
@@ -282,6 +282,12 @@
           placeholder="Observações sobre a venda (opcional)…"
           class="w-full bg-white border border-slate-200 rounded-md px-3 py-[9px] text-[13px] text-gray-800 font-[inherit] outline-none resize-y focus:border-blue-400 transition-colors">
         </textarea>
+      </div>
+
+      <!-- DATA DO PEDIDO -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Data do pedido</div>
+        <app-date-picker [(ngModel)]="dataMovimento" />
       </div>
 
       <!-- PAGAMENTO + TOTAL -->

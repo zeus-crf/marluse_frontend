@@ -7,6 +7,7 @@ import { ClienteSimples, FormaPagamento, LocacaoRequest, LocacaoResponse, Parcel
 export interface LocacaoEdicaoPayload {
   formaPagamento: FormaPagamento;
   observacao: string | null;
+  dataMovimento: string | null;
   desconto: number | null;
   tipoDesconto: TipoDesconto;
   juros: number | null;

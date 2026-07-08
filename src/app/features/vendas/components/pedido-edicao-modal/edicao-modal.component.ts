@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { PedidoResponse, FormaPagamento, TipoDesconto } from '../../models/vendas.models';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-pedido-edicao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule],
+  imports: [CommonModule, FormsModule, DialogModule, DatePickerComponent],
   templateUrl: './edicao-modal.component.html',
 })
 export class PedidoEdicaoModalComponent {
@@ -19,6 +20,7 @@ export class PedidoEdicaoModalComponent {
     this._pedido = p;
     this.formaPagamento = p?.formaPagamento ?? '';
     this.observacao     = p?.observacao    ?? '';
+    this.dataMovimento  = p?.dataMovimento ?? new Date().toISOString().split('T')[0];
     this.desconto       = p?.desconto      ?? null;
     this.tipoDesconto   = p?.tipoDesconto  ?? 'PERCENTUAL';
     this.juros          = p?.juros         ?? null;
@@ -28,10 +30,11 @@ export class PedidoEdicaoModalComponent {
   private _pedido: PedidoResponse | null = null;
 
   @Output() fechar = new EventEmitter<void>();
-  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
+  @Output() salvar = new EventEmitter<{ observacao: string; formaPagamento: FormaPagamento; dataMovimento: string; desconto: number | null; tipoDesconto: TipoDesconto; juros: number | null; tipoJuros: TipoDesconto }>();
 
   formaPagamento: FormaPagamento | '' = '';
   observacao = '';
+  dataMovimento: string = new Date().toISOString().split('T')[0];
   desconto: number | null = null;
   tipoDesconto: TipoDesconto = 'PERCENTUAL';
   juros: number | null = null;
@@ -91,6 +94,7 @@ export class PedidoEdicaoModalComponent {
     this.salvar.emit({
       observacao:     this.observacao,
       formaPagamento: this.formaPagamento,
+      dataMovimento:  this.dataMovimento,
       desconto:       this.desconto,
       tipoDesconto:   this.tipoDesconto,
       juros:          this.juros,
