@@ -56,6 +56,9 @@ export class NovoPedidoModalComponent {
   enderecoEntrega = '';
   dataPrevistaEntrega = '';
 
+  // Data do movimento
+  dataMovimento: string = new Date().toISOString().split('T')[0];
+
   // Juros
   juros: number | null = null;
   tipoJuros: TipoDesconto = 'PERCENTUAL';
@@ -198,6 +201,7 @@ export class NovoPedidoModalComponent {
       entrega:           this.temEntrega && this.enderecoEntrega
                            ? { endereco: this.enderecoEntrega, dataPrevista: this.dataPrevistaEntrega || null }
                            : null,
+      dataMovimento:     this.dataMovimento || undefined,
       juros:             this.juros || null,
       tipoJuros:         this.juros ? this.tipoJuros : null,
     }).subscribe({
@@ -234,6 +238,7 @@ export class NovoPedidoModalComponent {
     this.temEntrega         = false;
     this.enderecoEntrega    = '';
     this.dataPrevistaEntrega = '';
+    this.dataMovimento      = new Date().toISOString().split('T')[0];
     this.juros              = null;
     this.tipoJuros          = 'PERCENTUAL';
   }

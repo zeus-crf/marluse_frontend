@@ -20,9 +20,15 @@
           <div class="text-[13.5px] font-medium text-gray-800">{{ pedido.clienteNome }}</div>
         </div>
         <div>
-          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Data</div>
-          <div class="text-[13.5px] font-medium text-gray-800">{{ formatData(pedido.createdAt) }}</div>
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-[5px]">Registrado em</div>
+          <div class="text-[13.5px] font-medium text-gray-500">{{ formatData(pedido.createdAt) }}</div>
         </div>
+      </div>
+
+      <!-- Editável: Data do pedido -->
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Data do pedido</div>
+        <app-date-picker [(ngModel)]="dataMovimento" />
       </div>
 
       <!-- Itens somente leitura -->
