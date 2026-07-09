@@ -10,12 +10,12 @@ import {
   UnidadeMedida,
 } from '../models/estoque.models';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
-import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
+import { FieldErrorPipe } from '../../../shared/pipes/field-error.pipe';
 
 @Component({
   selector: 'app-novo-produto-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, InputNumberModule, SelectSearchComponent, FieldErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, InputNumberModule, SelectSearchComponent, FieldErrorPipe],
   templateUrl: './novo-produto-modal.component.html',
 })
 export class NovoProdutoModalComponent implements OnChanges {

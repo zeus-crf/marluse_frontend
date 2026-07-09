@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
-import { FieldErrorComponent } from '../../../../shared/components/field-error/field-error.component';
+import { FieldErrorPipe } from '../../../../shared/pipes/field-error.pipe';
 import {
   LancamentoFinanceiroResponse,
   LancamentoAtualizarRequest,
@@ -15,7 +15,7 @@ import {
 @Component({
   selector: 'app-lancamento-edicao-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, SelectComponent, DatePickerComponent, FieldErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, SelectComponent, DatePickerComponent, FieldErrorPipe],
   templateUrl: './lancamento-edicao-modal.component.html',
 })
 export class LancamentoEdicaoModalComponent implements OnChanges {

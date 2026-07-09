@@ -4,13 +4,13 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteRequest, ClienteAtualizarRequest, ClienteResponse } from '../../models/clientes.models';
-import { FieldErrorComponent } from '../../../../shared/components/field-error/field-error.component';
+import { FieldErrorPipe } from '../../../../shared/pipes/field-error.pipe';
 import { AppValidators } from '../../../../shared/validators/app-validators';
 
 @Component({
   selector: 'app-novo-cliente-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, NgxMaskDirective, FieldErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, NgxMaskDirective, FieldErrorPipe],
   templateUrl: './novo-cliente-modal.component.html',
 })
 export class NovoClienteModalComponent implements OnChanges {

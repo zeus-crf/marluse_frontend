@@ -12,12 +12,12 @@ import { ClienteSimples } from '../../../vendas/models/vendas.models';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../../shared/components/select-search/select-search.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
-import { FieldErrorComponent } from '../../../../shared/components/field-error/field-error.component';
+import { FieldErrorPipe } from '../../../../shared/pipes/field-error.pipe';
 
 @Component({
   selector: 'app-novo-lancamento-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, SelectComponent, SelectSearchComponent, DatePickerComponent, FieldErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, SelectComponent, SelectSearchComponent, DatePickerComponent, FieldErrorPipe],
   templateUrl: './novo-lancamento-modal.component.html',
 })
 export class NovoLancamentoModalComponent implements OnChanges {
