@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { FieldErrorComponent } from '../../../../shared/components/field-error/field-error.component';
 import {
   LancamentoFinanceiroResponse,
   LancamentoAtualizarRequest,
@@ -14,10 +15,12 @@ import {
 @Component({
   selector: 'app-lancamento-edicao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, SelectComponent, DatePickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, SelectComponent, DatePickerComponent, FieldErrorComponent],
   templateUrl: './lancamento-edicao-modal.component.html',
 })
 export class LancamentoEdicaoModalComponent implements OnChanges {
+
+  private fb = inject(FormBuilder);
 
   readonly opcoesStatus = [
     { value: 'PENDENTE',  label: 'Pendente'  },
@@ -32,57 +35,51 @@ export class LancamentoEdicaoModalComponent implements OnChanges {
   @Output() fechar = new EventEmitter<void>();
   @Output() salvar = new EventEmitter<LancamentoAtualizarRequest>();
 
-  // ── Formulário ────────────────────────────────────────────
-  tipo:          TipoLancamento   = 'RECEITA';
-  descricao      = '';
-  categoria      = '';
-  valor:         number | null    = null;
-  dataVencimento = '';
-  status:        StatusLancamento = 'PENDENTE';
+  tipo: TipoLancamento = 'RECEITA';
+
+  form = this.fb.group({
+    descricao:      ['', [Validators.required, Validators.minLength(3), Validators.maxLength(512)]],
+    categoria:      ['', [Validators.required, Validators.minLength(2)]],
+    valor:          [null as number | null, [Validators.required, Validators.min(0.01)]],
+    dataVencimento: ['', [Validators.required]],
+    status:         ['PENDENTE' as StatusLancamento],
+  });
 
   readonly categoriasSugeridas = [
     'Venda', 'Locação', 'Serviço', 'Aluguel', 'Salário',
     'Fornecedor', 'Utilidades', 'Imposto', 'Manutenção', 'Outro',
   ];
 
-  get formValido(): boolean {
-    return !!this.descricao.trim()
-      && !!this.categoria.trim()
-      && (this.valor ?? 0) > 0
-      && !!this.dataVencimento;
-  }
-
   ngOnChanges(): void {
     if (this.visible && this.lancamento) {
-      this.tipo          = this.lancamento.tipo;
-      this.descricao     = this.lancamento.descricao;
-      this.categoria     = this.lancamento.categoria;
-      this.valor         = this.lancamento.valor;
-      this.dataVencimento = this.lancamento.dataVencimento;
-      this.status        = this.lancamento.status === 'VENCIDO' ? 'PENDENTE' : this.lancamento.status;
+      this.tipo = this.lancamento.tipo;
+      this.form.reset({
+        descricao:      this.lancamento.descricao,
+        categoria:      this.lancamento.categoria,
+        valor:          this.lancamento.valor,
+        dataVencimento: this.lancamento.dataVencimento,
+        status:         this.lancamento.status === 'VENCIDO' ? 'PENDENTE' : this.lancamento.status,
+      });
     }
   }
 
-  setTipo(t: TipoLancamento): void {
-    this.tipo = t;
-  }
+  setTipo(t: TipoLancamento): void { this.tipo = t; }
 
   onSalvar(): void {
-    if (!this.formValido) return;
-
-    const payload: LancamentoAtualizarRequest = {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const v = this.form.value;
+    this.salvar.emit({
       tipo:           this.tipo,
-      descricao:      this.descricao.trim(),
-      categoria:      this.categoria.trim(),
-      valor:          this.valor!,
-      dataVencimento: this.dataVencimento,
-      status:         this.status,
-    };
-
-    this.salvar.emit(payload);
+      descricao:      v.descricao!.trim(),
+      categoria:      v.categoria!.trim(),
+      valor:          v.valor!,
+      dataVencimento: v.dataVencimento!,
+      status:         v.status as StatusLancamento,
+    });
   }
 
-  onFechar(): void {
-    this.fechar.emit();
-  }
+  onFechar(): void { this.fechar.emit(); }
 }

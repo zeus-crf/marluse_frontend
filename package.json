@@ -11,6 +11,7 @@
   "private": true,
   "packageManager": "npm@11.10.0",
   "dependencies": {
+    "@angular/animations": "^21.2.18",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
@@ -23,6 +24,7 @@
     "autoprefixer": "^10.5.0",
     "chart.js": "^4.5.1",
     "ng-apexcharts": "^2.4.0",
+    "ngx-mask": "^22.0.1",
     "postcss": "^8.5.15",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.9",

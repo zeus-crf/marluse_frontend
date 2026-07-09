@@ -1,9 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import {
   ProdutoRequest,
@@ -12,24 +10,18 @@ import {
   UnidadeMedida,
 } from '../models/estoque.models';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
-
-interface ProdutoForm {
-  nome: string;
-  descricao: string;
-  valorCompra: number | null;
-  preco: number | null;
-  quantidadeEstoque: number;
-  estoqueMinimo: number;
-  medida: UnidadeMedida;
-}
+import { FieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
 
 @Component({
   selector: 'app-novo-produto-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule, InputNumberModule, SelectSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DialogModule, InputNumberModule, SelectSearchComponent, FieldErrorComponent],
   templateUrl: './novo-produto-modal.component.html',
 })
 export class NovoProdutoModalComponent implements OnChanges {
+
+  private fb = inject(FormBuilder);
+
   @Input() visible  = false;
   @Input() produto: ProdutoResponse | null = null;
   @Input() salvando = false;
@@ -37,76 +29,62 @@ export class NovoProdutoModalComponent implements OnChanges {
   @Output() fechar = new EventEmitter<void>();
   @Output() salvar = new EventEmitter<ProdutoRequest | ProdutoAtualizarRequest>();
 
-  form: ProdutoForm = this.formVazio();
+  form = this.fb.group({
+    nome:              ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    descricao:         [''],
+    valorCompra:       [null as number | null, [Validators.required, Validators.min(0.01)]],
+    preco:             [null as number | null, [Validators.required, Validators.min(0.01)]],
+    quantidadeEstoque: [0, [Validators.required, Validators.min(0)]],
+    estoqueMinimo:     [0, [Validators.min(0)]],
+    medida:            [null as unknown as UnidadeMedida, [Validators.required]],
+  });
 
   get isEdicao(): boolean { return !!this.produto; }
   get titulo():   string  { return this.isEdicao ? 'Editar produto' : 'Novo produto'; }
 
   readonly unidades: { value: UnidadeMedida; label: string }[] = [
-    { value: 'SACO',          label: 'Saco' },
-    { value: 'METRO',         label: 'Metro (m)' },
-    { value: 'METRO_QUADRADO',label: 'Metro quadrado (m²)' },
-    { value: 'LITRO',         label: 'Litro' },
-    { value: 'PECA',          label: 'Peça' },
-    { value: 'KG',            label: 'Kg' },
-    { value: 'ROLO',          label: 'Rolo' },
-    { value: 'BALDE',         label: 'Balde' },
+    { value: 'SACO',           label: 'Saco' },
+    { value: 'METRO',          label: 'Metro (m)' },
+    { value: 'METRO_QUADRADO', label: 'Metro quadrado (m²)' },
+    { value: 'LITRO',          label: 'Litro' },
+    { value: 'PECA',           label: 'Peça' },
+    { value: 'KG',             label: 'Kg' },
+    { value: 'ROLO',           label: 'Rolo' },
+    { value: 'BALDE',          label: 'Balde' },
   ];
 
   ngOnChanges(): void {
     if (!this.visible) return;
     if (this.produto) {
-      this.form = {
-        nome:               this.produto.nome,
-        descricao:          this.produto.descricao ?? '',
-        valorCompra:        Number(this.produto.valorCompra),
-        preco:              Number(this.produto.preco),
-        quantidadeEstoque:  this.produto.quantidadeEstoque,
-        estoqueMinimo:      this.produto.estoqueMinimo,
-        medida:             this.produto.medida,
-      };
+      this.form.reset({
+        nome:              this.produto.nome,
+        descricao:         this.produto.descricao ?? '',
+        valorCompra:       Number(this.produto.valorCompra),
+        preco:             Number(this.produto.preco),
+        quantidadeEstoque: this.produto.quantidadeEstoque,
+        estoqueMinimo:     this.produto.estoqueMinimo,
+        medida:            this.produto.medida,
+      });
     } else {
-      this.form = this.formVazio();
+      this.form.reset({ nome: '', descricao: '', valorCompra: null, preco: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: null as unknown as UnidadeMedida });
     }
-  }
-
-  get formValido(): boolean {
-    return (
-      !!this.form.nome?.trim() &&
-      this.form.valorCompra !== null && this.form.valorCompra > 0 &&
-      this.form.preco !== null && this.form.preco > 0
-    );
   }
 
   onSalvar(): void {
-    if (!this.formValido) return;
-
-    if (this.isEdicao) {
-      const payload: ProdutoAtualizarRequest = {
-        nome:              this.form.nome.trim(),
-        descricao:         this.form.descricao?.trim() || undefined,
-        valorCompra:       this.form.valorCompra!,
-        preco:             this.form.preco!,
-        quantidadeEstoque: this.form.quantidadeEstoque,
-        estoqueMinimo:     this.form.estoqueMinimo,
-        medida:            this.form.medida,
-      };
-      this.salvar.emit(payload);
-    } else {
-      const payload: ProdutoRequest = {
-        nome:              this.form.nome.trim(),
-        descricao:         this.form.descricao?.trim() || undefined,
-        valorCompra:       this.form.valorCompra!,
-        preco:             this.form.preco!,
-        quantidadeEstoque: this.form.quantidadeEstoque,
-        estoqueMinimo:     this.form.estoqueMinimo,
-        medida:            this.form.medida,
-      };
-      this.salvar.emit(payload);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
-  }
-
-  private formVazio(): ProdutoForm {
-    return { nome: '', descricao: '', valorCompra: null, preco: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: 'PECA' };
+    const v = this.form.value;
+    const payload = {
+      nome:              v.nome!.trim(),
+      descricao:         v.descricao?.trim() || undefined,
+      valorCompra:       v.valorCompra!,
+      preco:             v.preco!,
+      quantidadeEstoque: v.quantidadeEstoque!,
+      estoqueMinimo:     v.estoqueMinimo ?? 0,
+      medida:            v.medida as UnidadeMedida,
+    };
+    this.salvar.emit(payload);
   }
 }

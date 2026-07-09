@@ -10,7 +10,7 @@
   (onHide)="onFechar()">
 
 <hr>
-  <div class="flex flex-col gap-4 px-6 py-5">
+  <form [formGroup]="form" class="flex flex-col gap-4 px-6 py-5">
 
     <!-- Tipo -->
     <div class="flex flex-col gap-1.5">
@@ -36,42 +36,39 @@
     <!-- Descrição -->
     <div class="flex flex-col gap-1.5">
       <label class="text-sm font-medium text-gray-700">Descrição <span class="text-red-500">*</span></label>
-      <input
-        type="text"
-        [(ngModel)]="descricao"
+      <input type="text" formControlName="descricao"
         placeholder="Ex.: Aluguel do galpão, Venda avulsa..."
-        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-      />
+        class="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400 transition-colors"
+        [class.border-red-400]="form.get('descricao')?.invalid && form.get('descricao')?.touched"
+        [class.border-slate-200]="!(form.get('descricao')?.invalid && form.get('descricao')?.touched)" />
+      <app-field-error [control]="form.get('descricao')" />
     </div>
 
     <!-- Categoria + Valor -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Categoria <span class="text-red-500">*</span></label>
-        <input
-          type="text"
-          [(ngModel)]="categoria"
+        <input type="text" formControlName="categoria"
           list="categorias-list"
           placeholder="Selecione ou digite"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-        />
+          class="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400 transition-colors"
+          [class.border-red-400]="form.get('categoria')?.invalid && form.get('categoria')?.touched"
+          [class.border-slate-200]="!(form.get('categoria')?.invalid && form.get('categoria')?.touched)" />
         <datalist id="categorias-list">
           @for (c of categoriasSugeridas; track c) {
             <option value="{{ c }}"></option>
           }
         </datalist>
+        <app-field-error [control]="form.get('categoria')" />
       </div>
-
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Valor (R$) <span class="text-red-500">*</span></label>
-        <input
-          type="number"
-          [(ngModel)]="valor"
-          placeholder="0,00"
-          min="0"
-          step="0.01"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400"
-        />
+        <input type="number" formControlName="valor"
+          placeholder="0,00" min="0" step="0.01"
+          class="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-blue-400 text-gray-700 placeholder:text-gray-400 transition-colors"
+          [class.border-red-400]="form.get('valor')?.invalid && form.get('valor')?.touched"
+          [class.border-slate-200]="!(form.get('valor')?.invalid && form.get('valor')?.touched)" />
+        <app-field-error [control]="form.get('valor')" />
       </div>
     </div>
 
@@ -79,12 +76,12 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Data de vencimento <span class="text-red-500">*</span></label>
-        <app-date-picker [(ngModel)]="dataVencimento" />
+        <app-date-picker formControlName="dataVencimento" />
+        <app-field-error [control]="form.get('dataVencimento')" />
       </div>
-
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Status</label>
-        <app-select [(ngModel)]="status" [options]="opcoesStatus" placeholder="Status" />
+        <app-select formControlName="status" [options]="opcoesStatus" placeholder="Status" />
       </div>
     </div>
 
@@ -92,10 +89,7 @@
     @if (clientes.length > 0) {
       <div class="flex flex-col gap-1.5">
         <label class="text-sm font-medium text-gray-700">Cliente <span class="text-xs text-gray-400 font-normal">(opcional)</span></label>
-        <app-select-search
-          [(ngModel)]="clienteId"
-          [options]="clienteOptions"
-          placeholder="Selecionar cliente…" />
+        <app-select-search formControlName="clienteId" [options]="clienteOptions" placeholder="Selecionar cliente…" />
       </div>
     }
 
@@ -106,22 +100,17 @@
           <p class="text-sm font-medium text-gray-700">Recorrência</p>
           <p class="text-xs text-gray-400">Gera próximo lançamento automaticamente</p>
         </div>
-        <button
-          type="button"
-          (click)="recorrente = !recorrente"
+        <button type="button" (click)="recorrente = !recorrente"
           class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
           [ngClass]="recorrente ? 'bg-blue-600' : 'bg-slate-200'">
           <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow"
             [ngClass]="recorrente ? 'translate-x-4' : 'translate-x-1'"></span>
         </button>
       </div>
-
       @if (recorrente) {
         <div class="flex gap-2">
           @for (r of recorrencias; track r.value) {
-            <button
-              type="button"
-              (click)="recorrencia = r.value"
+            <button type="button" (click)="recorrencia = r.value"
               class="flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors"
               [ngClass]="recorrencia === r.value
                 ? 'border-blue-400 bg-blue-50 text-blue-700'
@@ -133,25 +122,17 @@
       }
     </div>
 
-  </div>
+  </form>
 
   <!-- Footer -->
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2 pt-2">
-      <button
-        type="button"
-        (click)="onFechar()"
+      <button type="button" (click)="onFechar()"
         class="px-4 py-2 text-sm font-medium text-gray-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
         Cancelar
       </button>
-      <button
-        type="button"
-        (click)="onSalvar()"
-        [disabled]="!formValido || salvando"
-        class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
-        [ngClass]="formValido && !salvando
-          ? 'bg-blue-600 hover:bg-blue-700'
-          : 'bg-blue-300 cursor-not-allowed'">
+      <button type="button" (click)="onSalvar()" [disabled]="salvando"
+        class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         {{ salvando ? 'Salvando...' : 'Salvar' }}
       </button>
     </div>

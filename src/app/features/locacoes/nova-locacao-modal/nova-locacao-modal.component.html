@@ -280,9 +280,17 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Endereço de entrega</label>
-              <input type="text" [(ngModel)]="enderecoEntrega"
+              <input type="text" [(ngModel)]="enderecoEntrega" name="enderecoEntrega"
+                #enderecoField="ngModel" maxlength="255"
                 placeholder="Ex: Rua das Flores, 123, Centro"
-                class="w-full bg-white border border-slate-200 rounded-md px-3 py-[7px] text-[13px] text-gray-800 outline-none focus:border-blue-400 transition-colors font-[inherit]" />
+                class="w-full bg-white border rounded-md px-3 py-[7px] text-[13px] text-gray-800 outline-none focus:border-blue-400 transition-colors font-[inherit]"
+                [class.border-red-400]="enderecoField.invalid && enderecoField.touched"
+                [class.border-slate-200]="!(enderecoField.invalid && enderecoField.touched)" />
+              @if (enderecoField.invalid && enderecoField.touched) {
+                <span class="text-xs text-red-500 mt-0.5 flex items-center gap-1">
+                  <i class="pi pi-times-circle text-[10px]"></i> Máximo 255 caracteres
+                </span>
+              }
             </div>
             <div>
               <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] block mb-2">Data prevista <span class="font-normal normal-case">(opcional)</span></label>

@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
+import { provideNgxMask } from 'ngx-mask';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { MessageService } from 'primeng/api';
 import { AuthService } from './core/services/auth.service';
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
+    provideNgxMask(),
     providePrimeNG({
       translation: {
         dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
