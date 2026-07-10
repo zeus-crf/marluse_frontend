@@ -64,6 +64,14 @@ export class ClientesFiltrosModalComponent implements OnChanges {
     });
   }
 
+  get temFiltroAtivo(): boolean {
+    return this.tipoCliente !== 'TODOS'
+      || !!this.dataInicial
+      || !!this.dataFinal
+      || this.minCompras !== null
+      || this.maxCompras !== null;
+  }
+
   onLimpar(): void {
     this.tipoCliente = 'TODOS';
     this.dataInicial = '';

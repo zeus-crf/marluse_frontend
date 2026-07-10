@@ -130,7 +130,8 @@ export class PedidoDetalheModalComponent implements OnChanges {
     }
 
     get mensagemWhatsapp(): string {
-    const p = this.pedido!;
+    const p = this.pedido;
+    if (!p) return '';
     const nome = p.clienteNome;
     const total = this.formatCurrency(p.valorTotal);
     const parcela = p.parcelaMesAtual;

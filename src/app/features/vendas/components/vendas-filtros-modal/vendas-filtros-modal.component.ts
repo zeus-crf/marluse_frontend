@@ -78,6 +78,13 @@ export class VendasFiltrosModalComponent implements OnChanges {
     }).length;
   }
 
+  get temFiltroAtivo(): boolean {
+      return this.status !== 'TODOS'         ||
+            this.formaPagamento !== 'TODOS' ||
+            this.minValor !== null          ||
+            this.maxValor !== null;
+  }
+
   onAplicar(): void {
     this.aplicar.emit({
       status: this.status,

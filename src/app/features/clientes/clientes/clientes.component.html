@@ -10,6 +10,9 @@
       <button
         type="button"
         (click)="onLimparFiltros()"
+        [ngClass]="temFiltroAtivo
+        ? 'text-red-500 hover:text-red-700 cursor-pointer'
+        : 'text-gray-300 cursor-not-allowed pointer-events-none'">
         class="flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
         <i class="pi pi-times text-[10px]"></i>
         Limpar filtros

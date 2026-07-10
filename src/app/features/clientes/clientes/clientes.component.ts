@@ -191,7 +191,7 @@ export class ClientesComponent implements OnInit {
   }
 
   get temFiltroAtivo(): boolean {
-    return this.filtro.tipoCliente !== 'TODOS' ||
+    return this.filtro.tipoCliente !== 'TODOS'  ||
            this.filtro.dataInicial !== null     ||
            this.filtro.dataFinal   !== null     ||
            this.filtro.minCompras  !== null     ||

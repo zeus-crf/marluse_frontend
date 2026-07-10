@@ -44,6 +44,15 @@ export class FinanceiroFiltrosModalComponent implements OnChanges {
     }
   }
 
+    get temFiltroAtivo(): boolean {
+    return this.status   !== 'TODOS' ||
+           this.dataInicial !== ''    ||
+           this.dataFinal !== ''    ||
+           this.minValor   !== null    ||
+           this.maxValor   !== null;
+  }
+
+
   get totalFiltrado(): number {
     const hoje = new Date().toISOString().split('T')[0];
     return this.lancamentos.filter(l => {

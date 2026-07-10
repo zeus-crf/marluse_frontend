@@ -14,19 +14,19 @@ export class ClientesService {
   private baseUrl = `${environment.apiUrl}/clientes`;
 
   getClientes(): Observable<ClienteResponse[]> {
-    return this.http.get<any>(this.baseUrl).pipe(map(r => r.data));
+    return this.http.get<{ data:ClienteResponse[] }>(this.baseUrl).pipe(map(r => r.data));
   }
 
   getClienteById(id: string): Observable<ClienteResponse> {
-    return this.http.get<any>(`${this.baseUrl}/${id}`).pipe(map(r => r.data));
+    return this.http.get<{ data:ClienteResponse }>(`${this.baseUrl}/${id}`).pipe(map(r => r.data));
   }
 
   criar(request: ClienteRequest): Observable<ClienteResponse> {
-    return this.http.post<any>(this.baseUrl, request).pipe(map(r => r.data));
+    return this.http.post<{ data:ClienteResponse }>(this.baseUrl, request).pipe(map(r => r.data));
   }
 
   atualizar(id: string, request: ClienteAtualizarRequest): Observable<ClienteResponse> {
-    return this.http.put<any>(`${this.baseUrl}/${id}`, request).pipe(map(r => r.data));
+    return this.http.put<{ data:ClienteResponse }>(`${this.baseUrl}/${id}`, request).pipe(map(r => r.data));
   }
 
   inativar(id: string): Observable<void> {
