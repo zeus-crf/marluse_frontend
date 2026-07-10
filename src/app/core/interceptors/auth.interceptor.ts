@@ -15,9 +15,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError(error => {
-      const isAuthUrl = req.url.includes('/auth/');
+      // Evita loop infinito: não tenta refresh se o erro veio do próprio refresh,
+      // do login ou do register. /auth/me é um endpoint protegido normal — deve sim
+      // disparar o refresh quando o access token expirar.
+      const skipRefresh =
+        req.url.includes('/auth/refresh') ||
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/register');
 
-      if ((error.status === 401 || error.status === 403) && !isAuthUrl) {
+      if ((error.status === 401 || error.status === 403) && !skipRefresh) {
         if (!isRefreshing) {
           isRefreshing = true;
           refreshSubject = new Subject<void>();

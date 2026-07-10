@@ -21,6 +21,7 @@ import {
   EntregaResponse,
   LocacaoResponse,
   LocacoesFiltroCompleto,
+  ParcelaResponse,
   ProdutoSimples,
   StatusLocacao,
 } from '../models/locacoes.models';
@@ -138,6 +139,27 @@ export class LocacoesComponent implements OnInit {
       type: 'tag',
       tagSeverityFn: (val: StatusLocacao) => this.getSeverity(val),
       tagLabelFn:    (val: StatusLocacao) => this.getStatusLabel(val),
+    },
+    {
+      field: 'parcelaMesAtual',
+      header: 'Parcelas',
+      width: '11%',
+      type: 'tag',
+      tagSeverityFn: (parcela: ParcelaResponse | null) => {
+        if (!parcela) return 'secondary';
+        if (parcela.status === 'PAGO') return 'success';
+        if (parcela.dataVencimento) {
+          const venc = new Date(parcela.dataVencimento + 'T12:00:00');
+          if (venc < new Date()) return 'danger';
+        }
+        return 'warn';
+      },
+      tagLabelFn: (parcela: ParcelaResponse | null) => {
+        if (!parcela) return '';
+        if (parcela.status === 'PAGO') return `${parcela.totalParcelas}/${parcela.totalParcelas} pagas`;
+        const pagas = parcela.numeroParcela - 1;
+        return `${pagas}/${parcela.totalParcelas} pagas`;
+      },
     },
     {
       field: 'entrega',
