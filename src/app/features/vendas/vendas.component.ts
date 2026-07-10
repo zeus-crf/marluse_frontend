@@ -593,6 +593,8 @@ export class VendasComponent implements OnInit {
   onLimparFiltros(): void {
     this.filtro = { status: 'TODOS', formaPagamento: 'TODOS', inicio: '', fim: '', minValor: null, maxValor: null };
     this.showModalFiltros = false;
+    this.periodoAtivo = 'mes';
+    this.selectPeriodo('mes');
   }
 
   aplicarFiltroCustom(): void {
