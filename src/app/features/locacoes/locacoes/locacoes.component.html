@@ -36,17 +36,26 @@
 
 </div>
 <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 mb-6">
-  <div class="flex flex-wrap items-center gap-2">
-    <span class="text-[11px] font-semibold text-gray-400 tracking-widest">PERÍODO</span>
-    @for (p of periodos; track p.value) {
-      <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
-        {{ p.label }}
-      </button>
-    }
+
+    <!-- Linha 1: label + botões de período + range de datas (quando não custom) -->
+  <div class="flex flex-col gap-3">
+    <div>
+      <span class="text-[11px] font-semibold text-gray-400 tracking-widest">PERÍODO</span>
+    </div>
+
+    <div>
+      @for (p of periodos; track p.value) {
+        <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
+          {{ p.label }}
+        </button>
+      }
+    </div>
     <!-- @if (periodoAtivo !== 'custom') {
-      <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">{{ filtro.inicio }} → {{ filtro.fim }}</span>
+      <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">{{ inicio }} – {{ fim }}</span>
     } -->
   </div>
+
+
   @if (periodoAtivo === 'custom') {
     <div class="mt-3 pt-3 border-t border-slate-100">
       <div class="flex flex-wrap items-center gap-2">
