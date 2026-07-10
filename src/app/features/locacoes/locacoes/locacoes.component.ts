@@ -31,13 +31,14 @@ import { LocacaoEdicaoModalComponent } from "../locacao-edicao-modal/locacao-edi
 import { LocacaoFiltrosModalComponent } from "../locacao-filtros-modal/locacao-filtros-modal.component";
 import { LocacaoEdicaoPayload } from "./locacoes.service";
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { SelectComponent } from '../../../shared/components/select/select.component';
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 
 @Component({
   selector: 'app-locacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DataTableComponent, NovaLocacaoModalComponent, LocacaoDetalheModalComponent, LocacaoEdicaoModalComponent, LocacaoFiltrosModalComponent, DatePickerComponent, SelectComponent],
   templateUrl: './locacoes.component.html',
   styleUrl: './locacoes.component.scss',
 })
@@ -71,6 +72,12 @@ export class LocacoesComponent implements OnInit {
   ];
 
   // ── Filtros ────────────────────────────────────────────────
+  readonly opcoesOrdenacao = [
+    { value: 'recente', label: 'Mais recentes' },
+    { value: 'antigo',  label: 'Mais antigos'  },
+  ];
+  ordenacao: 'recente' | 'antigo' = 'recente';
+
   filtro: LocacoesFiltroCompleto = {
     status: 'TODOS', formaPagamento: 'TODOS',
     inicio: '', fim: '', minValor: null, maxValor: null,
@@ -337,14 +344,15 @@ export class LocacoesComponent implements OnInit {
       buckets.set(chave, (buckets.get(chave) ?? 0) + Number(l.valorTotal));
     }
 
-    if (inicio && fim) {
+    // No modo mensal preenche meses sem registro para manter continuidade do eixo.
+    // No modo diário exibe apenas os dias com registro para evitar sobreposição de labels.
+    if (inicio && fim && granularidade === 'mes') {
       const cur = new Date(inicio);
       const end = new Date(fim);
       while (cur <= end) {
         const k = this.bucketKey(cur.toISOString().split('T')[0], granularidade);
         if (!buckets.has(k)) buckets.set(k, 0);
-        if (granularidade === 'dia') cur.setDate(cur.getDate() + 1);
-        else cur.setMonth(cur.getMonth() + 1);
+        cur.setMonth(cur.getMonth() + 1);
       }
     }
 
@@ -357,8 +365,9 @@ export class LocacoesComponent implements OnInit {
       axisBorder: { show: false },
       axisTicks:  { show: false },
       labels: {
-        rotate:       isDia ? -45 : 0,
-        rotateAlways: isDia,
+        rotate:                isDia ? -45 : 0,
+        rotateAlways:          isDia,
+        hideOverlappingLabels: true,
         style: { colors: '#94a3b8', fontSize: isDia ? '10px' : '12px' },
       },
     };
@@ -458,6 +467,10 @@ export class LocacoesComponent implements OnInit {
       const matchMax = this.filtro.maxValor === null || valor <= this.filtro.maxValor;
 
       return matchStatus && matchPgto && matchPeriodo && matchMin && matchMax;
+    }).sort((a, b) => {
+      const da = new Date(a.createdAt ?? 0).getTime();
+      const db = new Date(b.createdAt ?? 0).getTime();
+      return this.ordenacao === 'recente' ? db - da : da - db;
     });
   }
 

@@ -37,6 +37,19 @@ export class LocacaoDetalheModalComponent implements OnChanges {
     pagandoParcela: string | null = null;
     marcandoEntrega = false;
     showWaModal = false;
+    showWaTooltip = false;
+    tooltipX = 10;
+    tooltipY = 10;
+
+    onWaEnter(event: MouseEvent): void {
+      if (window.innerWidth >= 640) return;
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      this.tooltipX = rect.left + rect.width / 2 + 20;
+      this.tooltipY = rect.top - 8;
+      this.showWaTooltip = true;
+    }
+
+    onWaLeave(): void { this.showWaTooltip = false; }
 
     ngOnChanges(changes: SimpleChanges): void {
         const visibleOn   = changes['visible']?.currentValue === true;

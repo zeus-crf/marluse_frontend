@@ -69,6 +69,7 @@ export interface LocacaoResponse {
   createdAt: string;
   dataMovimento: string;          // 'YYYY-MM-DD' — data real da transação
   parcelas: ParcelaResponse[] | null;
+  parcelaMesAtual: ParcelaResponse | null;
   entrega: EntregaResponse | null;
   juros: number | null;
   tipoJuros: TipoDesconto | null;

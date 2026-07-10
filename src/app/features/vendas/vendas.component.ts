@@ -106,8 +106,13 @@ export class VendasComponent implements OnInit {
     yaxis: { lines: { show: false } },
   };
   barHXaxis: any = {
+    tickAmount: 4,
     labels: {
-      formatter: (v: number) => this.formatCurrency(v),
+      formatter: (v: number) => {
+        if (v === 0) return 'R$ 0';
+        if (v >= 1000) return 'R$ ' + (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'k';
+        return 'R$ ' + Math.round(v);
+      },
       style: { colors: '#94a3b8', fontSize: '11px' },
     },
   };

@@ -116,13 +116,14 @@
       </div>
 
       <!-- ITENS -->
-      <div>
+      <div class="w-full">
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Equipamentos</div>
 
-        <div class="border border-slate-200 rounded-md overflow-hidden">
+        <div class="overflow-x-auto -mx-6 px-6">
+        <div class="border border-slate-200 rounded-md overflow-hidden min-w-[540px]">
 
           <!-- Cabeçalho -->
-          <div class="grid grid-cols-[1fr_68px_110px_110px_56px] gap-2 bg-slate-50 border-b border-slate-200 px-3 py-[7px]">
+          <div class="grid grid-cols-[180px_68px_110px_110px_56px] gap-2 bg-slate-50 border-b border-slate-200 px-3 py-[7px]">
             <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Equipamento</div>
             <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Qtd.</div>
             <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Diária (R$)</div>
@@ -137,7 +138,7 @@
 
           <!-- Linhas de item -->
           @for (item of itens; track trackByIndex($index); let i = $index) {
-            <div class="grid grid-cols-[1fr_68px_110px_110px_56px] gap-2 px-3 py-2 border-b border-slate-100 last:border-0 items-center">
+            <div class="grid grid-cols-[180px_68px_110px_110px_20px] gap-2 px-3 w-full py-2 border-b border-slate-100 last:border-0 items-center">
 
               <app-select-search
                 [(ngModel)]="item.produtoId"
@@ -177,6 +178,7 @@
             Adicionar equipamento
           </button>
 
+        </div>
         </div>
       </div>
 

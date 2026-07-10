@@ -1,3 +1,11 @@
+@if (showWaTooltip) {
+  <div class="fixed z-[9999] pointer-events-none -translate-x-1/2 -translate-y-full px-2 py-1 text-[11px] text-white bg-gray-700 rounded whitespace-nowrap"
+    [style.left.px]="tooltipX"
+    [style.top.px]="tooltipY">
+    {{ !locacao?.clienteTelefone ? 'Sem telefone cadastrado' : 'Cobrar via WhatsApp' }}
+  </div>
+}
+
 <p-dialog
   [visible]="visible"
   (visibleChange)="fechar.emit()"
@@ -74,27 +82,52 @@
 
         <!-- ── Itens ──────────────────────────────────────────── -->
         <div>
-          <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">Equipamentos</p>
-          <div class="border border-slate-200 rounded-lg overflow-hidden">
+      <p class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] mb-2">
+        Equipamentos
+      </p>
 
-            <div class="grid grid-cols-[1fr_52px_90px_90px] gap-2 bg-slate-50 border-b border-slate-100 px-4 py-[7px]">
-              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Item</div>
-              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Qtd.</div>
-              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Diária</div>
-              <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Subtotal</div>
+      <div class="border border-slate-200 rounded-lg overflow-x-auto">
+        <div class="min-w-[484px]">
+
+          <!-- Cabeçalho -->
+          <div class="grid grid-cols-[180px_52px_100px_100px] gap-2 bg-slate-50 border-b border-slate-100 px-4 py-[7px]">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">
+              Item
             </div>
-
-            @for (item of locacao.itens; track item.id) {
-              <div class="grid grid-cols-[1fr_52px_90px_90px] gap-2 px-4 py-2.5 border-b border-slate-100 last:border-0 items-center">
-                <p class="text-[13px] font-medium text-gray-800 truncate">{{ item.produtoNome }}</p>
-                <p class="text-[12px] text-gray-500 text-right">{{ item.quantidade }}×</p>
-                <p class="text-[12px] text-gray-500 text-right font-mono">{{ formatCurrency(item.precoDiaria) }}</p>
-                <p class="text-[12px] font-semibold text-gray-800 text-right font-mono">{{ formatCurrency(item.subtotal) }}</p>
-              </div>
-            }
-
+            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">
+              Qtd.
+            </div>
+            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">
+              Diária
+            </div>
+            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">
+              Subtotal
+            </div>
           </div>
+
+          <!-- Linhas -->
+          @for (item of locacao.itens; track item.id) {
+            <div class="grid grid-cols-[180px_52px_100px_100px] gap-2 px-4 py-2.5 border-b border-slate-100 last:border-0 items-center">
+              <p class="text-[13px] font-medium text-gray-800 truncate">
+                {{ item.produtoNome }}
+              </p>
+
+              <p class="text-[12px] text-gray-500 text-right">
+                {{ item.quantidade }}×
+              </p>
+
+              <p class="text-[12px] text-gray-500 text-right font-mono">
+                {{ formatCurrency(item.precoDiaria) }}
+              </p>
+
+              <p class="text-[12px] font-semibold text-gray-800 text-right font-mono">
+                {{ formatCurrency(item.subtotal) }}
+              </p>
+            </div>
+          }
         </div>
+      </div>
+  </div>
 
         <!-- ── Parcelas ───────────────────────────────────────── -->
         @if (loadingParcelas) {
@@ -108,9 +141,10 @@
               <span class="text-[10.5px] text-gray-400">{{ parcelasPagasCount }}/{{ parcelas.length }} pagas</span>
             </div>
 
-            <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <div class="border border-slate-200 rounded-lg overflow-x-auto">
+              <div class="min-w-[484px]">
               <!-- Cabeçalho -->
-              <div class="grid grid-cols-[44px_1fr_110px_90px_52px] gap-2 bg-slate-50 border-b border-slate-100 px-3 py-[7px]">
+              <div class="grid grid-cols-[44px_120px_110px_90px_64px] gap-2 bg-slate-50 border-b border-slate-100 px-3 py-[7px]">
                 <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">#</div>
                 <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Vencimento</div>
                 <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Valor</div>
@@ -120,7 +154,7 @@
 
               <!-- Linhas -->
               @for (parcela of parcelas; track parcela.id) {
-                <div class="grid grid-cols-[44px_1fr_110px_90px_52px] gap-2 px-3 py-2.5 border-b border-slate-100 last:border-0 items-center">
+                <div class="grid grid-cols-[44px_120px_110px_90px_64px] gap-2 px-3 py-2.5 border-b border-slate-100 last:border-0 items-center">
 
                   <!-- Número -->
                   <div class="text-[12px] text-gray-400 font-mono">
@@ -173,6 +207,7 @@
 
                 </div>
               }
+              </div>
             </div>
           </div>
         }
@@ -291,12 +326,13 @@
         @if (podeCobrarWhatsapp) {
           <button type="button"
             [disabled]="!locacao?.clienteTelefone || salvando"
-            [title]="!locacao?.clienteTelefone ? 'Cliente sem telefone cadastrado' : ''"
             (click)="showWaModal = true"
+            (mouseenter)="onWaEnter($event)"
+            (mouseleave)="onWaLeave()"
             class="flex items-center gap-1.5 px-4 py-[7px] text-[13px] font-semibold text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             style="background-color: #25D366;">
             <i class="pi pi-whatsapp text-xs"></i>
-            WhatsApp
+            <span class="hidden sm:inline">WhatsApp</span>
           </button>
         }
         <app-whatsapp-modal
@@ -308,10 +344,10 @@
         />
       </div>
       <div class="flex gap-2">
-        <button type="button" (click)="fechar.emit()"
+        <!-- <button type="button" (click)="fechar.emit()"
           class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
           Fechar
-        </button>
+        </button> -->
         @if (podeCancelar) {
           <button type="button" (click)="cancelar.emit(locacao)" [disabled]="salvando"
             class="flex items-center gap-1.5 px-4 py-[7px] text-[13px] font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">

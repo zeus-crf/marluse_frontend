@@ -25,6 +25,19 @@ export class PedidoDetalheModalComponent implements OnChanges {
     @Input() pedido: PedidoResponse | null = null;
     @Input() salvando = false;
     showWaModal = false;
+    showWaTooltip = false;
+    tooltipX = 0;
+    tooltipY = 0;
+
+    onWaEnter(event: MouseEvent): void {
+      if (window.innerWidth >= 640) return;
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      this.tooltipX = rect.left + rect.width / 2 + 20;
+      this.tooltipY = rect.top - 8;
+      this.showWaTooltip = true;
+    }
+
+    onWaLeave(): void { this.showWaTooltip = false; }
 
     @Output() fechar          = new EventEmitter<void>();
     @Output() pagar           = new EventEmitter<string>();
