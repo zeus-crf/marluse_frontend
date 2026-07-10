@@ -10,8 +10,16 @@
   </button> -->
 </div>
 
+<div class="flex pb-2 px-2">
+  <!-- Filtro de Período -->
+  @if (periodoAtivo !== 'custom') {
+        <span class="ml-auto text-xs text-gray-400  whitespace-nowrap">{{ inicio }} → {{ fim }}</span>
+      }
+
+</div>
 <!-- Filtros de Período -->
 <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 mb-6">
+
 
   <!-- Linha 1: label + botões de período + range de datas (quando não custom) -->
   <div class="flex flex-wrap items-center gap-2">
@@ -23,9 +31,9 @@
       </button>
     }
 
-    @if (periodoAtivo !== 'custom') {
+    <!-- @if (periodoAtivo !== 'custom') {
       <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">{{ inicio }} – {{ fim }}</span>
-    }
+    } -->
   </div>
 
   <!-- Linha 2: datepickers (apenas quando custom) -->
