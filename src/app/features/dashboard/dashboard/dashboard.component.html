@@ -22,15 +22,18 @@
 
 
   <!-- Linha 1: label + botões de período + range de datas (quando não custom) -->
-  <div class="flex flex-wrap items-center gap-2">
-    <span class="text-[11px] font-semibold text-gray-400 tracking-widest">PERÍODO</span>
+  <div class="flex flex-col gap-3">
+    <div>
+      <span class="text-[11px] font-semibold text-gray-400 tracking-widest">PERÍODO</span>
+    </div>
 
-    @for (p of periodos; track p.value) {
-      <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
-        {{ p.label }}
-      </button>
-    }
-
+    <div>
+      @for (p of periodos; track p.value) {
+        <button (click)="selectPeriodo(p.value)" [ngClass]="periodoButtonClass(p.value)">
+          {{ p.label }}
+        </button>
+      }
+    </div>
     <!-- @if (periodoAtivo !== 'custom') {
       <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">{{ inicio }} – {{ fim }}</span>
     } -->

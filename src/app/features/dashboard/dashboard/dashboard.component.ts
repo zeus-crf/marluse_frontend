@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
     { label: 'Trimestre', value: 'trimestre' },
     { label: 'Semestre',  value: 'semestre' },
     { label: 'Este ano',  value: 'ano' },
-    { label: 'Período',   value: 'custom' },
+    { label: 'Período Personalizado',   value: 'custom' },
   ];
 
   // Dados
