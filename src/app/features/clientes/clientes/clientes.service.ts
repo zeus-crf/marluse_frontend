@@ -6,6 +6,7 @@ import {
   ClienteRequest,
   ClienteAtualizarRequest,
   ClienteResponse,
+  ClienteHistoricoResponse,
 } from '../models/clientes.models';
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +22,10 @@ export class ClientesService {
     return this.http.get<{ data:ClienteResponse }>(`${this.baseUrl}/${id}`).pipe(map(r => r.data));
   }
 
+  getHistorico(id: string): Observable<ClienteHistoricoResponse> {
+    return this.http.get<{ data: ClienteHistoricoResponse }>(`${this.baseUrl}/${id}/historico`).pipe(map( r => r.data))
+  }
+
   criar(request: ClienteRequest): Observable<ClienteResponse> {
     return this.http.post<{ data:ClienteResponse }>(this.baseUrl, request).pipe(map(r => r.data));
   }
@@ -28,6 +33,7 @@ export class ClientesService {
   atualizar(id: string, request: ClienteAtualizarRequest): Observable<ClienteResponse> {
     return this.http.put<{ data:ClienteResponse }>(`${this.baseUrl}/${id}`, request).pipe(map(r => r.data));
   }
+
 
   inativar(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);

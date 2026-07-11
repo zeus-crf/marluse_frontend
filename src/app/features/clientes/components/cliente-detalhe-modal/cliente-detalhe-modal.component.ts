@@ -15,8 +15,9 @@ export class ClienteDetalheModalComponent {
   @Input() visible = false;
   @Input() cliente: ClienteResponse | null = null;
 
-  @Output() fechar = new EventEmitter<void>();
-  @Output() editar = new EventEmitter<ClienteResponse>();
+  @Output() fechar        = new EventEmitter<void>();
+  @Output() editar        = new EventEmitter<ClienteResponse>();
+  @Output() verHistorico  = new EventEmitter<ClienteResponse>();
 
   get tipo(): string {
     return this.cliente?.consumidorFinal ? 'Pessoa Física (PF)' : 'Pessoa Jurídica (PJ)';
@@ -32,6 +33,10 @@ export class ClienteDetalheModalComponent {
 
   onEditar(): void {
     if (this.cliente) this.editar.emit(this.cliente);
+  }
+
+  onVerHistorico(): void {
+    if (this.cliente) this.verHistorico.emit(this.cliente);
   }
 
   onFechar(): void {

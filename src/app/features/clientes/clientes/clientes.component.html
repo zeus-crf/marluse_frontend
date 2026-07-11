@@ -238,6 +238,13 @@
   [cliente]="clienteSelecionado"
   (fechar)="fecharDetalhe()"
   (editar)="abrirModalEditar($event)"
+  (verHistorico)="abrirHistorico($event)"
+/>
+
+<app-cliente-historico-modal
+  [visible]="showModalHistorico"
+  [cliente]="clienteSelecionado"
+  (fechar)="fecharHistorico()"
 />
 
 <app-clientes-filtros-modal

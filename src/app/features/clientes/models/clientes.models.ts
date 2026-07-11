@@ -1,6 +1,25 @@
 export type TipoCliente    = 'PF' | 'PJ';
 export type TabFiltroCliente = 'TODOS' | TipoCliente;
 
+export interface PedidosResumo {
+  id: string;
+  numero: number;
+  status: string;
+  formaPagamento: string;
+  valorTotal: number;
+  dataMovimento: string;
+}
+
+export interface LocacaoResumo {
+  id: string;
+  numero: number;
+  status: string;
+  formaPagamento: string;
+  valorTotal: number;
+  dataRetirada: string;
+  dataDevolucaoPrevista: string;
+}
+
 export interface ClienteRequest {
   nome:           string;
   cpfCnpj?:       string;
@@ -36,6 +55,11 @@ export interface ClienteFiltroCompleto {
   dataFinal:    string | null;
   minCompras:   number | null;
   maxCompras:   number | null;
+}
+
+export interface ClienteHistoricoResponse {
+  pedidos: PedidosResumo[];
+  locacoes: LocacaoResumo[];
 }
 
 export const FILTRO_CLIENTE_PADRAO: ClienteFiltroCompleto = {

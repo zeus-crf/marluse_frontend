@@ -1,0 +1,142 @@
+<p-dialog
+  [header]="cliente ? 'Histórico — ' + cliente.nome : 'Histórico'"
+  [visible]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '620px' }"
+  [breakpoints]="{'768px': '95vw'}"
+  [contentStyle]="{ padding: '0' }"
+  (onHide)="onFechar()">
+
+  <div class="sticky top-0 bg-white z-10"><hr></div>
+
+  <div class="flex flex-col" style="min-height: 360px;">
+
+    <!-- Tabs -->
+    <div class="flex border-b border-slate-200 px-6 pt-4 gap-1">
+      <button type="button"
+        (click)="tabAtiva = 'vendas'"
+        class="px-4 py-2 text-[13px] font-medium border-b-2 transition-colors -mb-px"
+        [class.border-blue-600]="tabAtiva === 'vendas'"
+        [class.text-blue-600]="tabAtiva === 'vendas'"
+        [class.border-transparent]="tabAtiva !== 'vendas'"
+        [class.text-gray-500]="tabAtiva !== 'vendas'"
+        [class.hover:text-gray-700]="tabAtiva !== 'vendas'">
+        <i class="pi pi-shopping-cart mr-1.5 text-xs"></i>
+        Vendas
+        @if (historico) {
+          <span class="ml-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full"
+            [class.bg-blue-100]="tabAtiva === 'vendas'"
+            [class.text-blue-600]="tabAtiva === 'vendas'"
+            [class.bg-slate-100]="tabAtiva !== 'vendas'"
+            [class.text-gray-400]="tabAtiva !== 'vendas'">
+            {{ historico.pedidos.length }}
+          </span>
+        }
+      </button>
+      <button type="button"
+        (click)="tabAtiva = 'locacoes'"
+        class="px-4 py-2 text-[13px] font-medium border-b-2 transition-colors -mb-px"
+        [class.border-blue-600]="tabAtiva === 'locacoes'"
+        [class.text-blue-600]="tabAtiva === 'locacoes'"
+        [class.border-transparent]="tabAtiva !== 'locacoes'"
+        [class.text-gray-500]="tabAtiva !== 'locacoes'"
+        [class.hover:text-gray-700]="tabAtiva !== 'locacoes'">
+        <i class="pi pi-box mr-1.5 text-xs"></i>
+        Locações
+        @if (historico) {
+          <span class="ml-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full"
+            [class.bg-blue-100]="tabAtiva === 'locacoes'"
+            [class.text-blue-600]="tabAtiva === 'locacoes'"
+            [class.bg-slate-100]="tabAtiva !== 'locacoes'"
+            [class.text-gray-400]="tabAtiva !== 'locacoes'">
+            {{ historico.locacoes.length }}
+          </span>
+        }
+      </button>
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="flex-1 px-6 py-4">
+
+      @if (loading) {
+        <div class="flex items-center justify-center gap-2 text-[13px] text-gray-400 py-10">
+          <i class="pi pi-spin pi-spinner text-sm"></i>
+          Carregando...
+        </div>
+      } @else if (historico) {
+
+        <!-- Aba Vendas -->
+        @if (tabAtiva === 'vendas') {
+          @if (historico.pedidos.length === 0) {
+            <div class="flex flex-col items-center justify-center gap-2 py-12 text-gray-300">
+              <i class="pi pi-shopping-cart text-4xl"></i>
+              <p class="text-[13px]">Nenhuma venda encontrada</p>
+            </div>
+          } @else {
+            <div class="border border-slate-200 rounded-lg overflow-hidden">
+              <!-- Cabeçalho -->
+              <div class="grid grid-cols-[56px_1fr_100px_108px] gap-2 bg-slate-50 border-b border-slate-200 px-3 py-[7px]">
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Nº</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Status</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Data</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Total</div>
+              </div>
+              @for (p of historico.pedidos; track p.id; let last = $last) {
+                <div class="grid grid-cols-[56px_0.7fr_100px_108px] gap-2 items-center px-3 py-[10px]"
+                  [class.border-b]="!last"
+                  [class.border-slate-100]="!last">
+                  <span class="text-[12px] text-gray-400 font-mono">#{{ p.numero }}</span>
+                  <p-tag [value]="statusPedidoLabel(p.status)" [severity]="statusPedidoSeverity(p.status)" />
+                  <span class="text-[12px] text-gray-500">{{ formatDate(p.dataMovimento) }}</span>
+                  <span class="text-[13px] font-semibold text-gray-800 font-mono text-right">{{ formatCurrency(p.valorTotal) }}</span>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- Aba Locações -->
+        @if (tabAtiva === 'locacoes') {
+          @if (historico.locacoes.length === 0) {
+            <div class="flex flex-col items-center justify-center gap-2 py-12 text-gray-300">
+              <i class="pi pi-box text-4xl"></i>
+              <p class="text-[13px]">Nenhuma locação encontrada</p>
+            </div>
+          } @else {
+            <div class="border border-slate-200 rounded-lg overflow-hidden">
+              <!-- Cabeçalho -->
+              <div class="grid grid-cols-[56px_1fr_100px_108px] gap-2 bg-slate-50 border-b border-slate-200 px-3 py-[7px]">
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Nº</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Status</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Retirada</div>
+                <div class="text-[10.5px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Total</div>
+              </div>
+              @for (l of historico.locacoes; track l.id; let last = $last) {
+                <div class="grid grid-cols-[56px_0.7fr_100px_108px] gap-2 items-center px-3 py-[10px]"
+                  [class.border-b]="!last"
+                  [class.border-slate-100]="!last">
+                  <span class="text-[12px] text-gray-400 font-mono">#{{ l.numero }}</span>
+                  <p-tag [value]="statusLocacaoLabel(l.status)" [severity]="statusLocacaoSeverity(l.status)" />
+                  <span class="text-[12px] text-gray-500">{{ formatDate(l.dataRetirada) }}</span>
+                  <span class="text-[13px] font-semibold text-gray-800 font-mono text-right">{{ formatCurrency(l.valorTotal) }}</span>
+                </div>
+              }
+            </div>
+          }
+        }
+
+      }
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex items-center justify-end px-6 py-4 border-t border-slate-100 bg-slate-50">
+    <button type="button" (click)="onFechar()"
+      class="px-4 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+      Fechar
+    </button>
+  </div>
+
+</p-dialog>

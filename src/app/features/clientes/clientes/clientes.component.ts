@@ -34,6 +34,7 @@ import {
 } from '../models/clientes.models';
 import { NovoClienteModalComponent } from "../components/novo-cliente-modal/novo-cliente-modal.component";
 import { ClienteDetalheModalComponent } from '../components/cliente-detalhe-modal/cliente-detalhe-modal.component';
+import { ClienteHistoricoModalComponent } from '../components/cliente-historico-modal/cliente-historico-modal.component';
 import { ClientesFiltrosModalComponent } from '../components/clientes-filtros-modal/clientes-filtros-modal.component';
 
 @Component({
@@ -49,7 +50,9 @@ import { ClientesFiltrosModalComponent } from '../components/clientes-filtros-mo
     DataTableComponent,
     NovoClienteModalComponent,
     ClienteDetalheModalComponent,
+    ClienteHistoricoModalComponent,
     ClientesFiltrosModalComponent,
+
   ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss',
@@ -70,8 +73,9 @@ export class ClientesComponent implements OnInit {
   filtro: ClienteFiltroCompleto = { ...FILTRO_CLIENTE_PADRAO };
   showModalFiltros = false;
 
-  showModal    = false;
-  showModalDetalhe = false;
+  showModal          = false;
+  showModalDetalhe   = false;
+  showModalHistorico = false;
   clienteEdit: ClienteResponse | null = null;
   clienteSelecionado: ClienteResponse | null = null;
 
@@ -274,6 +278,14 @@ export class ClientesComponent implements OnInit {
   fecharDetalhe(): void {
     this.showModalDetalhe   = false;
     this.clienteSelecionado = null;
+  }
+
+  abrirHistorico(cliente: ClienteResponse): void {
+    this.showModalHistorico = true;
+  }
+
+  fecharHistorico(): void {
+    this.showModalHistorico = false;
   }
 
   onSalvar(payload: ClienteRequest | ClienteAtualizarRequest): void {
