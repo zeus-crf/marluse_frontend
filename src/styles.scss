@@ -36,3 +36,14 @@
 .p-dialog {
   overflow: hidden;
 }
+
+media print {
+  /* Esconde tudo exceto os componentes de comprovante */
+  body > app-root > * {
+    display: none !important;
+  }
+  app-pedido-comprovante,
+  app-locacao-comprovante {
+    display: block !important;
+  }
+}
