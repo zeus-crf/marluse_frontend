@@ -7,6 +7,7 @@ import { LocacaoResponse, StatusLocacao, ParcelaResponse, EntregaResponse } from
 import { LocacaoService } from '../locacoes/locacoes.service';
 import { EntregaService } from '../../vendas/entrega.service';
 import { WhatsaapCobrancaModalComponent } from "../../../shared/components/whatsapp/whatsapp-cobranca-modal.component";
+import { ExportService } from '../../../shared/services/export.service';
 
 @Component({
     selector: 'app-locacao-detalhe-modal',
@@ -20,6 +21,7 @@ export class LocacaoDetalheModalComponent implements OnChanges {
     private entregaService  = inject(EntregaService);
     private cdr             = inject(ChangeDetectorRef);
     private messageService  = inject(MessageService);
+    exportService = inject(ExportService)
 
     @Input() visible = false;
     @Input() locacao: LocacaoResponse | null = null;

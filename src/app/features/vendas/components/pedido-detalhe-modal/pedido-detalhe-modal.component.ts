@@ -7,6 +7,7 @@ import { PedidoResponse, StatusPedido, ParcelaResponse, EntregaResponse } from '
 import { VendasService } from '../../vendas.service';
 import { EntregaService } from '../../entrega.service';
 import { WhatsaapCobrancaModalComponent } from "../../../../shared/components/whatsapp/whatsapp-cobranca-modal.component";
+import { ExportService } from '../../../../shared/services/export.service';
 
 @Component({
     selector: 'app-pedido-detalhe-modal',
@@ -20,6 +21,7 @@ export class PedidoDetalheModalComponent implements OnChanges {
     private entregaService = inject(EntregaService);
     private cdr            = inject(ChangeDetectorRef);
     private messageService = inject(MessageService);
+    exportService = inject(ExportService);
 
     @Input() visible = false;
     @Input() pedido: PedidoResponse | null = null;

@@ -23,7 +23,7 @@ export class ExportService {
         setTimeout(() => this.print(formato), 100)
     }
 
-    imprimiLocacao(locacao: LocacaoResponse, formato: ExportFormato): void {
+    imprimirLocacao(locacao: LocacaoResponse, formato: ExportFormato): void {
         this.locacao.set(locacao);
         this.pedido.set(null);
         this.formato.set(formato);
