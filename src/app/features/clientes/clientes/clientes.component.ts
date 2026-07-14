@@ -65,7 +65,7 @@ export class ClientesComponent implements OnInit {
 
   // ── Estado ────────────────────────────────────────────────
   clientes: ClienteResponse[] = [];
-  loading  = false;
+  loading  = true;
   salvando = false;
 
   tabAtiva: TabFiltroCliente = 'TODOS';

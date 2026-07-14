@@ -178,7 +178,20 @@
 }
 
 <!-- ── KPIs ─────────────────────────────────────────────────── -->
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+@if (loading) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3 min-h-[72px] animate-pulse">
+        <div class="w-9 h-9 rounded-lg bg-slate-100 flex-shrink-0"></div>
+        <div class="flex-1">
+          <div class="h-6 w-12 bg-slate-100 rounded mb-1.5"></div>
+          <div class="h-3 w-16 bg-slate-100 rounded"></div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 fade-in">
 
   <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
     <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
@@ -224,6 +237,7 @@
   </div>
 
 </div>
+}
 
 <!-- ── Gráficos ────────────────────────────────────────────── -->
 <div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-4 mb-6">
