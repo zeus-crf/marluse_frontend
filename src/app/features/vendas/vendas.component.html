@@ -250,6 +250,8 @@
   <!-- Barra de filtros -->
   <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
 
+
+
     <!-- Tabs status -->
     <div class="flex gap-1 bg-slate-100 rounded-lg p-1 overflow-x-auto whitespace-nowrap">
       @for (s of [
@@ -296,6 +298,8 @@
       (verDetalhe)="abrirDetalhe($any($event))"
       (editar)="abrirEdicao($any($event))"
       (excluir)="onExcluirPedido($any($event))"
+      (exportPdf)="exportarPedido($any($event), 'pdf')"
+      (exportTermica)="exportarPedido($any($event), 'termica')"
     />
   </div>
 

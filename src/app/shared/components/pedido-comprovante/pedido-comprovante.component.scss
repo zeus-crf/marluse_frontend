@@ -1,0 +1,84 @@
+/* Escondido na tela */
+:host {
+  display: none;
+}
+
+/* Visível somente ao imprimir */
+@media print {
+  :host {
+    display: block;
+    width: 100%;
+    font-family: sans-serif;
+    color: #000;
+  }
+
+  /* Térmica: conteúdo estreito independente do tamanho de papel no browser */
+  .termica {
+    font-family: monospace;
+    font-size: 12px;
+    max-width: 80mm;
+    margin: 0 auto;
+  }
+
+  .termica .total-linha.destaque {
+    font-size: 13px;
+  }
+
+  .secao {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .secao:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .grid-itens {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .grid-itens th {
+    text-align: left;
+    font-size: 10px;
+    color: #666;
+    border-bottom: 1px solid #ccc;
+    padding: 4px 0;
+  }
+
+  .grid-itens td {
+    padding: 5px 0;
+    border-bottom: 1px dotted #ddd;
+  }
+
+  .total-linha {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin: 3px 0;
+  }
+
+  .total-linha.destaque {
+    font-size: 14px;
+    font-weight: bold;
+    border-top: 1px solid #000;
+    padding-top: 6px;
+    margin-top: 6px;
+  }
+
+  .rodape {
+    text-align: center;
+    font-size: 10px;
+    color: #888;
+    margin-top: 16px;
+  }
+}

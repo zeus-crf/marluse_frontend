@@ -377,6 +377,18 @@
             }
           </button>
         }
+        <div class="flex items-center gap-2">
+          <button type="button" (click)="exportService.imprimirLocacao(locacao!, 'pdf')"
+            class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+            <i class="pi pi-file-pdf text-xs"></i>
+            PDF
+          </button>
+          <button type="button" (click)="exportService.imprimirLocacao(locacao!, 'termica')"
+            class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+            <i class="pi pi-print text-xs"></i>
+            Térmica
+          </button>
+        </div>
       </div>
     </div>
 

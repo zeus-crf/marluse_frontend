@@ -33,6 +33,7 @@ import { LocacaoFiltrosModalComponent } from "../locacao-filtros-modal/locacao-f
 import { LocacaoEdicaoPayload } from "./locacoes.service";
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { SelectComponent } from '../../../shared/components/select/select.component';
+import { ExportService, ExportFormato } from '../../../shared/services/export.service';
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
 
@@ -48,6 +49,7 @@ export class LocacoesComponent implements OnInit {
   private cdr            = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
   private service        = inject(LocacaoService);
+  exportService          = inject(ExportService);
 
   // ── Dados ──────────────────────────────────────────────────
   locacoes: LocacaoResponse[] = [];
@@ -179,13 +181,16 @@ export class LocacoesComponent implements OnInit {
   ];
 
   readonly acoesLocacoes: TableActionConfig = {
-    showExtra:    true,
-    extraIcon:    'pi pi-pencil',
-    extraTooltip: 'Editar',
-    showView:     true,
-    showEdit:     false,
-    showDelete:   false,
-    showApagar:   true,
+    showExtra:         true,
+    extraIcon:         'pi pi-pencil',
+    extraTooltip:      'Editar',
+    showView:          true,
+    showEdit:          false,
+    showDelete:        false,
+    showApagar:        true,
+    showExportPdf:     true,
+    showExportTermica: true,
+    useExportMenu:     true,
     apagarIcon:   'pi pi-trash',
     apagarTooltip: 'Apagar',
     apagarHeader: 'Apagar permanentemente',
@@ -591,6 +596,14 @@ export class LocacoesComponent implements OnInit {
       life: 3000,
     });
     this.cdr.detectChanges();
+  }
+
+  // ── Exportar (busca dados completos antes de imprimir) ────────
+  exportarLocacao(row: LocacaoResponse, formato: ExportFormato): void {
+    this.service.getLocacaoById(row.id).subscribe({
+      next: locacao => this.exportService.imprimirLocacao(locacao, formato),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a locação para exportação', life: 4000 }),
+    });
   }
 
   // ── Modal Detalhe ──────────────────────────────────────────

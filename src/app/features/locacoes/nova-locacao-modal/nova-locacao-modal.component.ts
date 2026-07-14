@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
+import { finalize } from 'rxjs';
 import { LocacaoService } from '../locacoes/locacoes.service';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
@@ -26,6 +27,7 @@ export class NovaLocacaoModalComponent {
 
     private service        = inject(LocacaoService);
     private messageService = inject(MessageService);
+    private cdr            = inject(ChangeDetectorRef);
 
     @Input() visible = false;
     @Input() produtos: ProdutoSimples[] = [];
@@ -221,14 +223,14 @@ export class NovaLocacaoModalComponent {
             dataMovimento:         this.dataMovimento || undefined,
             juros:                 this.juros || null,
             tipoJuros:             this.juros ? this.tipoJuros : null,
-        }, this.tipo === 'ORCAMENTO').subscribe({
+        }, this.tipo === 'ORCAMENTO').pipe(
+            finalize(() => { this.salvando = false; this.cdr.detectChanges(); })
+        ).subscribe({
             next: (locacao) => {
-                this.locacaoCriada.emit(locacao);             // ✅ evento com nome correto
+                this.locacaoCriada.emit(locacao);
                 this.resetForm();
-                this.salvando = false;
             },
             error: (err: any) => {
-                this.salvando = false;
                 const detail = err?.error?.message ?? 'Não foi possível criar a locação';
                 this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
             },
@@ -241,6 +243,7 @@ export class NovaLocacaoModalComponent {
     }
 
     private resetForm(): void {
+        this.salvando              = false;
         this.tipo                  = 'LOCACAO';
         this.consumidorFinal       = false;
         this.dataRetirada          = '';
