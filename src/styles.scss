@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Material Symbols: reserva de espaço p/ evitar CLS ────────────
+   Cada ícone ocupa exatamente 1em de largura. Enquanto a fonte de
+   ícones não carrega, isso impede que o texto do ligature ("storefront")
+   expanda a caixa e depois colapse para o ícone (salto de layout). */
+.material-symbols-outlined {
+  display: inline-block;
+  width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* ── Fade-in de conteúdo (só opacity → não causa layout shift) ──── */
+@keyframes contentFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in {
+  animation: contentFadeIn 0.35s ease-out both;
+}
+
 /* ── PrimeNG DatePicker – overrides globais ──────────────────── */
 
 /* Dia selecionado: azul em vez do verde padrão do Aura */

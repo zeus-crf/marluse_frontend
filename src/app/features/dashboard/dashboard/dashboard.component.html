@@ -82,10 +82,10 @@
 
 <!-- KPI Cards -->
 @if (kpis) {
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 fade-in">
 
     <!-- Receita do Período -->
-    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden min-h-[180px]">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Receita do Período</p>
         <div class="relative group">
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Vendas -->
-    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden min-h-[180px]">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Vendas no Período</p>
         <div class="relative group">
@@ -131,7 +131,7 @@
     </div>
 
     <!-- Locações Ativas -->
-    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden min-h-[180px]">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Locações Ativas</p>
         <div class="relative group">
@@ -154,7 +154,7 @@
     </div>
 
     <!-- Clientes Ativos -->
-    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col overflow-hidden min-h-[180px]">
       <div class="flex items-start justify-between mb-2">
         <p class="text-[11px] font-semibold text-gray-400 tracking-widest uppercase">Clientes Ativos</p>
         <div class="relative group">
@@ -177,6 +177,19 @@
     </div>
 
   </div>
+} @else {
+  <!-- Skeleton: reserva o MESMO espaço dos KPI cards para não haver salto (CLS)
+       quando os dados reais chegam -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col min-h-[180px] animate-pulse">
+        <div class="h-3 w-24 bg-slate-100 rounded mb-3"></div>
+        <div class="h-7 w-32 bg-slate-100 rounded mb-2"></div>
+        <div class="h-3 w-28 bg-slate-100 rounded"></div>
+        <div class="mt-auto h-[56px] bg-slate-50 rounded"></div>
+      </div>
+    }
+  </div>
 }
 
 <!-- Gráficos -->
@@ -198,24 +211,26 @@
         </span>
       </div>
     </div>
-    @if (barSeries.length > 0) {
-      <apx-chart
-        [series]="barSeries"
-        [chart]="barChart"
-        [plotOptions]="barPlotOptions"
-        [colors]="barColors"
-        [dataLabels]="barDataLabels"
-        [grid]="barGrid"
-        [xaxis]="barXaxis"
-        [yaxis]="barYaxis"
-        [tooltip]="barTooltip"
-      />
-    } @else {
-      <div class="h-[250px] flex items-center justify-center text-gray-400 text-sm">
-        <span class="material-symbols-outlined text-[32px] mr-2 opacity-30">bar_chart</span>
-        Nenhum dado no período
-      </div>
-    }
+    <div class="min-h-[250px]">
+      @if (barSeries.length > 0) {
+        <apx-chart
+          [series]="barSeries"
+          [chart]="barChart"
+          [plotOptions]="barPlotOptions"
+          [colors]="barColors"
+          [dataLabels]="barDataLabels"
+          [grid]="barGrid"
+          [xaxis]="barXaxis"
+          [yaxis]="barYaxis"
+          [tooltip]="barTooltip"
+        />
+      } @else {
+        <div class="h-[250px] flex items-center justify-center text-gray-400 text-sm">
+          <span class="material-symbols-outlined text-[32px] mr-2 opacity-30">bar_chart</span>
+          Nenhum dado no período
+        </div>
+      }
+    </div>
   </div>
 
   <!-- Donut: Locações -->
@@ -223,25 +238,27 @@
     <p class="text-sm font-semibold text-gray-800 mb-0.5">Locações</p>
     <p class="text-xs text-gray-400 mb-2">Status atual</p>
 
-    @if (donutSeries.length > 0 && (donutSeries[0] + donutSeries[1]) > 0) {
-      <div class="flex justify-center">
-        <apx-chart
-          [series]="donutSeries"
-          [chart]="donutChart"
-          [colors]="donutColors"
-          [labels]="donutLabels"
-          [legend]="donutLegend"
-          [dataLabels]="donutDataLabels"
-          [plotOptions]="donutPlotOptions"
-          [stroke]="donutStroke"
-          [tooltip]="donutTooltip"
-        />
-      </div>
-    } @else {
-      <div class="flex-1 flex items-center justify-center text-gray-400 text-sm">
-        Sem locações ativas
-      </div>
-    }
+    <div class="min-h-[180px] flex flex-col">
+      @if (donutSeries.length > 0 && (donutSeries[0] + donutSeries[1]) > 0) {
+        <div class="flex justify-center">
+          <apx-chart
+            [series]="donutSeries"
+            [chart]="donutChart"
+            [colors]="donutColors"
+            [labels]="donutLabels"
+            [legend]="donutLegend"
+            [dataLabels]="donutDataLabels"
+            [plotOptions]="donutPlotOptions"
+            [stroke]="donutStroke"
+            [tooltip]="donutTooltip"
+          />
+        </div>
+      } @else {
+        <div class="flex-1 flex items-center justify-center text-gray-400 text-sm">
+          Sem locações ativas
+        </div>
+      }
+    </div>
 
     <div class="mt-3 space-y-2">
       <div class="flex items-center justify-between text-sm">
