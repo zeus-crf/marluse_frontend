@@ -62,7 +62,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Estado ────────────────────────────────────────────────
   produtos: ProdutoResponse[] = [];
-  loading  = false;
+  loading  = true;
   salvando = false;
 
   tabAtiva: TabFiltroEstoque = 'TODOS';
