@@ -158,14 +158,13 @@
           </div>
 
           <div class="border border-slate-200 rounded-lg overflow-x-auto">
-            <div class="min-w-[484px]">
+            <div>
             <!-- Cabeçalho -->
             <div class="grid grid-cols-[44px_120px_110px_90px_64px] gap-2 bg-slate-50 border-b border-slate-100 px-3 py-[7px]">
               <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">#</div>
               <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em]">Vencimento</div>
               <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-right">Valor</div>
               <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.06em] text-center">Status</div>
-              <div></div>
             </div>
 
             <!-- Linhas -->
@@ -285,6 +284,20 @@
         </div>
       }
 
+      <!-- Exportar -->
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" (click)="exportService.imprimirPedido(pedido!, 'pdf')"
+          class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+          <i class="pi pi-file-pdf text-xs"></i>
+          PDF
+        </button>
+        <button type="button" (click)="exportService.imprimirPedido(pedido!, 'termica')"
+          class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+          <i class="pi pi-print text-xs"></i>
+          Térmica
+        </button>
+      </div>
+
     </div>
   }
 
@@ -345,19 +358,6 @@
           Pagar
         </button>
       }
-    </div>
-
-    <div class="flex items-center gap-2">
-      <button type="button" (click)="exportService.imprimirPedido(pedido!, 'pdf')"
-        class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-        <i class="pi pi-file-pdf text-xs"></i>
-        PDF
-      </button>
-      <button type="button" (click)="exportService.imprimirPedido(pedido!, 'termica')"
-        class="flex items-center gap-1.5 px-3 py-[7px] text-[13px] font-medium text-gray-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-        <i class="pi pi-print text-xs"></i>
-        Térmica
-      </button>
     </div>
   </div>
 

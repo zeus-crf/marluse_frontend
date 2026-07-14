@@ -31,7 +31,7 @@
   </div>
 }
 
-<div class="overflow-x-auto overflow-y-hidden">
+<div class="overflow-x-auto">
 <p-table
   [value]="rowsFiltrados"
   [loading]="loading"
@@ -162,35 +162,13 @@
               ></button>
             }
             @if (actions.useExportMenu && (actions.showExportPdf || actions.showExportTermica)) {
-              <!-- Menu 3 pontos: mostra opções ao passar o mouse -->
-              <div class="relative group">
-                <button
-                  type="button"
-                  class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-slate-100 transition-colors"
-                  title="Exportar">
-                  <i class="pi pi-ellipsis-v text-[13px]"></i>
-                </button>
-                <div class="hidden group-hover:block absolute right-0 top-8 z-30 min-w-[140px] bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-                  @if (actions.showExportPdf) {
-                    <button
-                      type="button"
-                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-slate-50 transition-colors"
-                      (click)="exportPdf.emit(row)">
-                      <i class="pi pi-file-pdf text-red-500 text-[13px]"></i>
-                      Exportar PDF
-                    </button>
-                  }
-                  @if (actions.showExportTermica) {
-                    <button
-                      type="button"
-                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-slate-50 transition-colors"
-                      (click)="exportTermica.emit(row)">
-                      <i class="pi pi-print text-blue-500 text-[13px]"></i>
-                      Nota térmica
-                    </button>
-                  }
-                </div>
-              </div>
+              <button
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-slate-100 transition-colors"
+                title="Exportar"
+                (click)="toggleExportMenu($event, row)">
+                <i class="pi pi-ellipsis-v text-[13px]"></i>
+              </button>
             } @else {
               @if (actions.showExportPdf) {
                 <button
@@ -258,3 +236,30 @@
 
 </p-table>
 </div>
+
+@if (exportMenuVisible() && actions.useExportMenu) {
+  <div
+    class="fixed z-[9999] min-w-[140px] bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
+    [style.left.px]="exportMenuX()"
+    [style.top.px]="exportMenuY()"
+    (click)="$event.stopPropagation()">
+    @if (actions.showExportPdf) {
+      <button
+        type="button"
+        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-slate-50 transition-colors"
+        (click)="exportPdf.emit(exportMenuRow()); closeExportMenu()">
+        <i class="pi pi-file-pdf text-red-500 text-[13px]"></i>
+        Exportar PDF
+      </button>
+    }
+    @if (actions.showExportTermica) {
+      <button
+        type="button"
+        class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-slate-50 transition-colors"
+        (click)="exportTermica.emit(exportMenuRow()); closeExportMenu()">
+        <i class="pi pi-print text-blue-500 text-[13px]"></i>
+        Nota térmica
+      </button>
+    }
+  </div>
+}

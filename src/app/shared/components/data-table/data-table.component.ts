@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, HostListener, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -17,9 +17,13 @@ import { TableColumn, TableActionConfig } from './data-table.models';
   templateUrl: './data-table.component.html',
   providers: [ConfirmationService],
 })
-export class DataTableComponent {
+export class DataTableComponent implements OnDestroy {
 
   private confirmationService = inject(ConfirmationService);
+
+  ngOnDestroy(): void {
+    this._removeScrollListener();
+  }
 
   /** Definição das colunas */
   @Input() columns: TableColumn[] = [];
@@ -79,6 +83,84 @@ export class DataTableComponent {
     showDelete: true,
     deleteHeader: 'Confirmar exclusão',
   };
+
+  // ── Menu de exportação (clique) ───────────────────────────
+  // Signals: escrever num signal notifica o change detection do app zoneless
+  // (sem zone.js), mesmo a partir de um listener nativo de scroll.
+  exportMenuVisible = signal(false);
+  exportMenuX = signal(0);
+  exportMenuY = signal(0);
+  exportMenuRow = signal<any>(null);
+
+  /** Alvos onde o listener de scroll foi anexado (para remover depois) */
+  private _scrollTargets: EventTarget[] = [];
+
+  /** Fecha o menu ao rolar qualquer container/janela */
+  private _onScroll = (): void => {
+    if (!this.exportMenuVisible()) return;
+    this.closeExportMenu();
+  };
+
+  /** Abre/fecha o menu ao clicar nos 3 pontos */
+  toggleExportMenu(event: MouseEvent, row: any): void {
+    event.stopPropagation();
+    const btn = event.currentTarget as HTMLElement;
+    // Se já está aberto para esta linha, fecha
+    if (this.exportMenuVisible() && this.exportMenuRow() === row) {
+      this.closeExportMenu();
+      return;
+    }
+    const rect = btn.getBoundingClientRect();
+    this.exportMenuRow.set(row);
+    this.exportMenuX.set(rect.right - 140);
+    this.exportMenuY.set(rect.bottom + 4);
+    this.exportMenuVisible.set(true);
+    this._attachScrollListeners(btn);
+  }
+
+  closeExportMenu(): void {
+    this.exportMenuVisible.set(false);
+    this._removeScrollListener();
+  }
+
+  /**
+   * Anexa o listener de scroll na janela e em TODO ancestral que rola.
+   * Fazer isso nos containers reais garante que o evento seja capturado
+   * (scroll não borbulha; a captura na window pode não bastar em todos os casos).
+   */
+  private _attachScrollListeners(el: HTMLElement): void {
+    this._removeScrollListener();
+    const targets: EventTarget[] = [window];
+    let node: HTMLElement | null = el.parentElement;
+    while (node && node !== document.body && node !== document.documentElement) {
+      const style = getComputedStyle(node);
+      const overflow = style.overflowY + style.overflowX;
+      if (/(auto|scroll|overlay)/.test(overflow)) {
+        targets.push(node);
+      }
+      node = node.parentElement;
+    }
+    for (const t of targets) {
+      t.addEventListener('scroll', this._onScroll, { passive: true, capture: true });
+    }
+    this._scrollTargets = targets;
+  }
+
+  private _removeScrollListener(): void {
+    for (const t of this._scrollTargets) {
+      t.removeEventListener('scroll', this._onScroll, { capture: true } as any);
+    }
+    this._scrollTargets = [];
+  }
+
+  /** Fecha ao clicar em qualquer lugar fora do menu */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.exportMenuVisible()) this.closeExportMenu();
+  }
+  // ──────────────────────────────────────────────────────────
+
+  
 
   @Output() verDetalhe    = new EventEmitter<unknown>();
   @Output() editar        = new EventEmitter<unknown>();
