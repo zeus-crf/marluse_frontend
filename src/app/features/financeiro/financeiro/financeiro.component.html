@@ -159,25 +159,28 @@
     </div>
   </div>
 
-  @if (lancamentos.length > 0) {
-    <apx-chart
-      [series]="areaSeries"
-      [chart]="areaChart"
-      [stroke]="areaStroke"
-      [colors]="areaColors"
-      [fill]="areaFill"
-      [dataLabels]="areaDataLabels"
-      [grid]="areaGrid"
-      [xaxis]="areaXaxis"
-      [yaxis]="areaYaxis"
-      [tooltip]="areaTooltip"
-    />
-  } @else {
-    <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
-      <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">area_chart</span>
-      Sem dados para exibir
-    </div>
-  }
+  <div class="min-h-[200px]">
+    @if (lancamentos.length > 0) {
+      <apx-chart
+        class="fade-in block"
+        [series]="areaSeries"
+        [chart]="areaChart"
+        [stroke]="areaStroke"
+        [colors]="areaColors"
+        [fill]="areaFill"
+        [dataLabels]="areaDataLabels"
+        [grid]="areaGrid"
+        [xaxis]="areaXaxis"
+        [yaxis]="areaYaxis"
+        [tooltip]="areaTooltip"
+      />
+    } @else {
+      <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+        <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">area_chart</span>
+        Sem dados para exibir
+      </div>
+    }
+  </div>
 
   <!-- Legenda -->
   <div class="flex gap-6 mt-2 justify-end">
