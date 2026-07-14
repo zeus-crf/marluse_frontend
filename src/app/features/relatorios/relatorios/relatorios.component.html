@@ -32,6 +32,7 @@
   </div>
 } @else {
 
+  <div class="fade-in">
   <!-- KPI Cards: dois containers lado a lado, 3 KPIs cada -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
@@ -95,49 +96,55 @@
     <div class="bg-white border border-slate-100 rounded-xl p-4">
       <p class="text-sm font-medium text-gray-900">Receita mensal</p>
       <p class="text-xs text-gray-400 mb-3">Vendas vs. locações</p>
-      @if (receitaMensal.length > 0) {
-        <apx-chart
-          [series]="chartReceita.series"
-          [chart]="chartReceita.chart"
-          [colors]="chartReceita.colors"
-          [stroke]="chartReceita.stroke"
-          [fill]="chartReceita.fill"
-          [xaxis]="chartReceita.xaxis"
-          [yaxis]="chartReceita.yaxis"
-          [grid]="chartReceita.grid"
-          [dataLabels]="chartReceita.dataLabels"
-          [legend]="chartReceita.legend"
-          [tooltip]="chartReceita.tooltip">
-        </apx-chart>
-      } @else {
-        <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
-          Sem dados no período
-        </div>
-      }
+      <div class="min-h-[220px]">
+        @if (receitaMensal.length > 0) {
+          <apx-chart
+            class="fade-in block"
+            [series]="chartReceita.series"
+            [chart]="chartReceita.chart"
+            [colors]="chartReceita.colors"
+            [stroke]="chartReceita.stroke"
+            [fill]="chartReceita.fill"
+            [xaxis]="chartReceita.xaxis"
+            [yaxis]="chartReceita.yaxis"
+            [grid]="chartReceita.grid"
+            [dataLabels]="chartReceita.dataLabels"
+            [legend]="chartReceita.legend"
+            [tooltip]="chartReceita.tooltip">
+          </apx-chart>
+        } @else {
+          <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
+            Sem dados no período
+          </div>
+        }
+      </div>
     </div>
 
     <div class="bg-white border border-slate-100 rounded-xl p-4">
       <p class="text-sm font-medium text-gray-900">Margem de lucro</p>
       <p class="text-xs text-gray-400 mb-3">Receita × CMV × Despesas</p>
-      @if (receitaMensal.length > 0) {
-        <apx-chart
-          [series]="chartMargem.series"
-          [chart]="chartMargem.chart"
-          [colors]="chartMargem.colors"
-          [stroke]="chartMargem.stroke"
-          [fill]="chartMargem.fill"
-          [xaxis]="chartMargem.xaxis"
-          [yaxis]="chartMargem.yaxis"
-          [grid]="chartMargem.grid"
-          [dataLabels]="chartMargem.dataLabels"
-          [legend]="chartMargem.legend"
-          [tooltip]="chartMargem.tooltip">
-        </apx-chart>
-      } @else {
-        <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
-          Sem dados no período
-        </div>
-      }
+      <div class="min-h-[220px]">
+        @if (receitaMensal.length > 0) {
+          <apx-chart
+            class="fade-in block"
+            [series]="chartMargem.series"
+            [chart]="chartMargem.chart"
+            [colors]="chartMargem.colors"
+            [stroke]="chartMargem.stroke"
+            [fill]="chartMargem.fill"
+            [xaxis]="chartMargem.xaxis"
+            [yaxis]="chartMargem.yaxis"
+            [grid]="chartMargem.grid"
+            [dataLabels]="chartMargem.dataLabels"
+            [legend]="chartMargem.legend"
+            [tooltip]="chartMargem.tooltip">
+          </apx-chart>
+        } @else {
+          <div class="h-[220px] flex items-center justify-center text-sm text-gray-300">
+            Sem dados no período
+          </div>
+        }
+      </div>
     </div>
   </div>
 
@@ -149,7 +156,7 @@
       <p class="text-sm font-medium text-gray-900">Status financeiro</p>
       <p class="text-xs text-gray-400 mb-3">Lançamentos</p>
       @if (statusFinanceiro && totalStatusFinanceiro > 0) {
-        <div class="flex justify-center">
+        <div class="flex justify-center min-h-[130px] fade-in">
           <apx-chart
             [series]="chartStatusFinanceiro.series"
             [chart]="chartStatusFinanceiro.chart"
@@ -271,6 +278,7 @@
         </div>
       }
     </div>
+  </div>
   </div>
 
 }

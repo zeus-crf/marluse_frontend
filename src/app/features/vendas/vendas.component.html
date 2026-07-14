@@ -173,26 +173,28 @@
     <p class="text-sm font-semibold text-gray-800 mb-0.5">Por Status</p>
     <p class="text-xs text-gray-400 mb-2">Valor total das vendas</p>
 
-    @if (donutSeries.length > 0 && donutSeries.some(v => v > 0)) {
-      <div class="flex justify-center">
-        <apx-chart
-          [series]="donutSeries"
-          [chart]="donutChart"
-          [colors]="donutColors"
-          [labels]="donutLabels"
-          [legend]="donutLegend"
-          [dataLabels]="donutDataLabels"
-          [plotOptions]="donutPlotOptions"
-          [stroke]="donutStroke"
-          [tooltip]="donutTooltip"
-        />
-      </div>
-    } @else {
-      <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
-        <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">donut_large</span>
-        Sem dados
-      </div>
-    }
+    <div class="min-h-[200px]">
+      @if (donutSeries.length > 0 && donutSeries.some(v => v > 0)) {
+        <div class="flex justify-center fade-in">
+          <apx-chart
+            [series]="donutSeries"
+            [chart]="donutChart"
+            [colors]="donutColors"
+            [labels]="donutLabels"
+            [legend]="donutLegend"
+            [dataLabels]="donutDataLabels"
+            [plotOptions]="donutPlotOptions"
+            [stroke]="donutStroke"
+            [tooltip]="donutTooltip"
+          />
+        </div>
+      } @else {
+        <div class="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+          <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">donut_large</span>
+          Sem dados
+        </div>
+      }
+    </div>
 
     <!-- Legenda -->
     <div class="mt-4 space-y-2.5">
@@ -222,24 +224,27 @@
     <p class="text-sm font-semibold text-gray-800 mb-0.5">Top Clientes</p>
     <p class="text-xs text-gray-400 mb-3">Maior volume de compras no período</p>
 
-    @if (barHSeries.length > 0 && barHSeries[0]?.data?.length > 0) {
-      <apx-chart
-        [series]="barHSeries"
-        [chart]="barHChart"
-        [plotOptions]="barHPlotOptions"
-        [colors]="barHColors"
-        [dataLabels]="barHDataLabels"
-        [grid]="barHGrid"
-        [xaxis]="barHXaxis"
-        [yaxis]="barHYaxis"
-        [tooltip]="barHTooltip"
-      />
-    } @else {
-      <div class="h-[220px] flex items-center justify-center text-gray-400 text-sm">
-        <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">bar_chart</span>
-        Sem dados no período
-      </div>
-    }
+    <div class="min-h-[220px]">
+      @if (barHSeries.length > 0 && barHSeries[0]?.data?.length > 0) {
+        <apx-chart
+          class="fade-in block"
+          [series]="barHSeries"
+          [chart]="barHChart"
+          [plotOptions]="barHPlotOptions"
+          [colors]="barHColors"
+          [dataLabels]="barHDataLabels"
+          [grid]="barHGrid"
+          [xaxis]="barHXaxis"
+          [yaxis]="barHYaxis"
+          [tooltip]="barHTooltip"
+        />
+      } @else {
+        <div class="h-[220px] flex items-center justify-center text-gray-400 text-sm">
+          <span class="material-symbols-outlined text-[32px] opacity-30 mr-2">bar_chart</span>
+          Sem dados no período
+        </div>
+      }
+    </div>
   </div>
 
 </div>
