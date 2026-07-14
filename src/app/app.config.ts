@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, APP_INITIALIZER, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -7,18 +7,12 @@ import Aura from '@primeng/themes/aura';
 import { provideNgxMask } from 'ngx-mask';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { MessageService } from 'primeng/api';
-import { AuthService } from './core/services/auth.service';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 
 registerLocaleData(localePt);
 
 import { routes } from './app.routes';
-import { catchError, of } from 'rxjs';
-
-function initAuth(auth: AuthService) {
-  return () => auth.me().pipe(catchError(() => of(null)));
-}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -57,11 +51,5 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initAuth,
-      deps: [AuthService],
-      multi: true
-    },
   ]
 }
