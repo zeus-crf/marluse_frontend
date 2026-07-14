@@ -119,14 +119,29 @@ Ordenado por impacto esperado.
 
 | ID | Status |
 |----|--------|
-| P1-A | 📋 backlog |
-| P1-B | 📋 backlog |
-| P2-A | 📋 backlog |
-| P2-B | 📋 backlog |
-| P2-C | 📋 backlog |
-| P2-D | 📋 backlog |
-| P3-A | 📋 backlog |
-| P3-B | 📋 backlog |
+| P1-A | ❌ NÃO SE APLICA — o frontend é servido pelo Vercel (ver vercel.json), não pelo Railway. O Vercel já faz `ng build --configuration production` + CDN + gzip/brotli + cache. Diagnóstico original ("ng serve em prod") estava errado. Arquivos Docker removidos. |
+| P1-B | ✅ implementado e verificado (redireciona p/ login sem travar) |
+| P2-A | 📋 backlog (adiado nesta rodada) |
+| P2-B | ✅ implementado (chart.js removido) |
+| P2-C | ✅ implementado e verificado (ícones renderizam) |
+| P2-D | 📋 backlog (adiado — warning de budget persiste) |
+| P3-A | 📋 backlog (adiado) |
+| P3-B | ✅ implementado (warning do build sumiu) |
+
+### Correção importante (2026-07-14)
+- **Descoberta tardia:** existe um `vercel.json` na raiz — o frontend é deployado no **Vercel**,
+  não no Railway. O Vercel já roda `ng build --configuration production` e serve estático via CDN.
+  Portanto o P1-A (Dockerfile/nginx pra substituir `ng serve`) NUNCA foi necessário — o app
+  nunca rodou dev-server em produção. Arquivos Docker criados e depois removidos.
+- **Backend no Railway hobby** (`marlusebackend-production.up.railway.app`, via rewrite do Vercel)
+  é o provável gargalo real de "demora pra carregar dados": cold start + recursos limitados.
+  Próximo passo de maior impacto = otimizar/manter o backend acordado, fora deste repo frontend.
+- **P1-B (bootstrap não-bloqueante)** segue sendo a maior melhoria deste repo: antes o app ficava
+  em tela branca esperando o `/auth/me` do backend lento; agora pinta imediatamente.
+- **Deploy P1-A ainda precisa de ação sua no Railway:**
+  1. Definir a variável de ambiente `API_URL` (ex: `https://<backend>.up.railway.app`, sem barra final).
+  2. Garantir que o serviço use o Dockerfile (Railway detecta automaticamente se houver Dockerfile na raiz).
+  3. Se `API_URL` não estiver setada, o nginx falha ao subir de propósito (evita deploy quebrado).
 
 ---
 

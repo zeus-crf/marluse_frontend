@@ -5,7 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import { LocacaoService } from '../locacoes/locacoes.service';
-import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
+import { SelectOption } from '../../../shared/components/select/select.component';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { ClienteSimples, EntregaRequest, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from '../models/locacoes.models';
@@ -20,7 +20,7 @@ interface ItemForm {
 @Component({
     selector: 'app-nova-locacao-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, DialogModule, SelectComponent, SelectSearchComponent, DatePickerComponent],
+    imports: [CommonModule, FormsModule, DialogModule, SelectSearchComponent, DatePickerComponent],
     templateUrl: './nova-locacao-modal.component.html',
 })
 export class NovaLocacaoModalComponent {

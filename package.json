@@ -22,7 +22,6 @@
     "@tailwindcss/forms": "^0.5.11",
     "apexcharts": "^5.15.0",
     "autoprefixer": "^10.5.0",
-    "chart.js": "^4.5.1",
     "ng-apexcharts": "^2.4.0",
     "ngx-mask": "^22.0.1",
     "postcss": "^8.5.15",
