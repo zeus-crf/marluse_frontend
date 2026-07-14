@@ -35,6 +35,10 @@ export class DataTableComponent {
   /** Número de linhas por página */
   @Input() pageSize = 10;
 
+  /** Ativa scroll interno da tabela (modo flex — tabela preenche altura disponível) */
+  @Input() scrollable = false;
+  @Input() scrollHeight = 'flex';
+
   /** Exibe o input de busca acima da tabela */
   @Input() searchable = true;
 
@@ -76,14 +80,16 @@ export class DataTableComponent {
     deleteHeader: 'Confirmar exclusão',
   };
 
-  @Output() verDetalhe = new EventEmitter<unknown>();
-  @Output() editar     = new EventEmitter<unknown>();
-  @Output() excluir    = new EventEmitter<unknown>();
-  @Output() extra      = new EventEmitter<unknown>();
-  @Output() apagar     = new EventEmitter<unknown>();
+  @Output() verDetalhe    = new EventEmitter<unknown>();
+  @Output() editar        = new EventEmitter<unknown>();
+  @Output() excluir       = new EventEmitter<unknown>();
+  @Output() extra         = new EventEmitter<unknown>();
+  @Output() apagar        = new EventEmitter<unknown>();
+  @Output() exportPdf     = new EventEmitter<unknown>();
+  @Output() exportTermica = new EventEmitter<unknown>();
 
   get showActions(): boolean {
-    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete || this.actions.showExtra || this.actions.showApagar);
+    return !!(this.actions.showView || this.actions.showEdit || this.actions.showDelete || this.actions.showExtra || this.actions.showApagar || this.actions.showExportPdf || this.actions.showExportTermica || this.actions.useExportMenu);
   }
 
   /** Total de colunas + coluna de ações (se existir) */

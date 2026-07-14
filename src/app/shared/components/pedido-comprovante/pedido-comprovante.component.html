@@ -18,7 +18,7 @@
       <div class="label">Cliente</div>
       <div><strong>{{ pedido()!.clienteNome }}</strong></div>
       @if (pedido()!.clienteTelefone) {
-        <div>{{ pedido()!.clienteTelefone }}</div>
+        <div>{{ formatarTelefone(pedido()!.clienteTelefone) }}</div>
       }
     </div>
 
@@ -55,14 +55,14 @@
       </div>
       @if (pedido()!.desconto && pedido()!.desconto! > 0) {
         <div class="total-linha">
-          <span>Desconto</span>
-          <span>- {{ pedido()!.desconto | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          <span>Desconto@if (pedido()!.tipoDesconto === 'PERCENTUAL') { ({{ pedido()!.desconto }}%)}</span>
+          <span>- {{ descontoMonetario() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
         </div>
       }
       @if (pedido()!.juros && pedido()!.juros! > 0) {
         <div class="total-linha">
-          <span>Juros</span>
-          <span>+ {{ pedido()!.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          <span>Juros@if (pedido()!.tipoJuros === 'PERCENTUAL') { ({{ pedido()!.juros }}%)}</span>
+          <span>+ {{ jurosMonetario() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
         </div>
       }
       <div class="total-linha destaque">
@@ -78,13 +78,13 @@
         <span>{{ pedido()!.formaPagamento }}</span>
       </div>
       <div class="total-linha">
-        <span>Status</span>
+        <span>Status do Pedido</span>
         <span>{{ pedido()!.status }}</span>
       </div>
     </div>
 
     <!-- Parcelas (condicional) -->
-    @if (pedido()!.parcelas && pedido()!.parcelas!.length > 0) {
+    @if (pedido()!.parcelas && pedido()!.parcelas!.length > 1) {
       <div class="secao">
         <div class="label">Parcelas</div>
         @for (parcela of pedido()!.parcelas; track parcela.id) {

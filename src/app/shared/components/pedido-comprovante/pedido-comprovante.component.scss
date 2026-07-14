@@ -12,10 +12,16 @@
     color: #000;
   }
 
-  :host.termica {
+  /* Térmica: conteúdo estreito independente do tamanho de papel no browser */
+  .termica {
     font-family: monospace;
     font-size: 12px;
     max-width: 80mm;
+    margin: 0 auto;
+  }
+
+  .termica .total-linha.destaque {
+    font-size: 13px;
   }
 
   .secao {

@@ -37,9 +37,18 @@
   overflow: hidden;
 }
 
-media print {
+/* Layout — oculta scrollbar sem perder o scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@media print {
   /* Esconde tudo exceto os componentes de comprovante */
-  body > app-root > * {
+  body > app-root > *:not(app-pedido-comprovante):not(app-locacao-comprovante) {
     display: none !important;
   }
   app-pedido-comprovante,

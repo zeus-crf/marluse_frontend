@@ -1,7 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { PedidoResponse } from "../../features/vendas/models/vendas.models";
 import { LocacaoResponse } from "../../features/locacoes/models/locacoes.models";
-import { form } from "@angular/forms/signals";
 
 export type ExportFormato = 'pdf' | 'termica';
 export type ExportTipo = 'pedido' | 'locacao';
@@ -32,9 +31,12 @@ export class ExportService {
 
     private print(formato: ExportFormato): void {
         this.removerStyle();
-        const size = formato === 'pdf' ? 'A4' : '80mm auto';
         this.styleEl = document.createElement('style');
-        this.styleEl.textContent = `@page { size: ${size}; margin: ${formato === 'pdf' ? '15mm' : '5mm'}; }`;
+        // @page size: A4 para PDF; para térmica o usuário seleciona a impressora correta no diálogo
+        const pageRule = formato === 'pdf'
+            ? `@page { size: A4; margin: 15mm; }`
+            : `@page { margin: 3mm; }`;
+        this.styleEl.textContent = pageRule;
         document.head.appendChild(this.styleEl);
         window.print();
         window.addEventListener('afterprint', () => {

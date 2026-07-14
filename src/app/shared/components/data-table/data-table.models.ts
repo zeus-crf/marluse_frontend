@@ -75,4 +75,11 @@ export interface TableActionConfig {
   apagarHeader?: string;
   /** Texto do botão aceitar no confirm de apagar */
   apagarAcceptLabel?: string;
+
+  /** Exibir botão de exportar PDF */
+  showExportPdf?: boolean;
+  /** Exibir botão de imprimir térmica */
+  showExportTermica?: boolean;
+  /** Agrupa PDF e térmica em um menu de 3 pontos ao hover, em vez de botões separados */
+  useExportMenu?: boolean;
 }

@@ -18,7 +18,7 @@
       <div class="label">Cliente</div>
       <div><strong>{{ locacao()!.clienteNome }}</strong></div>
       @if (locacao()!.clienteTelefone) {
-        <div>{{ locacao()!.clienteTelefone }}</div>
+        <div>{{ formatarTelefone(locacao()!.clienteTelefone) }}</div>
       }
     </div>
 
@@ -55,14 +55,14 @@
       </div>
       @if (locacao()!.desconto && locacao()!.desconto! > 0) {
         <div class="total-linha">
-          <span>Desconto</span>
-          <span>- {{ locacao()!.desconto | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          <span>Desconto@if (locacao()!.tipoDesconto === 'PERCENTUAL') { ({{ locacao()!.desconto }}%)}</span>
+          <span>- {{ descontoMonetario() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
         </div>
       }
       @if (locacao()!.juros && locacao()!.juros! > 0) {
         <div class="total-linha">
-          <span>Juros</span>
-          <span>+ {{ locacao()!.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          <span>Juros@if (locacao()!.tipoJuros === 'PERCENTUAL') { ({{ locacao()!.juros }}%)}</span>
+          <span>+ {{ jurosMonetario() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
         </div>
       }
       <div class="total-linha destaque">
@@ -102,7 +102,7 @@
     </div>
 
     <!-- Parcelas (condicional) -->
-    @if (locacao()!.parcelas && locacao()!.parcelas!.length > 0) {
+    @if (locacao()!.parcelas && locacao()!.parcelas!.length > 1) {
       <div class="secao">
         <div class="label">Parcelas</div>
         @for (parcela of locacao()!.parcelas; track parcela.id) {

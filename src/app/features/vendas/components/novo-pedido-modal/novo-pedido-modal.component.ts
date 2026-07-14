@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
+import { finalize } from 'rxjs';
 import { VendasService } from '../../vendas.service';
 import {
   PedidoResponse, ProdutoSimples, ClienteSimples, FormaPagamento, StatusPedido, TipoDesconto, EntregaRequest
@@ -27,6 +28,7 @@ interface ItemForm {
 export class NovoPedidoModalComponent {
   private service        = inject(VendasService);
   private messageService = inject(MessageService);
+  private cdr            = inject(ChangeDetectorRef);
 
   @Input() visible = false;
   @Input() produtos: ProdutoSimples[] = [];
@@ -204,14 +206,14 @@ export class NovoPedidoModalComponent {
       dataMovimento:     this.dataMovimento || undefined,
       juros:             this.juros || null,
       tipoJuros:         this.juros ? this.tipoJuros : null,
-    }).subscribe({
+    }).pipe(
+      finalize(() => { this.salvando = false; this.cdr.detectChanges(); })
+    ).subscribe({
       next: (pedido) => {
         this.pedidoCriado.emit(pedido);
         this.resetForm();
-        this.salvando = false;
       },
       error: (err) => {
-        this.salvando = false;
         const detail = err?.error?.message ?? 'Não foi possível criar o pedido';
         this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
@@ -224,6 +226,7 @@ export class NovoPedidoModalComponent {
   }
 
   private resetForm(): void {
+    this.salvando           = false;
     this.tipo               = 'PEDIDO';
     this.consumidorFinal    = false;
     this.dataVencimento     = '';

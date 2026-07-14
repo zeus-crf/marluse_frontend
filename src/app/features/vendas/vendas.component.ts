@@ -26,6 +26,7 @@ import { PedidoDetalheModalComponent } from './components/pedido-detalhe-modal/p
 import { PedidoEdicaoModalComponent } from './components/pedido-edicao-modal/edicao-modal.component';
 import { VendasFiltrosModalComponent } from './components/vendas-filtros-modal/vendas-filtros-modal.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
+import { ExportService, ExportFormato } from '../../shared/services/export.service';
 
 
 
@@ -40,6 +41,7 @@ export class VendasComponent implements OnInit {
   private service = inject(VendasService);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
+  exportService = inject(ExportService)
 
   readonly opcoesOrdenacao = [
     { value: 'recente', label: 'Mais recentes' },
@@ -205,6 +207,7 @@ export class VendasComponent implements OnInit {
 
   readonly acoesPedidos: TableActionConfig = {
     showView: true, showEdit: true, showDelete: true,
+    showExportPdf: true, showExportTermica: true, useExportMenu: true,
     deleteHeader: 'Confirmar exclusão',
     deleteMessageFn: (p: PedidoResponse) =>
       `Deseja excluir a venda de ${p.clienteNome} no valor de ${Number(p.valorBruto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
@@ -614,6 +617,14 @@ export class VendasComponent implements OnInit {
     };
   }
 
+
+  // ── Exportar (busca dados completos antes de imprimir) ────────
+  exportarPedido(row: PedidoResponse, formato: ExportFormato): void {
+    this.service.getByPedidoId(row.id).subscribe({
+      next: pedido => this.exportService.imprimirPedido(pedido, formato),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar o pedido para exportação', life: 4000 }),
+    });
+  }
 
   // ── Helpers ────────────────────────────────────────────────
   private atualizarNaLista(pedidoAtualizado: PedidoResponse): void {
