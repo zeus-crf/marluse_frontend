@@ -45,6 +45,8 @@ export interface ItemPedidoResponse {
   quantidade: number;
   precoUnitario: number;
   subtotal: number;
+  baixarEstoque: boolean;
+  permitirSemEstoque: boolean;
 }
  
 export interface PedidoResponse {
@@ -76,6 +78,9 @@ export interface PedidoResponse {
 export interface ItemPedidoRequest {
   productId: string;
   quantidade: number;
+  preco?: number;
+  baixarEstoque?: boolean;
+  permitirSemEstoque?: boolean;
 }
  
 export interface PedidoRequest {
@@ -122,6 +127,7 @@ export interface ItemPedidoForm {
   produtoNome: string;
   preco: number;
   quantidade: number;
+  baixarEstoque: boolean;
 }
 
 export interface VendasFiltro {

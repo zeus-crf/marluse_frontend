@@ -2,7 +2,8 @@ import { ChangeDetectorRef, Component, Input, Output, EventEmitter, inject } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import { VendasService } from '../../vendas.service';
 import {
@@ -17,18 +18,21 @@ interface ItemForm {
   produtoNome: string;
   precoUnitario: number;
   quantidade: number;
+  baixarEstoque: boolean;
 }
 
 @Component({
   selector: 'app-novo-pedido-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, SelectSearchComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, DialogModule, ConfirmDialogModule, SelectSearchComponent, DatePickerComponent],
+  providers: [ConfirmationService],
   templateUrl: './novo-pedido-modal.component.html',
 })
 export class NovoPedidoModalComponent {
-  private service        = inject(VendasService);
-  private messageService = inject(MessageService);
-  private cdr            = inject(ChangeDetectorRef);
+  private service             = inject(VendasService);
+  private messageService      = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private cdr                 = inject(ChangeDetectorRef);
 
   @Input() visible = false;
   @Input() produtos: ProdutoSimples[] = [];
@@ -153,7 +157,16 @@ export class NovoPedidoModalComponent {
   }
 
   novoItem(): ItemForm {
-    return { produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1 };
+    return { produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1, baixarEstoque: true };
+  }
+
+  /** Itens que vão baixar estoque mas cuja quantidade excede o saldo disponível. */
+  private itensSemSaldo(): ItemForm[] {
+    return this.itens.filter(i => {
+      if (!i.baixarEstoque || !i.produtoId) return false;
+      const prod = this.produtos.find(p => p.id === i.produtoId);
+      return !!prod && i.quantidade > prod.quantidadeEstoque;
+    });
   }
 
   adicionarLinha(): void {
@@ -187,12 +200,38 @@ export class NovoPedidoModalComponent {
 
   salvar(): void {
     if (!this.formValida) return;
+
+    const semSaldo = this.itensSemSaldo();
+    if (semSaldo.length > 0) {
+      const nomes = semSaldo.map(i => i.produtoNome).join(', ');
+      this.confirmationService.confirm({
+        header: 'Vender sem estoque?',
+        message: `Sem itens em estoque para: ${nomes}. O estoque ficará negativo. Deseja continuar?`,
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sim, vender',
+        rejectLabel: 'Cancelar',
+        acceptButtonProps: { severity: 'danger' },
+        rejectButtonProps: { severity: 'secondary', outlined: true },
+        accept: () => this.enviar(true),
+      });
+      return;
+    }
+    this.enviar(false);
+  }
+
+  private enviar(permitirSemEstoque: boolean): void {
     this.salvando = true;
     const status: StatusPedido = this.tipo === 'ORCAMENTO' ? 'ORCAMENTO' : 'CONFIRMADO';
     this.service.postPedidos({
       clienteId:         this.clienteId || undefined,
       formaPagamento:    this.formaPagamento as FormaPagamento,
-      itens:             this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade, preco: i.precoUnitario })),
+      itens:             this.itens.map(i => ({
+                           productId: i.produtoId,
+                           quantidade: i.quantidade,
+                           preco: i.precoUnitario,
+                           baixarEstoque: i.baixarEstoque,
+                           permitirSemEstoque: permitirSemEstoque && i.baixarEstoque,
+                         })),
       status,
       dataVencimento:    this.isFiado && this.numeroParcelas === 1 && this.primeiroVencimento ? this.primeiroVencimento : undefined,
       observacao:        this.observacao || undefined,
