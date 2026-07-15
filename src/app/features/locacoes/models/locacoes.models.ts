@@ -2,6 +2,8 @@ export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA' | '
 
 export type StatusEntrega = 'PENDENTE' | 'FEITA';
 
+
+
 export interface EntregaResponse {
   id: string;
   endereco: string;
@@ -47,6 +49,8 @@ export interface ItemLocacaoRequest {
   produtoId: string;          // backend espera String, não número
   quantidade: number;
 }
+
+
 
 export interface LocacaoResponse {
   id: string;
