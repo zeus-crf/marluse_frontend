@@ -192,7 +192,7 @@ export class NovoPedidoModalComponent {
     this.service.postPedidos({
       clienteId:         this.clienteId || undefined,
       formaPagamento:    this.formaPagamento as FormaPagamento,
-      itens:             this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade })),
+      itens:             this.itens.map(i => ({ productId: i.produtoId, quantidade: i.quantidade, preco: i.precoUnitario })),
       status,
       dataVencimento:    this.isFiado && this.numeroParcelas === 1 && this.primeiroVencimento ? this.primeiroVencimento : undefined,
       observacao:        this.observacao || undefined,

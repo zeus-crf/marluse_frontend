@@ -194,7 +194,7 @@ export class NovaLocacaoModalComponent {
         const produto = this.produtos.find(p => p.id === item.produtoId);
         if (produto) {
             item.produtoNome   = produto.nome;
-            item.precoUnitario = Number(produto.preco);
+            item.precoUnitario = Number(produto.precoDiaria);
         }
     }
 
@@ -210,7 +210,7 @@ export class NovaLocacaoModalComponent {
             formaPagamento:        this.formaPagamento as FormaPagamento,
             dataRetirada:          this.dataRetirada,
             dataDevolucaoPrevista: this.dataDevolucaoPrevista,
-            itens:                 this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+            itens:                 this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade, precoDiaria: i.precoUnitario  })),
             observacao:            this.observacao || null,
             status,
             desconto:              this.desconto || null,

@@ -1,15 +1,25 @@
 export type UnidadeMedida = 'SACO' | 'METRO' | 'METRO_QUADRADO' | 'LITRO' | 'PECA' | 'KG' | 'ROLO' | 'BALDE';
 export type StatusEstoque = 'OK' | 'BAIXO' | 'ZERADO';
 export type TabFiltroEstoque = 'TODOS' | StatusEstoque;
+export type CategoriaProduto =
+  | 'FERRAMENTAS'
+  | 'ELETRICA'
+  | 'CONEXOES_E_TUBOS'
+  | 'ENSACADOS'
+  | 'MATERIAL_BRUTO'
+  | 'LOCACAO'
+  | 'OUTROS';
 
 export interface ProdutoRequest {
   nome: string;
   descricao?: string;
   valorCompra: number;
   preco: number;
+  precoDiaria: number;
   quantidadeEstoque: number;
   estoqueMinimo: number;
   medida: UnidadeMedida;
+  categoria: CategoriaProduto;
 }
 
 export interface ProdutoResponse {
@@ -18,11 +28,13 @@ export interface ProdutoResponse {
   descricao: string;
   valorCompra: number;
   preco: number;
+  precoDiaria: number;
   quantidadeEstoque: number;
   estoqueMinimo: number;
   ativo: boolean;
   estoqueBaixo: boolean;
   medida: UnidadeMedida;
+  categoria: CategoriaProduto;
 }
 
 export interface ProdutoAtualizarRequest {
@@ -30,9 +42,11 @@ export interface ProdutoAtualizarRequest {
   descricao?: string;
   valorCompra: number;
   preco: number;
+  precoDiaria: number;
   estoqueMinimo: number;
   quantidadeEstoque: number;
   medida: UnidadeMedida;
+  categorira: CategoriaProduto;
 }
 
 export interface EstoqueFiltroCompleto {

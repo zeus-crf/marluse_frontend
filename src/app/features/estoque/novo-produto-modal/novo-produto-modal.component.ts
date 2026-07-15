@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import {
@@ -8,6 +8,7 @@ import {
   ProdutoAtualizarRequest,
   ProdutoResponse,
   UnidadeMedida,
+  CategoriaProduto,
 } from '../models/estoque.models';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { FieldErrorPipe } from '../../../shared/pipes/field-error.pipe';
@@ -33,11 +34,13 @@ export class NovoProdutoModalComponent implements OnChanges {
     nome:              ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     descricao:         [''],
     valorCompra:       [null as number | null, [Validators.required, Validators.min(0.01)]],
-    preco:             [null as number | null, [Validators.required, Validators.min(0.01)]],
+    preco:             [null as number | null, [Validators.min(0.01)]],
+    precoDiaria:       [null as number | null, [Validators.min(0.01)]],
     quantidadeEstoque: [0, [Validators.required, Validators.min(0)]],
     estoqueMinimo:     [0, [Validators.min(0)]],
     medida:            [null as unknown as UnidadeMedida, [Validators.required]],
-  });
+    categoria:         [null as unknown as CategoriaProduto, [Validators.required]]
+  }, { validators: peloMenosUmPreco });
 
   get isEdicao(): boolean { return !!this.produto; }
   get titulo():   string  { return this.isEdicao ? 'Editar produto' : 'Novo produto'; }
@@ -53,6 +56,16 @@ export class NovoProdutoModalComponent implements OnChanges {
     { value: 'BALDE',          label: 'Balde' },
   ];
 
+    readonly categorias: { value: CategoriaProduto; label: string }[] = [
+    { value: 'FERRAMENTAS',      label: 'Ferramentas' },
+    { value: 'ELETRICA',         label: 'Elétrica' },
+    { value: 'CONEXOES_E_TUBOS', label: 'Conexões e Tubos' },
+    { value: 'ENSACADOS',        label: 'Ensacados' },
+    { value: 'MATERIAL_BRUTO',   label: 'Material Bruto' },
+    { value: 'LOCACAO',          label: 'Locação' },
+    { value: 'OUTROS',           label: 'Outros' },
+  ];
+
   ngOnChanges(): void {
     if (!this.visible) return;
     if (this.produto) {
@@ -61,12 +74,14 @@ export class NovoProdutoModalComponent implements OnChanges {
         descricao:         this.produto.descricao ?? '',
         valorCompra:       Number(this.produto.valorCompra),
         preco:             Number(this.produto.preco),
+        precoDiaria:       Number(this.produto.precoDiaria),
         quantidadeEstoque: this.produto.quantidadeEstoque,
         estoqueMinimo:     this.produto.estoqueMinimo,
         medida:            this.produto.medida,
+        categoria:         this.produto.categoria,
       });
     } else {
-      this.form.reset({ nome: '', descricao: '', valorCompra: null, preco: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: null as unknown as UnidadeMedida });
+       this.form.reset({ nome: '', descricao: '', valorCompra: null, preco: null, precoDiaria: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: null as unknown as UnidadeMedida, categoria: null as unknown as CategoriaProduto });
     }
   }
 
@@ -81,10 +96,23 @@ export class NovoProdutoModalComponent implements OnChanges {
       descricao:         v.descricao?.trim() || undefined,
       valorCompra:       v.valorCompra!,
       preco:             v.preco!,
+      precoDiaria:       v.precoDiaria!,
       quantidadeEstoque: v.quantidadeEstoque!,
       estoqueMinimo:     v.estoqueMinimo ?? 0,
       medida:            v.medida as UnidadeMedida,
+      categoria:         v.categoria as CategoriaProduto,
     };
     this.salvar.emit(payload);
+    this.fechar.emit();
   }
+}
+
+/** Exige pelo menos um dos preços (venda ou diária) preenchido e maior que zero. */
+function peloMenosUmPreco(group: AbstractControl): ValidationErrors | null {
+  const preco  = group.get('preco')?.value;
+  const diaria = group.get('precoDiaria')?.value;
+  const temPreco  = preco  != null && preco  > 0;
+  const temDiaria = diaria != null && diaria > 0;
+  return temPreco || temDiaria ? null : { peloMenosUmPreco: true };
+
 }

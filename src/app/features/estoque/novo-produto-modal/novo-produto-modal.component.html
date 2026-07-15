@@ -57,11 +57,11 @@
       }
     </div>
 
-    <!-- Preço + Unidade -->
+    <!-- Preço de venda + Preço da diária (informe ao menos um) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="flex flex-col gap-1.5">
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">
-          Preço unitário <span class="text-red-500">*</span>
+          Preço de venda
         </div>
         <p-inputnumber formControlName="preco"
           mode="currency" currency="BRL" locale="pt-BR" [minFractionDigits]="2"
@@ -74,12 +74,47 @@
       </div>
       <div class="flex flex-col gap-1.5">
         <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">
+          Preço da diária
+        </div>
+        <p-inputnumber formControlName="precoDiaria"
+          mode="currency" currency="BRL" locale="pt-BR" [minFractionDigits]="2"
+          class="w-full" />
+        @if (form.get('precoDiaria') | fieldError; as msg) {
+          <span class="text-xs text-red-500 mt-0.5 flex items-center gap-1">
+            <i class="pi pi-times-circle text-[10px]"></i>{{ msg }}
+          </span>
+        }
+      </div>
+    </div>
+    @if (form.hasError('peloMenosUmPreco') && (form.get('preco')?.touched || form.get('precoDiaria')?.touched)) {
+      <span class="text-xs text-red-500 -mt-2 flex items-center gap-1">
+        <i class="pi pi-times-circle text-[10px]"></i>Informe ao menos um preço (venda ou diária).
+      </span>
+    }
+
+    <!-- Unidade + Categoria -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">
           Unidade <span class="text-red-500">*</span>
         </div>
         <app-select-search formControlName="medida"
           [options]="unidades"
           placeholder="Selecionar unidade…" />
         @if (form.get('medida') | fieldError; as msg) {
+          <span class="text-xs text-red-500 mt-0.5 flex items-center gap-1">
+            <i class="pi pi-times-circle text-[10px]"></i>{{ msg }}
+          </span>
+        }
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.06em]">
+          Categoria <span class="text-red-500">*</span>
+        </div>
+        <app-select-search formControlName="categoria"
+          [options]="categorias"
+          placeholder="Selecionar categoria…" />
+        @if (form.get('categoria') | fieldError; as msg) {
           <span class="text-xs text-red-500 mt-0.5 flex items-center gap-1">
             <i class="pi pi-times-circle text-[10px]"></i>{{ msg }}
           </span>
