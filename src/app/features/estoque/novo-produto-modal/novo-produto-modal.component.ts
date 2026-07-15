@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import {
@@ -40,7 +40,7 @@ export class NovoProdutoModalComponent implements OnChanges {
     estoqueMinimo:     [0, [Validators.min(0)]],
     medida:            [null as unknown as UnidadeMedida, [Validators.required]],
     categoria:         [null as unknown as CategoriaProduto, [Validators.required]]
-  });
+  }, { validators: peloMenosUmPreco });
 
   get isEdicao(): boolean { return !!this.produto; }
   get titulo():   string  { return this.isEdicao ? 'Editar produto' : 'Novo produto'; }
@@ -78,6 +78,7 @@ export class NovoProdutoModalComponent implements OnChanges {
         quantidadeEstoque: this.produto.quantidadeEstoque,
         estoqueMinimo:     this.produto.estoqueMinimo,
         medida:            this.produto.medida,
+        categoria:         this.produto.categoria,
       });
     } else {
        this.form.reset({ nome: '', descricao: '', valorCompra: null, preco: null, precoDiaria: null, quantidadeEstoque: 0, estoqueMinimo: 0, medida: null as unknown as UnidadeMedida, categoria: null as unknown as CategoriaProduto });
@@ -102,5 +103,16 @@ export class NovoProdutoModalComponent implements OnChanges {
       categoria:         v.categoria as CategoriaProduto,
     };
     this.salvar.emit(payload);
+    this.fechar.emit();
   }
+}
+
+/** Exige pelo menos um dos preços (venda ou diária) preenchido e maior que zero. */
+function peloMenosUmPreco(group: AbstractControl): ValidationErrors | null {
+  const preco  = group.get('preco')?.value;
+  const diaria = group.get('precoDiaria')?.value;
+  const temPreco  = preco  != null && preco  > 0;
+  const temDiaria = diaria != null && diaria > 0;
+  return temPreco || temDiaria ? null : { peloMenosUmPreco: true };
+
 }
