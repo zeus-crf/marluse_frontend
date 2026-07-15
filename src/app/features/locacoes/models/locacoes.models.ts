@@ -48,6 +48,7 @@ export interface ItemLocacaoResponse {
 export interface ItemLocacaoRequest {
   produtoId: string;          // backend espera String, não número
   quantidade: number;
+  precoDiaria?: number;
 }
 
 
@@ -134,6 +135,7 @@ export interface ProdutoSimples {
   id: string;
   nome: string;
   preco: number;
+  precoDiaria: number;
   quantidadeEstoque: number;
 }
  
