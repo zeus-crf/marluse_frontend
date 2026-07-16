@@ -172,13 +172,22 @@
 
               </div>
 
-              <div class="px-3 pt-1.5 flex justify-end">
-                <label class="flex items-center gap-1.5 text-[11.5px] cursor-pointer select-none"
-                  [class.text-gray-400]="!item.baixarEstoque"
-                  [class.text-blue-600]="item.baixarEstoque">
-                  <input type="checkbox" [(ngModel)]="item.baixarEstoque" [name]="'baixar-' + i" class="accent-blue-600" />
-                  Baixar do estoque
-                </label>
+              <div class="px-3 pt-2 flex justify-end">
+                <button type="button" (click)="item.baixarEstoque = !item.baixarEstoque"
+                  class="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full border text-[11.5px] font-medium transition-all duration-150 cursor-pointer select-none"
+                  [class.bg-blue-50]="item.baixarEstoque"
+                  [class.border-blue-200]="item.baixarEstoque"
+                  [class.text-blue-600]="item.baixarEstoque"
+                  [class.bg-slate-50]="!item.baixarEstoque"
+                  [class.border-slate-200]="!item.baixarEstoque"
+                  [class.text-gray-400]="!item.baixarEstoque">
+                  <span class="flex items-center justify-center w-[18px] h-[18px] rounded-full text-white transition-colors"
+                    [class.bg-blue-500]="item.baixarEstoque"
+                    [class.bg-slate-300]="!item.baixarEstoque">
+                    <i class="pi text-[9px]" [class.pi-check]="item.baixarEstoque" [class.pi-minus]="!item.baixarEstoque"></i>
+                  </span>
+                  {{ item.baixarEstoque ? 'Baixa do estoque' : 'Não baixa estoque' }}
+                </button>
               </div>
             </div>
           }
