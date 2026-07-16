@@ -138,37 +138,57 @@
 
           <!-- Linhas de item -->
           @for (item of itens; track trackByIndex($index); let i = $index) {
-            <div class="grid grid-cols-[180px_68px_110px_110px_20px] gap-2 px-3 w-full py-2 border-b border-slate-100 last:border-0 items-center">
+            <div class="border-b border-slate-100 last:border-0 py-2">
+              <div class="grid grid-cols-[180px_68px_110px_110px_20px] gap-2 px-3 w-full items-center">
 
-              <app-select-search
-                [(ngModel)]="item.produtoId"
-                (ngModelChange)="onProdutoChange(item)"
-                [options]="produtoOptions"
-                placeholder="Equipamento…" />
+                <app-select-search
+                  [(ngModel)]="item.produtoId"
+                  (ngModelChange)="onProdutoChange(item)"
+                  [options]="produtoOptions"
+                  placeholder="Equipamento…" />
 
-              <input type="number" [(ngModel)]="item.quantidade" min="1"
-                class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
+                <input type="number" [(ngModel)]="item.quantidade" min="1"
+                  class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
 
-              <input type="number" [(ngModel)]="item.precoUnitario" min="0" step="0.01"
-                class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
+                <input type="number" [(ngModel)]="item.precoUnitario" min="0" step="0.01"
+                  class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
 
-              <div class="text-[12px] font-semibold text-right whitespace-nowrap font-mono"
-                [class.text-gray-800]="rowTotal(item) > 0"
-                [class.text-gray-300]="rowTotal(item) === 0">
-                {{ rowTotal(item) > 0 ? formatCurrency(rowTotal(item)) : '—' }}
+                <div class="text-[12px] font-semibold text-right whitespace-nowrap font-mono"
+                  [class.text-gray-800]="rowTotal(item) > 0"
+                  [class.text-gray-300]="rowTotal(item) === 0">
+                  {{ rowTotal(item) > 0 ? formatCurrency(rowTotal(item)) : '—' }}
+                </div>
+
+                <div class="flex items-center justify-center gap-1">
+                  <button type="button" (click)="incrementarQty(item)"
+                    class="w-6 h-6 flex items-center justify-center text-[14px] leading-none text-gray-400 hover:text-blue-500 border border-slate-200 rounded transition-colors">
+                    +
+                  </button>
+                  <button type="button" (click)="decrementarQty(i)"
+                    class="w-6 h-6 flex items-center justify-center text-[16px] leading-none text-gray-300 hover:text-red-500 border border-slate-200 rounded transition-colors">
+                    ×
+                  </button>
+                </div>
+
               </div>
 
-              <div class="flex items-center justify-center gap-1">
-                <button type="button" (click)="incrementarQty(item)"
-                  class="w-6 h-6 flex items-center justify-center text-[14px] leading-none text-gray-400 hover:text-blue-500 border border-slate-200 rounded transition-colors">
-                  +
-                </button>
-                <button type="button" (click)="decrementarQty(i)"
-                  class="w-6 h-6 flex items-center justify-center text-[16px] leading-none text-gray-300 hover:text-red-500 border border-slate-200 rounded transition-colors">
-                  ×
+              <div class="px-3 pt-2 flex justify-end">
+                <button type="button" (click)="item.baixarEstoque = !item.baixarEstoque"
+                  class="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full border text-[11.5px] font-medium transition-all duration-150 cursor-pointer select-none"
+                  [class.bg-blue-50]="item.baixarEstoque"
+                  [class.border-blue-200]="item.baixarEstoque"
+                  [class.text-blue-600]="item.baixarEstoque"
+                  [class.bg-slate-50]="!item.baixarEstoque"
+                  [class.border-slate-200]="!item.baixarEstoque"
+                  [class.text-gray-400]="!item.baixarEstoque">
+                  <span class="flex items-center justify-center w-[18px] h-[18px] rounded-full text-white transition-colors"
+                    [class.bg-blue-500]="item.baixarEstoque"
+                    [class.bg-slate-300]="!item.baixarEstoque">
+                    <i class="pi text-[9px]" [class.pi-check]="item.baixarEstoque" [class.pi-minus]="!item.baixarEstoque"></i>
+                  </span>
+                  {{ item.baixarEstoque ? 'Baixa do estoque' : 'Não baixa estoque' }}
                 </button>
               </div>
-
             </div>
           }
 
@@ -407,3 +427,5 @@
   </div>
 
 </p-dialog>
+
+<p-confirmdialog appendTo="body" />

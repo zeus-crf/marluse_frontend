@@ -2,7 +2,8 @@ import { ChangeDetectorRef, Component, Input, Output, EventEmitter, inject } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import { LocacaoService } from '../locacoes/locacoes.service';
 import { SelectOption } from '../../../shared/components/select/select.component';
@@ -15,19 +16,22 @@ interface ItemForm {
   produtoNome: string;
   precoUnitario: number;
   quantidade: number;
+  baixarEstoque: boolean;
 }
 
 @Component({
     selector: 'app-nova-locacao-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, DialogModule, SelectSearchComponent, DatePickerComponent],
+    imports: [CommonModule, FormsModule, DialogModule, ConfirmDialogModule, SelectSearchComponent, DatePickerComponent],
+    providers: [ConfirmationService],
     templateUrl: './nova-locacao-modal.component.html',
 })
 export class NovaLocacaoModalComponent {
 
-    private service        = inject(LocacaoService);
-    private messageService = inject(MessageService);
-    private cdr            = inject(ChangeDetectorRef);
+    private service             = inject(LocacaoService);
+    private messageService      = inject(MessageService);
+    private confirmationService = inject(ConfirmationService);
+    private cdr                 = inject(ChangeDetectorRef);
 
     @Input() visible = false;
     @Input() produtos: ProdutoSimples[] = [];
@@ -166,7 +170,16 @@ export class NovaLocacaoModalComponent {
     }
 
     novoItem(): ItemForm {
-        return { produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1 };
+        return { produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1, baixarEstoque: true };
+    }
+
+    /** Itens que vão baixar estoque mas cuja quantidade excede o saldo disponível. */
+    private itensSemSaldo(): ItemForm[] {
+        return this.itens.filter(i => {
+            if (!i.baixarEstoque || !i.produtoId) return false;
+            const prod = this.produtos.find(p => p.id === i.produtoId);
+            return !!prod && i.quantidade > prod.quantidadeEstoque;
+        });
     }
 
     adicionarLinha(): void {
@@ -200,6 +213,26 @@ export class NovaLocacaoModalComponent {
 
     salvar(): void {
         if (!this.formValida) return;
+
+        const semSaldo = this.itensSemSaldo();
+        if (semSaldo.length > 0) {
+            const nomes = semSaldo.map(i => i.produtoNome).join(', ');
+            this.confirmationService.confirm({
+                header: 'Locar sem estoque?',
+                message: `Sem itens em estoque para: ${nomes}. O estoque ficará negativo. Deseja continuar?`,
+                icon: 'pi pi-exclamation-triangle',
+                acceptLabel: 'Sim, continuar',
+                rejectLabel: 'Cancelar',
+                acceptButtonProps: { severity: 'danger' },
+                rejectButtonProps: { severity: 'secondary', outlined: true },
+                accept: () => this.enviar(true),
+            });
+            return;
+        }
+        this.enviar(false);
+    }
+
+    private enviar(permitirSemEstoque: boolean): void {
         this.salvando = true;
 
         // ✅ status mapeado corretamente — ORCAMENTO ou ATIVA (padrão backend)
@@ -210,7 +243,13 @@ export class NovaLocacaoModalComponent {
             formaPagamento:        this.formaPagamento as FormaPagamento,
             dataRetirada:          this.dataRetirada,
             dataDevolucaoPrevista: this.dataDevolucaoPrevista,
-            itens:                 this.itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade, precoDiaria: i.precoUnitario  })),
+            itens:                 this.itens.map(i => ({
+                                     produtoId: i.produtoId,
+                                     quantidade: i.quantidade,
+                                     precoDiaria: i.precoUnitario,
+                                     baixarEstoque: i.baixarEstoque,
+                                     permitirSemEstoque: permitirSemEstoque && i.baixarEstoque,
+                                   })),
             observacao:            this.observacao || null,
             status,
             desconto:              this.desconto || null,

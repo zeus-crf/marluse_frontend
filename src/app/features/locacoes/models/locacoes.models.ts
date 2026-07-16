@@ -43,12 +43,16 @@ export interface ItemLocacaoResponse {
   quantidade: number;
   precoDiaria: number;
   subtotal: number;           // backend serializa como "subtotal" (sem maiúscula)
+  baixarEstoque: boolean;
+  permitirSemEstoque: boolean;
 }
 
 export interface ItemLocacaoRequest {
   produtoId: string;          // backend espera String, não número
   quantidade: number;
   precoDiaria?: number;
+  baixarEstoque?: boolean;
+  permitirSemEstoque?: boolean;
 }
 
 
@@ -115,6 +119,7 @@ export interface ItemLocacaoForm {
   produtoNome: string;
   precoDiaria: number;
   quantidade: number;
+  baixarEstoque: boolean;
 }
 
 export interface LocacaoFiltro {
