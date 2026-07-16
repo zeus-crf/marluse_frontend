@@ -35,7 +35,7 @@ export class ExportService {
         // @page size: A4 para PDF; para térmica o usuário seleciona a impressora correta no diálogo
         const pageRule = formato === 'pdf'
             ? `@page { size: A4; margin: 15mm; }`
-            : `@page { margin: 3mm; }`;
+            : `@page { size: 80mm auto; margin: 3mm; }`;
         this.styleEl.textContent = pageRule;
         document.head.appendChild(this.styleEl);
         window.print();
