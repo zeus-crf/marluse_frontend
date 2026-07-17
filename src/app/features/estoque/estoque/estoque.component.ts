@@ -89,7 +89,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Colunas ───────────────────────────────────────────────
   readonly colunasProdutos: TableColumn[] = [
-    { field: 'nome', header: 'Produto', width: '24%' },
+    { field: 'nome', header: 'Produto', width: '20%' },
     {
       field: 'quantidadeEstoque', header: 'Qtd.', width: '8%',
       type: 'computed',
@@ -102,10 +102,11 @@ export class EstoqueComponent implements OnInit {
       type: 'computed',
       valueFn: (row: ProdutoResponse) => this.medidaLabel[row.medida],
     },
-    { field: 'estoqueMinimo', header: 'Mínimo', width: '8%' },
-    { field: 'preco', header: 'Preço un.', width: '13%', type: 'currency' },
+    { field: 'estoqueMinimo', header: 'Mínimo', width: '7%' },
+    { field: 'valorCompra', header: 'Custo un.', width: '11%', type: 'currency' },
+    { field: 'preco', header: 'Preço un.', width: '11%', type: 'currency' },
     {
-      field: 'valorTotal', header: 'Valor total', width: '12%',
+      field: 'valorTotal', header: 'Custo total', width: '11%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) =>
         (Number(row.valorCompra) * row.quantidadeEstoque)
