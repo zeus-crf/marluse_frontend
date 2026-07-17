@@ -94,6 +94,8 @@ export class EstoqueComponent implements OnInit {
       field: 'quantidadeEstoque', header: 'Qtd.', width: '8%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) => String(row.quantidadeEstoque),
+      cellClassFn: (row: ProdutoResponse) =>
+        row.quantidadeEstoque < 0 ? 'text-red-500 font-semibold' : '',
     },
     {
       field: 'medida', header: 'Un.', width: '6%',
@@ -124,13 +126,13 @@ export class EstoqueComponent implements OnInit {
       field: 'estoqueBaixo', header: 'Status', width: '10%',
       type: 'tag',
       tagSeverityFn: (_: unknown, row: ProdutoResponse) => {
-        if (row.quantidadeEstoque === 0) return 'danger';
-        if (row.estoqueBaixo)            return 'warn';
+        if (row.quantidadeEstoque <= 0) return 'danger';
+        if (row.estoqueBaixo)           return 'warn';
         return 'success';
       },
       tagLabelFn: (_: unknown, row: ProdutoResponse) => {
-        if (row.quantidadeEstoque === 0) return 'Zerado';
-        if (row.estoqueBaixo)            return 'Baixo';
+        if (row.quantidadeEstoque <= 0) return 'Zerado';
+        if (row.estoqueBaixo)           return 'Baixo';
         return 'OK';
       },
     },
@@ -146,7 +148,13 @@ export class EstoqueComponent implements OnInit {
     showEdit:   true,
     editIcon:   'pi pi-check-circle',
     editTooltip:'Completar cadastro',
-    showDelete: false,
+    showDelete:        true,
+    deleteIcon:        'pi pi-trash',
+    deleteTooltip:     'Inativar',
+    deleteHeader:      'Inativar rascunho',
+    deleteAcceptLabel: 'Inativar',
+    deleteMessageFn:   (p: ProdutoResponse) =>
+      `Inativar o rascunho "${p.nome}"? Ele não aparecerá mais na lista de produtos a completar.`,
   };
 
   readonly acoesProdutos: TableActionConfig = {
@@ -226,12 +234,6 @@ export class EstoqueComponent implements OnInit {
 
   get totalZerado(): number {
     return this.produtos.filter(p => this.statusDe(p) === 'ZERADO').length;
-  }
-
-  get valorCritico(): number {
-    return this.produtos
-      .filter(p => !p.rascunho && this.statusDe(p) !== 'OK')
-      .reduce((acc, p) => acc + Number(p.valorCompra) * p.quantidadeEstoque, 0);
   }
 
   // ── Filtro ────────────────────────────────────────────────
@@ -405,10 +407,23 @@ carregarRascunhos(): void {
     this.showModal   = true;
   }
 
+  onInativarRascunho(rascunho: ProdutoResponse): void {
+    this.service.inativar(rascunho.id).subscribe({
+      next: () => {
+        this.rascunhos = this.rascunhos.filter(r => r.id !== rascunho.id);
+        this.messageService.add({ severity: 'info', summary: 'Inativado', detail: `Rascunho "${rascunho.nome}" foi inativado.` });
+      },
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível inativar o rascunho.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+      },
+    });
+  }
+
   // ── Helpers ───────────────────────────────────────────────
   statusDe(p: ProdutoResponse): StatusEstoque {
-    if (p.quantidadeEstoque === 0) return 'ZERADO';
-    if (p.estoqueBaixo)            return 'BAIXO';
+    if (p.quantidadeEstoque <= 0) return 'ZERADO';
+    if (p.estoqueBaixo)           return 'BAIXO';
     return 'OK';
   }
 
