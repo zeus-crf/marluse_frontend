@@ -8,6 +8,7 @@ import {
   GraficoItemResponse,
   EstoqueCriticoResponse,
   LocacaoEmCursoResponse,
+  ProdutoRascunhoResponse,
 } from './models/dashboard.models';
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +42,12 @@ export class DashboardService {
   getLocacoesEmCurso() {
     return this.http
       .get<{ data: LocacaoEmCursoResponse[] }>(`${this.base}/locacoes-em-curso`)
+      .pipe(map(r => r.data));
+  }
+
+  getRascunhos() {
+    return this.http
+      .get<{ data: ProdutoRascunhoResponse[] }>(`${environment.apiUrl}/produtos/rascunhos`)
       .pipe(map(r => r.data));
   }
 }

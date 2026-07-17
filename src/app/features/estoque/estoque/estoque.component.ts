@@ -106,7 +106,7 @@ export class EstoqueComponent implements OnInit {
       field: 'valorTotal', header: 'Valor total', width: '13%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) =>
-        (Number(row.preco) * row.quantidadeEstoque)
+        (Number(row.valorCompra) * row.quantidadeEstoque)
           .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
     },
     {
@@ -203,7 +203,10 @@ export class EstoqueComponent implements OnInit {
 
   // ── KPIs ─────────────────────────────────────────────────
   get valorTotalEstoque(): number {
-    return this.produtos.reduce((acc, p) => acc + Number(p.preco) * p.quantidadeEstoque, 0);
+    // Rascunhos (produtos ainda não concluídos) não entram no valor em estoque
+    return this.produtos
+      .filter(p => !p.rascunho)
+      .reduce((acc, p) => acc + Number(p.valorCompra) * p.quantidadeEstoque, 0);
   }
 
   get totalBaixo(): number {
@@ -216,8 +219,8 @@ export class EstoqueComponent implements OnInit {
 
   get valorCritico(): number {
     return this.produtos
-      .filter(p => this.statusDe(p) !== 'OK')
-      .reduce((acc, p) => acc + Number(p.preco) * p.quantidadeEstoque, 0);
+      .filter(p => !p.rascunho && this.statusDe(p) !== 'OK')
+      .reduce((acc, p) => acc + Number(p.valorCompra) * p.quantidadeEstoque, 0);
   }
 
   // ── Filtro ────────────────────────────────────────────────

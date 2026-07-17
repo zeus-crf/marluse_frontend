@@ -12,6 +12,7 @@ import {
   GraficoMensal,
   EstoqueCriticoResponse,
   LocacaoEmCursoResponse,
+  ProdutoRascunhoResponse,
 } from '../models/dashboard.models';
 
 type Periodo = 'mes' | 'trimestre' | 'semestre' | 'ano' | 'custom';
@@ -48,6 +49,26 @@ export class DashboardComponent implements OnInit {
   graficoMensal: GraficoMensal[] = [];
   estoqueCritico: EstoqueCriticoResponse[] = [];
   locacoesEmCurso: LocacaoEmCursoResponse[] = [];
+  rascunhos: ProdutoRascunhoResponse[] = [];
+
+  // Paginação de "Locações em Curso"
+  locacoesPage = 0;
+  readonly locacoesPageSize = 4;
+
+  get totalPaginasLocacoes(): number {
+    return Math.max(1, Math.ceil(this.locacoesEmCurso.length / this.locacoesPageSize));
+  }
+
+  get locacoesEmCursoPagina(): LocacaoEmCursoResponse[] {
+    const inicio = this.locacoesPage * this.locacoesPageSize;
+    return this.locacoesEmCurso.slice(inicio, inicio + this.locacoesPageSize);
+  }
+
+  mudarPaginaLocacoes(delta: number): void {
+    const nova = this.locacoesPage + delta;
+    if (nova < 0 || nova >= this.totalPaginasLocacoes) return;
+    this.locacoesPage = nova;
+  }
 
   // Getters derivados
   get locacoesAtrasadas(): LocacaoEmCursoResponse[] {
@@ -114,11 +135,14 @@ export class DashboardComponent implements OnInit {
       grafico:  this.service.getGrafico(filtro),
       estoque:  this.service.getEstoqueCritico(),
       locacoes: this.service.getLocacoesEmCurso(),
+      rascunhos: this.service.getRascunhos(),
     }).subscribe({
       next: (res) => {
         this.kpis = res.kpis;
         this.estoqueCritico = res.estoque;
         this.locacoesEmCurso = res.locacoes;
+        this.locacoesPage = 0;
+        this.rascunhos = res.rascunhos;
 
         // Agrupa com granularidade inteligente
         this.graficoMensal = this.agruparDados(res.grafico);

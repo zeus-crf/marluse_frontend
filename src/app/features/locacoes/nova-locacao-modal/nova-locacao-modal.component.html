@@ -139,31 +139,24 @@
           <!-- Linhas de item -->
           @for (item of itens; track trackByIndex($index); let i = $index) {
             <div class="border-b border-slate-100 last:border-0 py-2">
-              <div class="grid grid-cols-[180px_68px_110px_110px_20px] gap-2 px-3 w-full items-center">
+              <div class="grid grid-cols-[180px_68px_110px_100px_20px] gap-4 px-3 w-full items-center">
 
-                <div class="flex flex-col gap-1 min-w-0">
-                  <app-select-search
-                    *ngIf="!item.produtoNovo"
-                    [(ngModel)]="item.produtoId"
-                    (ngModelChange)="onProdutoChange(item)"
-                    [options]="produtoOptions"
-                    placeholder="Equipamento…" />
+                <!-- Produto -->
+                <app-select-search
+                  *ngIf="!item.produtoNovo"
+                  [(ngModel)]="item.produtoId"
+                  (ngModelChange)="onProdutoChange(item)"
+                  [options]="produtoOptions"
+                  placeholder="Equipamento…" />
 
-                  <!-- Produto novo: nome digitado na hora (valor da diária vai na coluna de valor) -->
-                  <input
-                    *ngIf="item.produtoNovo"
-                    type="text"
-                    [(ngModel)]="item.produtoNome"
-                    [ngModelOptions]="{ standalone: true }"
-                    placeholder="Nome do produto novo"
-                    class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 outline-none font-[inherit]" />
-
-                  <button type="button"
-                    class="text-[11px] text-blue-500 hover:text-blue-600 text-left"
-                    (click)="alternarProdutoNovo(item)">
-                    {{ item.produtoNovo ? 'Usar produto do estoque' : '+ Produto novo' }}
-                  </button>
-                </div>
+                <!-- Produto novo: nome digitado na hora (a diária vai na coluna de valor) -->
+                <input
+                  *ngIf="item.produtoNovo"
+                  type="text"
+                  [(ngModel)]="item.produtoNome"
+                  [ngModelOptions]="{ standalone: true }"
+                  placeholder="Nome do produto"
+                  class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[15px] text-gray-800 outline-none font-[inherit]" />
 
                 <input type="number" [(ngModel)]="item.quantidade" min="1"
                   class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
@@ -190,8 +183,14 @@
 
               </div>
 
-              <div class="px-3 pt-2 flex justify-end">
-                <button type="button" (click)="item.baixarEstoque = !item.baixarEstoque"
+              <div class="px-3 pt-2 flex justify-end gap-2">
+                 <!-- Botão para alternar o modo da linha -->
+              <button type="button" class="p-button p-button-text p-button-sm"
+                      (click)="alternarProdutoNovo(item)">
+                      <i class="pi pi-plus text-[10px]"></i>
+                {{ item.produtoNovo ? 'Usar produto do estoque' : 'Produto novo' }}
+              </button>
+                <button type="button" *ngIf="!item.produtoNovo" (click)="item.baixarEstoque = !item.baixarEstoque"
                   class="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full border text-[11.5px] font-medium transition-all duration-150 cursor-pointer select-none"
                   [class.bg-blue-50]="item.baixarEstoque"
                   [class.border-blue-200]="item.baixarEstoque"
@@ -208,6 +207,7 @@
                 </button>
               </div>
             </div>
+           
           }
 
           <button type="button" (click)="adicionarLinha()"

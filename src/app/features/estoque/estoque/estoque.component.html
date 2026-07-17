@@ -234,15 +234,36 @@
 
 </div>
 
-<section *ngIf="rascunhos.length > 0" class="rascunhos-panel">
-  <h3>Produtos a completar ({{ rascunhos.length }})</h3>
-  <p class="hint">Criados em vendas/locações. Clique para completar o cadastro.</p>
-  <app-data-table
-    [rows]="rascunhos"
-    [columns]="colunasRascunhos"
-    [actions]="acoesRascunhos"
-    (editar)="abrirModalCompletar($any($event))">
-  </app-data-table>
+<!-- ── PRODUTOS A COMPLETAR (rascunhos) ─────────────────────────────── -->
+<section *ngIf="rascunhos.length > 0" class="bg-white rounded-xl border border-slate-200 mt-6">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 p-4 border-b border-slate-100 flex-wrap">
+    <div class="flex items-center gap-2">
+      <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-50 text-amber-500">
+        <i class="pi pi-pencil text-[13px]"></i>
+      </span>
+      <div>
+        <h2 class="text-md font-semibold text-gray-800">Produtos a completar</h2>
+        <p class="text-[11px] text-gray-500">Criados em vendas/locações — clique para completar o cadastro.</p>
+      </div>
+    </div>
+    <span class="ml-auto text-xs text-gray-400">
+      {{ rascunhos.length }} pendente(s)
+    </span>
+  </div>
+
+  <!-- DataTable -->
+  <div class="p-1">
+    <app-data-table
+      [columns]="colunasRascunhos"
+      [rows]="rascunhos"
+      [actions]="acoesRascunhos"
+      emptyMessage="Nenhum produto a completar"
+      (editar)="abrirModalCompletar($any($event))"
+    />
+  </div>
+
 </section>
 
 <!-- ── MODAL FILTROS ────────────────────────────────────────────────── -->

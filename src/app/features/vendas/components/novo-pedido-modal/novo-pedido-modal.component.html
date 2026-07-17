@@ -112,7 +112,7 @@
           <!-- Linhas -->
           @for (item of itens; track trackByIndex($index); let i = $index) {
             <div class="border-b border-slate-100 last:border-0 py-2">
-              <div class="grid grid-cols-[180px_68px_100px_100px_56px] gap-2 px-3 items-center">
+              <div class="grid grid-cols-[180px_68px_100px_100px_56px] gap-4 px-3 items-center">
 
                 <!-- Produto -->
                 <app-select-search
@@ -122,28 +122,16 @@
                   [options]="produtoOptions"
                   placeholder="Selecionar produto…" />
 
-                  <!-- Produto novo: nome + valor digitados na hora -->
-                <input
-                  *ngIf="item.produtoNovo"
-                  type="text"
-                  [(ngModel)]="item.produtoNome"
-                  [ngModelOptions]="{ standalone: true }"
-                  placeholder="Nome do produto novo"
-                  class="p-inputtext p-component" />
+                  <!-- Produto novo: nome digitado na hora (o valor vai na coluna "Preço unitário") -->
+              <input
+                *ngIf="item.produtoNovo"
+                type="text"
+                [(ngModel)]="item.produtoNome"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Nome do produto"
+                class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[15px] text-gray-800 outline-none font-[inherit]" />
 
-                <input
-                  *ngIf="item.produtoNovo"
-                  type="number" min="0" step="0.01"
-                  [(ngModel)]="item.precoUnitario"
-                  [ngModelOptions]="{ standalone: true }"
-                  placeholder="Valor unitário"
-                  class="p-inputtext p-component" />
 
-                <!-- Botão para alternar o modo da linha -->
-                <button type="button" class="p-button p-button-text p-button-sm"
-                        (click)="alternarProdutoNovo(item)">
-                  {{ item.produtoNovo ? 'Usar produto do estoque' : '+ Produto novo' }}
-                </button>
 
                 <!-- Quantidade -->
                 <input type="number" [(ngModel)]="item.quantidade" min="1"
@@ -175,8 +163,13 @@
 
               </div>
 
-              <div class="px-3 pt-2 flex justify-end">
-                <button type="button" (click)="item.baixarEstoque = !item.baixarEstoque"
+              <div class="px-3 pt-2 flex justify-end gap-2">
+                 <button type="button" class=" p-button p-button-text rounded-full  p-button-sm hover:bg-slate-50 transition-colors font-[inherit] border-t border-slate-100"
+                      (click)="alternarProdutoNovo(item)">
+                      <i class="pi pi-plus text-[10px]"></i>
+                {{ item.produtoNovo ? 'Usar produto do estoque' : 'Produto novo' }}
+              </button>
+                <button type="button" *ngIf="!item.produtoNovo" (click)="item.baixarEstoque = !item.baixarEstoque"
                   class="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full border text-[11.5px] font-medium transition-all duration-150 cursor-pointer select-none"
                   [class.bg-blue-50]="item.baixarEstoque"
                   [class.border-blue-200]="item.baixarEstoque"
@@ -189,10 +182,15 @@
                     [class.bg-slate-300]="!item.baixarEstoque">
                     <i class="pi text-[9px]" [class.pi-check]="item.baixarEstoque" [class.pi-minus]="!item.baixarEstoque"></i>
                   </span>
-                  {{ item.baixarEstoque ? 'Baixa do estoque' : 'Não baixa estoque' }}
+                  {{ item.baixarEstoque  ? 'Baixa do estoque' : 'Não baixa estoque' }}
+              
                 </button>
+
+                <!-- Botão para alternar o modo da linha -->
+             
               </div>
             </div>
+            
           }
 
           <!-- Adicionar produto -->
@@ -201,6 +199,7 @@
             <i class="pi pi-plus text-[10px]"></i>
             Adicionar produto
           </button>
+          
 
         </div>
         </div>

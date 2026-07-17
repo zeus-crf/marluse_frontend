@@ -28,6 +28,12 @@ export interface EstoqueCriticoResponse {
   preco: number;
 }
 
+export interface ProdutoRascunhoResponse {
+  id: string;
+  nome: string;
+  preco: number;
+}
+
 export type StatusLocacao = 'ATIVA' | 'ATRASADA' | 'CONCLUIDA' | 'CANCELADA';
 
 export interface LocacaoEmCursoResponse {
