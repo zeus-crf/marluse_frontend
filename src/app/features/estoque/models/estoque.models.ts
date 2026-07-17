@@ -35,6 +35,7 @@ export interface ProdutoResponse {
   estoqueBaixo: boolean;
   medida: UnidadeMedida;
   categoria: CategoriaProduto;
+  rascunho: boolean;
 }
 
 export interface ProdutoAtualizarRequest {

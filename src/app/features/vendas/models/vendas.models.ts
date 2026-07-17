@@ -76,7 +76,8 @@ export interface PedidoResponse {
 }
 
 export interface ItemPedidoRequest {
-  productId: string;
+  productId?: string;
+  produtoNome?: string;
   quantidade: number;
   preco?: number;
   baixarEstoque?: boolean;
@@ -165,4 +166,5 @@ export interface ProdutoResponse {
     ativo: boolean;
     estoqueBaixo: boolean;
     medida: UnidadeMedida;
+    rascunho: boolean;
 }
