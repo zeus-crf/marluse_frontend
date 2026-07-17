@@ -141,11 +141,29 @@
             <div class="border-b border-slate-100 last:border-0 py-2">
               <div class="grid grid-cols-[180px_68px_110px_110px_20px] gap-2 px-3 w-full items-center">
 
-                <app-select-search
-                  [(ngModel)]="item.produtoId"
-                  (ngModelChange)="onProdutoChange(item)"
-                  [options]="produtoOptions"
-                  placeholder="Equipamento…" />
+                <div class="flex flex-col gap-1 min-w-0">
+                  <app-select-search
+                    *ngIf="!item.produtoNovo"
+                    [(ngModel)]="item.produtoId"
+                    (ngModelChange)="onProdutoChange(item)"
+                    [options]="produtoOptions"
+                    placeholder="Equipamento…" />
+
+                  <!-- Produto novo: nome digitado na hora (valor da diária vai na coluna de valor) -->
+                  <input
+                    *ngIf="item.produtoNovo"
+                    type="text"
+                    [(ngModel)]="item.produtoNome"
+                    [ngModelOptions]="{ standalone: true }"
+                    placeholder="Nome do produto novo"
+                    class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 outline-none font-[inherit]" />
+
+                  <button type="button"
+                    class="text-[11px] text-blue-500 hover:text-blue-600 text-left"
+                    (click)="alternarProdutoNovo(item)">
+                    {{ item.produtoNovo ? 'Usar produto do estoque' : '+ Produto novo' }}
+                  </button>
+                </div>
 
                 <input type="number" [(ngModel)]="item.quantidade" min="1"
                   class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />

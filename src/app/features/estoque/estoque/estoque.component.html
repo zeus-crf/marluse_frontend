@@ -234,6 +234,17 @@
 
 </div>
 
+<section *ngIf="rascunhos.length > 0" class="rascunhos-panel">
+  <h3>Produtos a completar ({{ rascunhos.length }})</h3>
+  <p class="hint">Criados em vendas/locações. Clique para completar o cadastro.</p>
+  <app-data-table
+    [rows]="rascunhos"
+    [columns]="colunasRascunhos"
+    [actions]="acoesRascunhos"
+    (editar)="abrirModalCompletar($any($event))">
+  </app-data-table>
+</section>
+
 <!-- ── MODAL FILTROS ────────────────────────────────────────────────── -->
 <app-estoque-filtros-modal
   [visible]="showModalFiltros"

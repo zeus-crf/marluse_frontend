@@ -62,6 +62,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Estado ────────────────────────────────────────────────
   produtos: ProdutoResponse[] = [];
+  rascunhos: ProdutoResponse[] = [];
   loading  = true;
   salvando = false;
 
@@ -123,6 +124,19 @@ export class EstoqueComponent implements OnInit {
       },
     },
   ];
+
+    readonly colunasRascunhos: TableColumn[] = [
+    { field: 'nome',  header: 'Produto (a completar)', width: '60%' },
+    { field: 'preco', header: 'Valor un.', width: '25%', type: 'currency' },
+  ];
+
+  readonly acoesRascunhos: TableActionConfig = {
+    showView:   false,
+    showEdit:   true,
+    editIcon:   'pi pi-check-circle',
+    editTooltip:'Completar cadastro',
+    showDelete: false,
+  };
 
   readonly acoesProdutos: TableActionConfig = {
     showView:   false,
@@ -267,6 +281,7 @@ export class EstoqueComponent implements OnInit {
     this.service.getProdutos().subscribe({
       next: data => {
         this.produtos = data;
+        this.carregarRascunhos();
         this.recalcularGrafico();
         this.loading = false;
         this.cdr.detectChanges();
@@ -279,6 +294,15 @@ export class EstoqueComponent implements OnInit {
     });
   }
 
+carregarRascunhos(): void {
+    this.service.getRascunhos().subscribe({
+      next: data => { this.rascunhos = data; this.cdr.detectChanges(); },
+      error: (err : any) => { 
+        const detail = err?.error?.message ?? 'Não foi possível carregar os produtos rascunho.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+      },
+    });
+  }
   // ── Modal ─────────────────────────────────────────────────
   abrirModalNovo(): void {
     this.produtoEdit = null;
@@ -316,8 +340,9 @@ export class EstoqueComponent implements OnInit {
     this.salvando = true;
     if (this.produtoEdit) {
       this.service.atualizar(this.produtoEdit.id, payload as ProdutoAtualizarRequest).subscribe({
-        next: updated => {
-          this.produtos = this.produtos.map(p => p.id === updated.id ? updated : p);
+         next: updated => {
+          this.produtos   = [...this.produtos.filter(p => p.id !== updated.id), updated];
+          this.rascunhos  = this.rascunhos.filter(r => r.id !== updated.id);
           this.recalcularGrafico();
           this.fecharModal();
           this.salvando = false;
@@ -359,6 +384,11 @@ export class EstoqueComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
       },
     });
+  }
+
+    abrirModalCompletar(rascunho: ProdutoResponse): void {
+    this.produtoEdit = rascunho;   // reutiliza o fluxo de edição existente
+    this.showModal   = true;
   }
 
   // ── Helpers ───────────────────────────────────────────────
