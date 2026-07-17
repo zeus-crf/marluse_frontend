@@ -14,6 +14,7 @@ import { SelectSearchComponent } from '../../../../shared/components/select-sear
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 
 interface ItemForm {
+  produtoNovo: boolean;
   produtoId: string;
   produtoNome: string;
   precoUnitario: number;
@@ -151,13 +152,14 @@ export class NovoPedidoModalComponent {
     return (
       !!this.formaPagamento &&
       this.itens.length > 0 &&
-      this.itens.every(i => i.produtoId && i.quantidade > 0) &&
+      this.itens.every(i => (i.produtoNovo ? !!i.produtoNome.trim() : !!i.produtoId) &&
+      i.quantidade > 0 ) &&
       clienteOk
     );
   }
 
   novoItem(): ItemForm {
-    return { produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1, baixarEstoque: true };
+    return { produtoNovo: false ,produtoId: '', produtoNome: '', precoUnitario: 0, quantidade: 1, baixarEstoque: true };
   }
 
   /** Itens que vão baixar estoque mas cuja quantidade excede o saldo disponível. */
@@ -167,6 +169,19 @@ export class NovoPedidoModalComponent {
       const prod = this.produtos.find(p => p.id === i.produtoId);
       return !!prod && i.quantidade > prod.quantidadeEstoque;
     });
+  }
+
+   alternarProdutoNovo(item: ItemForm): void {
+    item.produtoNovo = !item.produtoNovo;
+    if (item.produtoNovo) {
+      // produto novo não conhece estoque: não baixa
+      item.produtoId = '';
+      item.baixarEstoque = false;
+    } else {
+      item.produtoNome = '';
+      item.precoUnitario = 0;
+      item.baixarEstoque = true;
+    }
   }
 
   adicionarLinha(): void {
@@ -225,13 +240,23 @@ export class NovoPedidoModalComponent {
     this.service.postPedidos({
       clienteId:         this.clienteId || undefined,
       formaPagamento:    this.formaPagamento as FormaPagamento,
-      itens:             this.itens.map(i => ({
-                           productId: i.produtoId,
-                           quantidade: i.quantidade,
-                           preco: i.precoUnitario,
-                           baixarEstoque: i.baixarEstoque,
-                           permitirSemEstoque: permitirSemEstoque && i.baixarEstoque,
-                         })),
+      itens:             this.itens.map(i => i.produtoNovo 
+                        ? { 
+                            produtoNome: i.produtoNome.trim(),
+                            quantidade: i.quantidade,
+                            preco: i.precoUnitario,
+                            baixarEstoque: false,
+                            permitirSemEstoque: false,
+                          
+                          }
+                        : {
+                            productId: i.produtoId,
+                            quantidade: i.quantidade,
+                            preco: i.precoUnitario,
+                            baixarEstoque: i.baixarEstoque,
+                            permitirSemEstoque: permitirSemEstoque && i.baixarEstoque,
+                        }),
+                           
       status,
       dataVencimento:    this.isFiado && this.numeroParcelas === 1 && this.primeiroVencimento ? this.primeiroVencimento : undefined,
       observacao:        this.observacao || undefined,

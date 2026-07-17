@@ -116,10 +116,34 @@
 
                 <!-- Produto -->
                 <app-select-search
+                *ngIf="!item.produtoNovo"
                   [(ngModel)]="item.produtoId"
                   (ngModelChange)="onProdutoChange(item)"
                   [options]="produtoOptions"
                   placeholder="Selecionar produto…" />
+
+                  <!-- Produto novo: nome + valor digitados na hora -->
+                <input
+                  *ngIf="item.produtoNovo"
+                  type="text"
+                  [(ngModel)]="item.produtoNome"
+                  [ngModelOptions]="{ standalone: true }"
+                  placeholder="Nome do produto novo"
+                  class="p-inputtext p-component" />
+
+                <input
+                  *ngIf="item.produtoNovo"
+                  type="number" min="0" step="0.01"
+                  [(ngModel)]="item.precoUnitario"
+                  [ngModelOptions]="{ standalone: true }"
+                  placeholder="Valor unitário"
+                  class="p-inputtext p-component" />
+
+                <!-- Botão para alternar o modo da linha -->
+                <button type="button" class="p-button p-button-text p-button-sm"
+                        (click)="alternarProdutoNovo(item)">
+                  {{ item.produtoNovo ? 'Usar produto do estoque' : '+ Produto novo' }}
+                </button>
 
                 <!-- Quantidade -->
                 <input type="number" [(ngModel)]="item.quantidade" min="1"
