@@ -158,7 +158,9 @@
                   placeholder="Nome do produto"
                   class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[15px] text-gray-800 outline-none font-[inherit]" />
 
-                <input type="number" [(ngModel)]="item.quantidade" min="1"
+                <input type="number" [(ngModel)]="item.quantidade"
+                  [min]="permiteFracao(item) ? 0.001 : 1"
+                  [step]="permiteFracao(item) ? 0.01 : 1"
                   class="w-full bg-white border border-slate-200 rounded-[6px] px-2 py-[5px] text-[12px] text-gray-800 text-right outline-none font-[inherit]" />
 
                 <input type="number" [(ngModel)]="item.precoUnitario" min="0" step="0.01"

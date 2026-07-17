@@ -116,6 +116,7 @@ export interface ProdutoSimples {
   nome: string;
   preco: number;
   quantidadeEstoque: number;
+  medida: UnidadeMedida;
 }
  
 export interface ClienteSimples {
