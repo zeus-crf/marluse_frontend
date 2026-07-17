@@ -24,6 +24,9 @@ export interface TableColumn {
 
   /** Classe CSS extra aplicada ao <th> e <td> da coluna */
   cellClass?: string;
+
+  /** Para type 'computed': classe CSS dependente da linha (ex.: vermelho para valores negativos) */
+  cellClassFn?: (row: any) => string;
 }
 
 export interface TableActionConfig {

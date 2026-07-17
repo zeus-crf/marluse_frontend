@@ -89,7 +89,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Colunas ───────────────────────────────────────────────
   readonly colunasProdutos: TableColumn[] = [
-    { field: 'nome', header: 'Produto', width: '30%' },
+    { field: 'nome', header: 'Produto', width: '24%' },
     {
       field: 'quantidadeEstoque', header: 'Qtd.', width: '8%',
       type: 'computed',
@@ -103,11 +103,22 @@ export class EstoqueComponent implements OnInit {
     { field: 'estoqueMinimo', header: 'Mínimo', width: '8%' },
     { field: 'preco', header: 'Preço un.', width: '13%', type: 'currency' },
     {
-      field: 'valorTotal', header: 'Valor total', width: '13%',
+      field: 'valorTotal', header: 'Valor total', width: '12%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) =>
         (Number(row.valorCompra) * row.quantidadeEstoque)
           .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+    },
+    {
+      field: 'lucroMaximo', header: 'Lucro máx.', width: '12%',
+      type: 'computed',
+      valueFn: (row: ProdutoResponse) =>
+        ((Number(row.preco) - Number(row.valorCompra)) * row.quantidadeEstoque)
+          .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      cellClassFn: (row: ProdutoResponse) =>
+        (Number(row.preco) - Number(row.valorCompra)) * row.quantidadeEstoque < 0
+          ? 'text-red-500 font-semibold'
+          : '',
     },
     {
       field: 'estoqueBaixo', header: 'Status', width: '10%',
