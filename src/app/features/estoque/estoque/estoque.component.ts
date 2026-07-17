@@ -62,6 +62,7 @@ export class EstoqueComponent implements OnInit {
 
   // ── Estado ────────────────────────────────────────────────
   produtos: ProdutoResponse[] = [];
+  rascunhos: ProdutoResponse[] = [];
   loading  = true;
   salvando = false;
 
@@ -88,11 +89,13 @@ export class EstoqueComponent implements OnInit {
 
   // ── Colunas ───────────────────────────────────────────────
   readonly colunasProdutos: TableColumn[] = [
-    { field: 'nome', header: 'Produto', width: '30%' },
+    { field: 'nome', header: 'Produto', width: '24%' },
     {
       field: 'quantidadeEstoque', header: 'Qtd.', width: '8%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) => String(row.quantidadeEstoque),
+      cellClassFn: (row: ProdutoResponse) =>
+        row.quantidadeEstoque < 0 ? 'text-red-500 font-semibold' : '',
     },
     {
       field: 'medida', header: 'Un.', width: '6%',
@@ -102,27 +105,57 @@ export class EstoqueComponent implements OnInit {
     { field: 'estoqueMinimo', header: 'Mínimo', width: '8%' },
     { field: 'preco', header: 'Preço un.', width: '13%', type: 'currency' },
     {
-      field: 'valorTotal', header: 'Valor total', width: '13%',
+      field: 'valorTotal', header: 'Valor total', width: '12%',
       type: 'computed',
       valueFn: (row: ProdutoResponse) =>
-        (Number(row.preco) * row.quantidadeEstoque)
+        (Number(row.valorCompra) * row.quantidadeEstoque)
           .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+    },
+    {
+      field: 'lucroMaximo', header: 'Lucro máx.', width: '12%',
+      type: 'computed',
+      valueFn: (row: ProdutoResponse) =>
+        ((Number(row.preco) - Number(row.valorCompra)) * row.quantidadeEstoque)
+          .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      cellClassFn: (row: ProdutoResponse) =>
+        (Number(row.preco) - Number(row.valorCompra)) * row.quantidadeEstoque < 0
+          ? 'text-red-500 font-semibold'
+          : '',
     },
     {
       field: 'estoqueBaixo', header: 'Status', width: '10%',
       type: 'tag',
       tagSeverityFn: (_: unknown, row: ProdutoResponse) => {
-        if (row.quantidadeEstoque === 0) return 'danger';
-        if (row.estoqueBaixo)            return 'warn';
+        if (row.quantidadeEstoque <= 0) return 'danger';
+        if (row.estoqueBaixo)           return 'warn';
         return 'success';
       },
       tagLabelFn: (_: unknown, row: ProdutoResponse) => {
-        if (row.quantidadeEstoque === 0) return 'Zerado';
-        if (row.estoqueBaixo)            return 'Baixo';
+        if (row.quantidadeEstoque <= 0) return 'Zerado';
+        if (row.estoqueBaixo)           return 'Baixo';
         return 'OK';
       },
     },
   ];
+
+    readonly colunasRascunhos: TableColumn[] = [
+    { field: 'nome',  header: 'Produto (a completar)', width: '60%' },
+    { field: 'preco', header: 'Valor un.', width: '25%', type: 'currency' },
+  ];
+
+  readonly acoesRascunhos: TableActionConfig = {
+    showView:   false,
+    showEdit:   true,
+    editIcon:   'pi pi-check-circle',
+    editTooltip:'Completar cadastro',
+    showDelete:        true,
+    deleteIcon:        'pi pi-trash',
+    deleteTooltip:     'Inativar',
+    deleteHeader:      'Inativar rascunho',
+    deleteAcceptLabel: 'Inativar',
+    deleteMessageFn:   (p: ProdutoResponse) =>
+      `Inativar o rascunho "${p.nome}"? Ele não aparecerá mais na lista de produtos a completar.`,
+  };
 
   readonly acoesProdutos: TableActionConfig = {
     showView:   false,
@@ -189,7 +222,10 @@ export class EstoqueComponent implements OnInit {
 
   // ── KPIs ─────────────────────────────────────────────────
   get valorTotalEstoque(): number {
-    return this.produtos.reduce((acc, p) => acc + Number(p.preco) * p.quantidadeEstoque, 0);
+    // Rascunhos (produtos ainda não concluídos) não entram no valor em estoque
+    return this.produtos
+      .filter(p => !p.rascunho)
+      .reduce((acc, p) => acc + Number(p.valorCompra) * p.quantidadeEstoque, 0);
   }
 
   get totalBaixo(): number {
@@ -198,12 +234,6 @@ export class EstoqueComponent implements OnInit {
 
   get totalZerado(): number {
     return this.produtos.filter(p => this.statusDe(p) === 'ZERADO').length;
-  }
-
-  get valorCritico(): number {
-    return this.produtos
-      .filter(p => this.statusDe(p) !== 'OK')
-      .reduce((acc, p) => acc + Number(p.preco) * p.quantidadeEstoque, 0);
   }
 
   // ── Filtro ────────────────────────────────────────────────
@@ -267,6 +297,7 @@ export class EstoqueComponent implements OnInit {
     this.service.getProdutos().subscribe({
       next: data => {
         this.produtos = data;
+        this.carregarRascunhos();
         this.recalcularGrafico();
         this.loading = false;
         this.cdr.detectChanges();
@@ -279,6 +310,15 @@ export class EstoqueComponent implements OnInit {
     });
   }
 
+carregarRascunhos(): void {
+    this.service.getRascunhos().subscribe({
+      next: data => { this.rascunhos = data; this.cdr.detectChanges(); },
+      error: (err : any) => { 
+        const detail = err?.error?.message ?? 'Não foi possível carregar os produtos rascunho.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+      },
+    });
+  }
   // ── Modal ─────────────────────────────────────────────────
   abrirModalNovo(): void {
     this.produtoEdit = null;
@@ -316,8 +356,9 @@ export class EstoqueComponent implements OnInit {
     this.salvando = true;
     if (this.produtoEdit) {
       this.service.atualizar(this.produtoEdit.id, payload as ProdutoAtualizarRequest).subscribe({
-        next: updated => {
-          this.produtos = this.produtos.map(p => p.id === updated.id ? updated : p);
+         next: updated => {
+          this.produtos   = [...this.produtos.filter(p => p.id !== updated.id), updated];
+          this.rascunhos  = this.rascunhos.filter(r => r.id !== updated.id);
           this.recalcularGrafico();
           this.fecharModal();
           this.salvando = false;
@@ -361,10 +402,28 @@ export class EstoqueComponent implements OnInit {
     });
   }
 
+    abrirModalCompletar(rascunho: ProdutoResponse): void {
+    this.produtoEdit = rascunho;   // reutiliza o fluxo de edição existente
+    this.showModal   = true;
+  }
+
+  onInativarRascunho(rascunho: ProdutoResponse): void {
+    this.service.inativar(rascunho.id).subscribe({
+      next: () => {
+        this.rascunhos = this.rascunhos.filter(r => r.id !== rascunho.id);
+        this.messageService.add({ severity: 'info', summary: 'Inativado', detail: `Rascunho "${rascunho.nome}" foi inativado.` });
+      },
+      error: (err: any) => {
+        const detail = err?.error?.message ?? 'Não foi possível inativar o rascunho.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail, life: 5000 });
+      },
+    });
+  }
+
   // ── Helpers ───────────────────────────────────────────────
   statusDe(p: ProdutoResponse): StatusEstoque {
-    if (p.quantidadeEstoque === 0) return 'ZERADO';
-    if (p.estoqueBaixo)            return 'BAIXO';
+    if (p.quantidadeEstoque <= 0) return 'ZERADO';
+    if (p.estoqueBaixo)           return 'BAIXO';
     return 'OK';
   }
 

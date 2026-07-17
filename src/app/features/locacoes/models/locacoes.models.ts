@@ -48,7 +48,8 @@ export interface ItemLocacaoResponse {
 }
 
 export interface ItemLocacaoRequest {
-  produtoId: string;          // backend espera String, não número
+  produtoId?: string;         // backend espera String, não número
+  produtoNome?: string;       // usado quando produtoId ausente (produto novo → rascunho)
   quantidade: number;
   precoDiaria?: number;
   baixarEstoque?: boolean;

@@ -14,6 +14,11 @@ export class EstoqueService {
     return this.http.get<any>(this.baseUrl).pipe(map(r => r.data));
   }
 
+  getRascunhos(): Observable<ProdutoResponse[]> {
+    return this.http.get<{ data: ProdutoResponse[] }>(`${this.baseUrl}/rascunhos`)
+      .pipe(map(r => r.data))
+  }
+
   criar(request: ProdutoRequest): Observable<ProdutoResponse> {
     return this.http.post<any>(this.baseUrl, request).pipe(map(r => r.data));
   }

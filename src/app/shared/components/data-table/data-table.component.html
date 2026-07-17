@@ -112,8 +112,8 @@
             }
 
             @default {
-              <span [class.text-gray-500]="col.type === 'computed'"
-                    [class.text-gray-800]="col.type !== 'computed'">
+              <span [ngClass]="(col.cellClassFn ? col.cellClassFn(row) : '')
+                                || (col.type === 'computed' ? 'text-gray-500' : 'text-gray-800')">
                 {{ getCellValue(col, row, ri) }}
               </span>
             }
