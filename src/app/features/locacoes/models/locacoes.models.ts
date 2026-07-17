@@ -1,5 +1,7 @@
 export type StatusLocacao = 'ATIVA' | 'DEVOLVIDA' | 'ATRASADA' | 'CANCELADA' | 'ORCAMENTO';
 
+export type UnidadeMedida = 'SACO' | 'METRO' | 'METRO_QUADRADO' | 'LITRO' | 'PECA' | 'KG' | 'ROLO' | 'BALDE';
+
 export type StatusEntrega = 'PENDENTE' | 'FEITA';
 
 
@@ -143,6 +145,7 @@ export interface ProdutoSimples {
   preco: number;
   precoDiaria: number;
   quantidadeEstoque: number;
+  medida: UnidadeMedida;
 }
  
 export interface ClienteSimples {

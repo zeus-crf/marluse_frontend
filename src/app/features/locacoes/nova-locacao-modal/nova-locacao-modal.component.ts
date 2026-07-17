@@ -10,6 +10,7 @@ import { SelectOption } from '../../../shared/components/select/select.component
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { ClienteSimples, EntregaRequest, FormaPagamento, LocacaoResponse, ProdutoSimples, StatusLocacao, TipoDesconto } from '../models/locacoes.models';
+import { permiteQuantidadeFracionada } from '../../../shared/unidade-medida';
 
 interface ItemForm {
   produtoNovo: boolean;
@@ -202,6 +203,12 @@ export class NovaLocacaoModalComponent {
 
     removerLinha(index: number): void {
         this.itens = this.itens.filter((_, i) => i !== index);
+    }
+
+    /** Produtos com unidade contínua (metro, kg, litro…) aceitam quantidade fracionada. */
+    permiteFracao(item: ItemForm): boolean {
+        const produto = this.produtos.find(p => p.id === item.produtoId);
+        return permiteQuantidadeFracionada(produto?.medida);
     }
 
     incrementarQty(item: ItemForm): void {

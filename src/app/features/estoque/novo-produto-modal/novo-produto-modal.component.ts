@@ -12,6 +12,7 @@ import {
 } from '../models/estoque.models';
 import { SelectSearchComponent } from '../../../shared/components/select-search/select-search.component';
 import { FieldErrorPipe } from '../../../shared/pipes/field-error.pipe';
+import { permiteQuantidadeFracionada } from '../../../shared/unidade-medida';
 
 @Component({
   selector: 'app-novo-produto-modal',
@@ -44,6 +45,11 @@ export class NovoProdutoModalComponent implements OnChanges {
 
   get isEdicao(): boolean { return !!this.produto; }
   get titulo():   string  { return this.isEdicao ? 'Editar produto' : 'Novo produto'; }
+
+  /** Libera casas decimais no estoque para unidades contínuas (metro, kg, litro…). */
+  get permiteFracao(): boolean {
+    return permiteQuantidadeFracionada(this.form.get('medida')?.value);
+  }
 
   readonly unidades: { value: UnidadeMedida; label: string }[] = [
     { value: 'SACO',           label: 'Saco' },
